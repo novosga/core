@@ -29,16 +29,10 @@ class Envelope implements \JsonSerializable
      */
     private $message;
 
-    public function __construct($data = null, $success = true)
+    public function __construct()
     {
-        $this->success = $success;
+        $this->success = true;
         $this->sessionStatus = 'active';
-        
-        if ($this->success) {
-            $this->data = $data;
-        } else {
-            $this->message = $data;
-        }
     }
     
     public function isSuccess()
