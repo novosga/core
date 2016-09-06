@@ -9,30 +9,96 @@ namespace Novosga\Http;
  */
 class Envelope implements \JsonSerializable
 {
+    /**
+     * @var bool
+     */
+    private $success;
     
-    private $body;
+    /**
+     * @var string
+     */
+    private $sessionStatus;
+    
+    /**
+     * @var mixed
+     */
+    private $data;
+    
+    /**
+     * @var string
+     */
+    private $message;
 
     public function __construct($data = null, $success = true)
     {
-        $this->body = [
-            'success'  => $success,
-            'invalid'  => false,
-            'inactive' => false,
-            'time'     => time() * 1000
-        ];
+        $this->success = $success;
+        $this->sessionStatus = 'active';
         
-        if ($success) {
-            $this->body['data'] = $data;
+        if ($this->success) {
+            $this->data = $data;
         } else {
-            $this->body['message']  = $data;
+            $this->message = $data;
         }
-        
-        parent::__construct($this->body);
     }
     
-    public function jsonSerialize()
+    public function isSuccess()
     {
-        return $this->body;
+        return $this->success;
     }
 
+    public function getSessionStatus()
+    {
+        return $this->sessionStatus;
+    }
+
+    public function getData()
+    {
+        return $this->data;
+    }
+
+    public function getMessage()
+    {
+        return $this->message;
+    }
+
+    public function setSuccess($success)
+    {
+        $this->success = $success;
+        return $this;
+    }
+
+    public function setSessionStatus($session)
+    {
+        $this->session = $session;
+        return $this;
+    }
+
+    public function setData($data)
+    {
+        $this->data = $data;
+        return $this;
+    }
+
+    public function setMessage($message)
+    {
+        $this->message = $message;
+        return $this;
+    }
+        
+    public function jsonSerialize()
+    {
+        $body = [
+            'success'        => $this->success,
+            'sessionStatus'  => $this->sessionStatus,
+            'time'           => time() * 1000,
+        ];
+        
+        if ($this->success) {
+            $body['data'] = $this->data;
+        } else {
+            $body['message']  = $this->message;
+        }
+        
+        return $body;
+    }
 }
