@@ -7,8 +7,13 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class Unidade extends SequencialModel
+class Unidade implements \JsonSerializable
 {
+    /**
+     * @var mixed
+     */
+    protected $id;
+    
     /**
      * @var string
      */
@@ -36,6 +41,17 @@ class Unidade extends SequencialModel
 
     public function __construct()
     {
+    }
+    
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
     }
 
     public function setCodigo($codigo)
@@ -91,7 +107,7 @@ class Unidade extends SequencialModel
         $this->mensagemImpressao = $mensagemImpressao;
     }
 
-    public function toString()
+    public function __toString()
     {
         return $this->getNome();
     }

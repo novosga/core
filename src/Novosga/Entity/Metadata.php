@@ -7,7 +7,7 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-abstract class Metadata extends Model implements \JsonSerializable
+abstract class Metadata implements \JsonSerializable
 {
     /**
      * @var string

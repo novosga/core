@@ -8,8 +8,13 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class Cargo extends SequencialModel
+class Cargo implements \JsonSerializable
 {
+    /**
+     * @var mixed
+     */
+    protected $id;
+    
     /**
      * @var string
      */
@@ -24,7 +29,23 @@ class Cargo extends SequencialModel
      * @var Modulo[]
      */
     private $modulos;
+    
+    public function __construct()
+    {
+        $this->modulos = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+    
+    public function getId()
+    {
+        return $this->id;
+    }
 
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+    
     /**
      * Define o nome do Cargo.
      *
@@ -76,7 +97,7 @@ class Cargo extends SequencialModel
         return $this;
     }
     
-    public function toString()
+    public function __toString()
     {
         return $this->nome;
     }

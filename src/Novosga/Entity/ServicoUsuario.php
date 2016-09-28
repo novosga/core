@@ -8,7 +8,7 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class ServicoUsuario extends Model
+class ServicoUsuario
 {
     // (bug ao tentar mapear ServicoUnidade: composite primary key as part of the primary key of another entity)
 

@@ -7,7 +7,7 @@ namespace Novosga\Entity;
   * Para controle dos modulos do sistema.
   *
   */
- class Modulo extends SequencialModel
+ class Modulo implements \JsonSerializable
  {
 
     /**
@@ -30,12 +30,6 @@ namespace Novosga\Entity;
      */
     private $status;
 
-    // transient
-
-    private $dir;
-     private $path;
-     private $realPath;
-
     /**
      * Define a chave do Modulo.
      *
@@ -44,6 +38,7 @@ namespace Novosga\Entity;
     public function setChave($chave)
     {
         $this->chave = $chave;
+        return $this;
     }
 
     /**
@@ -64,6 +59,7 @@ namespace Novosga\Entity;
     public function setNome($nome)
     {
         $this->nome = $nome;
+        return $this;
     }
 
     /**
@@ -79,6 +75,7 @@ namespace Novosga\Entity;
      public function setDescricao($descricao)
      {
          $this->descricao = $descricao;
+         return $this;
      }
 
      public function getDescricao()
@@ -94,15 +91,12 @@ namespace Novosga\Entity;
      public function setStatus($status)
      {
          $this->status = $status;
+         return $this;
      }
 
      public function getRealPath()
      {
-         if (!$this->realPath) {
-             $this->realPath = self::realPath($this->chave);
-         }
-
-         return $this->realPath;
+         return self::realPath($this->chave);
      }
 
      public static function realPath($chave)
@@ -113,7 +107,7 @@ namespace Novosga\Entity;
     /**
      * @return string
      */
-    public function toString()
+    public function __toString()
     {
         return $this->getChave();
     }

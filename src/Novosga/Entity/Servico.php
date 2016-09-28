@@ -7,8 +7,13 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class Servico extends SequencialModel
+class Servico implements \JsonSerializable
 {
+    /**
+     * @var mixed
+     */
+    protected $id;
+    
     /**
      * @var string
      */
@@ -35,17 +40,30 @@ class Servico extends SequencialModel
     private $mestre;
 
     /**
-     * @var Servico
+     * @var Servico[]
      */
     private $subServicos;
 
     /**
-     * @var ServicoUnidade
+     * @var ServicoUnidade[]
      */
     private $servicosUnidade;
 
     public function __construct()
     {
+        $this->subServicos = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->servicosUnidade = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+    
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
     }
 
     public function setNome($nome)
@@ -123,7 +141,7 @@ class Servico extends SequencialModel
         $this->servicosUnidade = $servicosUnidade;
     }
 
-    public function toString()
+    public function __toString()
     {
         return $this->nome;
     }

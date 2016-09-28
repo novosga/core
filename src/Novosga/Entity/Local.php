@@ -7,8 +7,13 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class Local extends SequencialModel
+class Local implements \JsonSerializable
 {
+    /**
+     * @var mixed
+     */
+    protected $id;
+    
     /**
      * @var string
      */
@@ -17,10 +22,22 @@ class Local extends SequencialModel
     public function __construct()
     {
     }
+    
+    public function getId()
+    {
+        return $this->id;
+    }
 
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+    
     public function setNome($nome)
     {
         $this->nome = $nome;
+        return $this;
     }
 
     public function getNome()

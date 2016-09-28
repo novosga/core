@@ -12,7 +12,7 @@ use Doctrine\ORM\EntityManager;
  * @ ORM\Entity
  * @ ORM\Table(name="config")
  */
-class Configuracao extends Model implements \JsonSerializable
+class Configuracao implements \JsonSerializable
 {
     const STRING = 1;
     const NUMERIC = 2;
@@ -68,7 +68,7 @@ class Configuracao extends Model implements \JsonSerializable
         $this->valor = ($this->tipo == self::COMPLEX) ? serialize($valor) : $valor;
     }
 
-    public function toString()
+    public function __toString()
     {
         return $this->getChave().'='.$this->getValor();
     }

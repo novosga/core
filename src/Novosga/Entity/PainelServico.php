@@ -7,7 +7,7 @@ namespace Novosga\Entity;
   *
   * @author Rogerio Lino <rogeriolino@gmail.com>
   */
-class PainelServico extends Model implements \JsonSerializable
+class PainelServico implements \JsonSerializable
 {
     /**
      * @var Painel

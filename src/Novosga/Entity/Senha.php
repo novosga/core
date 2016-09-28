@@ -1,28 +1,35 @@
 <?php
 
-namespace Novosga\Entity\Util;
-
-use Novosga\Entity\Model;
-use Novosga\Entity\Prioridade;
+namespace Novosga\Entity;
 
 /**
-  * Classe Senha
-  * Responsavel pelas informacoes do Senha.
-  */
- class Senha extends Model
- {
-     const LENGTH = 3;
-     const TIPO_NUMERACAO = 'numeracao';
-     const NUMERACAO_UNICA = 1;
-     const NUMERACAO_SERVICO = 2;
+ * Classe Senha
+ * Responsavel pelas informacoes do Senha.
+ * 
+ * @author Rogério Lino <rogeriolino@gmail.com>
+ */
+class Senha implements \JsonSerializable
+{
+    const LENGTH = 3;
 
-     private $sigla;
-     private $numero;
-     private $prioridade;
+    /**
+     * @var string
+     */
+    private $sigla;
 
-     public function __construct()
-     {
-     }
+    /**
+     * @var int
+     */
+    private $numero;
+
+    /**
+     * @var Prioridade
+     */
+    private $prioridade;
+
+    public function __construct()
+    {
+    }
 
     /**
      * Define a sigla da senha.
@@ -77,11 +84,11 @@ use Novosga\Entity\Prioridade;
     /**
      * Define a Prioridade da senha.
      *
-     * @param Prioridade $pri
+     * @param Prioridade $prioridade
      */
-    public function setPrioridade($pri)
+    public function setPrioridade(Prioridade $prioridade)
     {
-        $this->prioridade = $pri;
+        $this->prioridade = $prioridade;
     }
 
     /**
@@ -123,18 +130,18 @@ use Novosga\Entity\Prioridade;
      *
      * @return string
      */
-    public function toString()
+    public function __toString()
     {
-        return $this->getSigla().$this->getNumeroZeros();
+        return $this->getSigla() . $this->getNumeroZeros();
     }
-
-    /**
-     * Retorna resultado do método toString.
-     *
-     * @return string
-     */
-    public function __tostring()
+    
+    public function jsonSerialize()
     {
-        return $this->toString();
+        return [
+            'sigla'          => $this->getSigla(),
+            'numero'         => $this->getNumero(),
+            'prioridade'     => $this->getSenha()->isPrioridade(),
+            'nomePrioridade' => $this->getSenha()->getPrioridade()->getNome(),
+        ];
     }
  }

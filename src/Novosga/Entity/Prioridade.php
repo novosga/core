@@ -7,8 +7,13 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class Prioridade extends SequencialModel
+class Prioridade implements \JsonSerializable
 {
+    /**
+     * @var mixed
+     */
+    protected $id;
+    
     /**
      * @var string
      */
@@ -31,6 +36,17 @@ class Prioridade extends SequencialModel
 
     public function __construct()
     {
+    }
+    
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
     }
 
     public function setNome($nome)
@@ -77,7 +93,7 @@ class Prioridade extends SequencialModel
         $this->status = $status;
     }
 
-    public function toString()
+    public function __toString()
     {
         return $this->getNome();
     }

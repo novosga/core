@@ -1,17 +1,22 @@
 <?php
 
-namespace Novosga\Entity\Util;
-
-use Novosga\Entity\Model;
+namespace Novosga\Entity;
 
 /**
  * Classe auxiliar.
  *
  * @author rogerio
  */
-class Cliente extends Model
+class Cliente
 {
+    /**
+     * @var string
+     */
     private $nome;
+    
+    /**
+     * @var string
+     */
     private $documento;
 
     public function __construct()
@@ -38,8 +43,16 @@ class Cliente extends Model
         return $this->documento;
     }
 
-    public function toString()
+    public function __toString()
     {
         return $this->getNome();
+    }
+    
+    public function jsonSerialize()
+    {
+        return [
+            'nome'      => $this->getNome(),
+            'documento' => $this->getDocumento(),
+        ];
     }
 }

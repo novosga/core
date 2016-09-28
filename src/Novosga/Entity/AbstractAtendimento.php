@@ -11,8 +11,13 @@ use Novosga\Service\AtendimentoService;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-abstract class AbstractAtendimento extends SequencialModel
+abstract class AbstractAtendimento implements \JsonSerializable
 {
+    /**
+     * @var mixed
+     */
+    protected $id;
+    
     /**
      * @var Unidade
      */
@@ -27,11 +32,6 @@ abstract class AbstractAtendimento extends SequencialModel
      * @var ServicoUnidade
      */
     private $servicoUnidade;
-
-    /**
-     * @var Prioridade
-     */
-    private $prioridade;
 
     /**
      * @var Usuario
@@ -79,33 +79,26 @@ abstract class AbstractAtendimento extends SequencialModel
     protected $status;
 
     /**
-     * @var string
+     * @var Cliente
      */
-    protected $nomeCliente;
+    protected $cliente;
 
     /**
-     * @var string
+     * @var Senha
      */
-    protected $documentoCliente;
-
-    /**
-     * @var string
-     */
-    protected $siglaSenha;
-
-    /**
-     * @var int
-     */
-    protected $numeroSenha;
+    protected $senha;
 
     /**
      * @var Atendimento
      */
     protected $pai;
-
-    // transient
-    private $cliente;
-    private $senha;
+    
+    
+    public function __construct()
+    {
+        $this->senha = new Senha();
+        $this->cliente = new Cliente();
+    }
 
     public function getUnidade()
     {
@@ -141,18 +134,6 @@ abstract class AbstractAtendimento extends SequencialModel
         $this->servicoUnidade = $servicoUnidade;
         $this->setServico($servicoUnidade->getServico());
         $this->setUnidade($servicoUnidade->getUnidade());
-
-        return $this;
-    }
-
-    public function getPrioridade()
-    {
-        return $this->prioridade;
-    }
-
-    public function setPrioridade(Prioridade $prioridade)
-    {
-        $this->prioridade = $prioridade;
 
         return $this;
     }
@@ -287,54 +268,6 @@ abstract class AbstractAtendimento extends SequencialModel
         return $this;
     }
 
-    public function getNomeCliente()
-    {
-        return $this->nomeCliente;
-    }
-
-    public function setNomeCliente($nomeCliente)
-    {
-        $this->nomeCliente = $nomeCliente;
-
-        return $this;
-    }
-
-    public function getDocumentoCliente()
-    {
-        return $this->documentoCliente;
-    }
-
-    public function setDocumentoCliente($documentoCliente)
-    {
-        $this->documentoCliente = $documentoCliente;
-
-        return $this;
-    }
-
-    public function getSiglaSenha()
-    {
-        return $this->siglaSenha;
-    }
-
-    public function setSiglaSenha($siglaSenha)
-    {
-        $this->siglaSenha = $siglaSenha;
-
-        return $this;
-    }
-
-    public function getNumeroSenha()
-    {
-        return $this->numeroSenha;
-    }
-
-    public function setNumeroSenha($numeroSenha)
-    {
-        $this->numeroSenha = $numeroSenha;
-
-        return $this;
-    }
-
     public function getPai()
     {
         return $this->pai;
@@ -356,8 +289,9 @@ abstract class AbstractAtendimento extends SequencialModel
     public function getTempoEspera()
     {
         $now = new \DateTime();
+        $interval = $now->diff($this->getDataChegada());
 
-        return $now->diff($this->getDataChegada());
+        return $interval;
     }
 
     /**
@@ -368,11 +302,12 @@ abstract class AbstractAtendimento extends SequencialModel
      */
     public function getTempoPermanencia()
     {
+        $interval = new \DateInterval();
         if ($this->getDataFim()) {
-            return $this->getDataFim()->diff($this->getDataChegada());
+            $interval = $this->getDataFim()->diff($this->getDataChegada());
         }
 
-        return new \DateInterval();
+        return $interval;
     }
 
     /**
@@ -383,11 +318,12 @@ abstract class AbstractAtendimento extends SequencialModel
      */
     public function getTempoAtendimento()
     {
+        $interval = new \DateInterval();
         if ($this->getDataFim()) {
-            return $this->getDataFim()->diff($this->getDataInicio());
+            $interval = $this->getDataFim()->diff($this->getDataInicio());
         }
 
-        return new \DateInterval();
+        return $interval;
     }
 
     /**
@@ -395,12 +331,6 @@ abstract class AbstractAtendimento extends SequencialModel
      */
     public function getCliente()
     {
-        if (!$this->cliente) {
-            $this->cliente = new Cliente();
-            $this->cliente->setNome($this->nomeCliente.'');
-            $this->cliente->setDocumento($this->documentoCliente.'');
-        }
-
         return $this->cliente;
     }
 
@@ -409,14 +339,6 @@ abstract class AbstractAtendimento extends SequencialModel
      */
     public function getSenha()
     {
-        if (!$this->senha) {
-            $this->senha = new Senha();
-            $this->senha->setSigla($this->siglaSenha);
-            $numero = $this->numeroSenha;
-            $this->senha->setNumero((int) $numero);
-            $this->senha->setPrioridade($this->prioridade);
-        }
-
         return $this->senha;
     }
 
@@ -424,10 +346,8 @@ abstract class AbstractAtendimento extends SequencialModel
     {
         $arr = [
             'id'             => $this->getId(),
-            'senha'          => $this->getSenha()->toString(),
+            'senha'          => $this->getSenha(),
             'servico'        => $this->getServicoUnidade()->getServico()->getNome(),
-            'prioridade'     => $this->getSenha()->isPrioridade(),
-            'nomePrioridade' => $this->getSenha()->getPrioridade()->getNome(),
             'chegada'        => $this->getDataChegada()->format('Y-m-d H:i:s'),
             'espera'         => $this->getTempoEspera()->format('%H:%I:%S'),
         ];
@@ -456,7 +376,7 @@ abstract class AbstractAtendimento extends SequencialModel
         return $arr;
     }
 
-    public function toString()
+    public function __toString()
     {
         return $this->getSenha()->toString();
     }

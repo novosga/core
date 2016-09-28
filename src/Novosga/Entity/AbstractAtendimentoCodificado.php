@@ -8,7 +8,7 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-abstract class AbstractAtendimentoCodificado extends Model
+abstract class AbstractAtendimentoCodificado
 {
     /**
      * @var Servico

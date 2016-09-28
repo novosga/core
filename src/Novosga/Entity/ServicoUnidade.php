@@ -8,7 +8,7 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class ServicoUnidade extends Model implements \JsonSerializable
+class ServicoUnidade implements \JsonSerializable
 {
     /**
      * @var Servico
@@ -244,7 +244,7 @@ class ServicoUnidade extends Model implements \JsonSerializable
         return $this;
     }
 
-    public function toString()
+    public function __toString()
     {
         return $this->sigla.' - '.$this->getServico()->getNome();
     }

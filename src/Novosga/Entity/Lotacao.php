@@ -7,7 +7,7 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class Lotacao extends Model implements \JsonSerializable
+class Lotacao implements \JsonSerializable
 {
     /**
      * @var Usuario

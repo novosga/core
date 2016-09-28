@@ -7,7 +7,7 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class Contador extends Model implements \JsonSerializable
+class Contador implements \JsonSerializable
 {
     /**
      * @var Unidade

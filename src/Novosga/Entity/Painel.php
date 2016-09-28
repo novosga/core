@@ -7,7 +7,7 @@ namespace Novosga\Entity;
   *
   * @author Rogerio Lino <rogeriolino@gmail.com>
   */
- class Painel extends Model implements \JsonSerializable
+ class Painel implements \JsonSerializable
  {
      /**
      * @var int
@@ -64,7 +64,7 @@ namespace Novosga\Entity;
          return long2ip($this->getHost());
      }
 
-     public function toString()
+     public function __toString()
      {
          return $this->getIp();
      }

@@ -11,8 +11,12 @@ use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class Usuario extends SequencialModel implements AdvancedUserInterface, EncoderAwareInterface, \Serializable
+class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareInterface, \Serializable
 {
+    /**
+     * @var mixed
+     */
+    protected $id;
 
     /**
      * @var string
@@ -74,10 +78,22 @@ class Usuario extends SequencialModel implements AdvancedUserInterface, EncoderA
     public function __construct()
     {
     }
+    
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
 
     public function setLogin($login)
     {
         $this->login = $login;
+        return $this;
     }
 
     public function getLogin()
@@ -88,6 +104,7 @@ class Usuario extends SequencialModel implements AdvancedUserInterface, EncoderA
     public function setNome($nome)
     {
         $this->nome = $nome;
+        return $this;
     }
 
     public function getNome()
@@ -98,6 +115,7 @@ class Usuario extends SequencialModel implements AdvancedUserInterface, EncoderA
     public function setSobrenome($sobrenome)
     {
         $this->sobrenome = $sobrenome;
+        return $this;
     }
 
     public function getSobrenome()
@@ -112,7 +130,7 @@ class Usuario extends SequencialModel implements AdvancedUserInterface, EncoderA
      */
     public function getNomeCompleto()
     {
-        return $this->nome.' '.$this->sobrenome;
+        return $this->nome . ' ' . $this->sobrenome;
     }
 
     public function getSenha()
@@ -123,11 +141,13 @@ class Usuario extends SequencialModel implements AdvancedUserInterface, EncoderA
     public function setSenha($senha)
     {
         $this->senha = $senha;
+        return $this;
     }
 
     public function setStatus($status)
     {
         $this->status = $status;
+        return $this;
     }
 
     public function getLotacoes()
@@ -138,11 +158,13 @@ class Usuario extends SequencialModel implements AdvancedUserInterface, EncoderA
     public function setSalt($salt) 
     {
         $this->salt = $salt;
+        return $this;
     }
 
     public function setLotacoes($lotacoes)
     {
         $this->lotacoes = $lotacoes;
+        return $this;
     }
 
     public function getStatus()
@@ -158,6 +180,7 @@ class Usuario extends SequencialModel implements AdvancedUserInterface, EncoderA
     public function setUltimoAcesso($ultimoAcesso)
     {
         $this->ultimoAcesso = $ultimoAcesso;
+        return $this;
     }
 
     public function getSessionId()
@@ -168,11 +191,7 @@ class Usuario extends SequencialModel implements AdvancedUserInterface, EncoderA
     public function setSessionId($sessionId)
     {
         $this->sessionId = $sessionId;
-    }
-
-    public function toString()
-    {
-        return $this->getLogin();
+        return $this;
     }
 
     public function getAlgorithm()

@@ -7,8 +7,13 @@ namespace Novosga\Entity;
   *
   * @author Rogerio Lino <rogeriolino@gmail.com>
   */
- class PainelSenha extends SequencialModel
+ class PainelSenha implements \JsonSerializable
  {
+    /**
+     * @var mixed
+     */
+    protected $id;
+    
      /**
      * @var Servico
      */
