@@ -104,11 +104,10 @@ class Cargo implements \JsonSerializable
 
     public function jsonSerialize()
     {
-        $arr = parent::jsonSerialize();
-
-        return array_merge($arr, [
+        return [
+            'id'        => $this->getId(),
             'nome'      => $this->getNome(),
             'descricao' => $this->getDescricao(),
-        ]);
+        ];
     }
 }
