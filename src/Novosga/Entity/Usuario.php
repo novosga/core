@@ -51,6 +51,11 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
     /**
      * @var string
      */
+    private $ip;
+
+    /**
+     * @var string
+     */
     private $sessionId;
 
     /**
@@ -73,6 +78,9 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
      */
     private $salt;
 
+    /**
+     * @var array
+     */
     private $roles = [];
 
     public function __construct()
@@ -180,6 +188,17 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
     public function setUltimoAcesso($ultimoAcesso)
     {
         $this->ultimoAcesso = $ultimoAcesso;
+        return $this;
+    }
+    
+    public function getIp()
+    {
+        return $this->ip;
+    }
+
+    public function setIp($ip)
+    {
+        $this->ip = $ip;
         return $this;
     }
 

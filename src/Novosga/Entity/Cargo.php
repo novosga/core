@@ -32,7 +32,7 @@ class Cargo implements \JsonSerializable
     
     public function __construct()
     {
-        $this->modulos = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->modulos = [];
     }
     
     public function getId()
