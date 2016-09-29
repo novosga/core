@@ -38,12 +38,17 @@ class UsuarioRepository extends EntityRepository implements UserLoaderInterface,
                 throw new Exception(_('Não existe lotação para o usuário atual na unidade informada.'));
             }
 
+            $roles = $usuario->getRoles();
             $permissoes = $lotacao->getCargo()->getModulos();
+            
+            
             foreach ($permissoes as $modulo) {
-                $chave = $modulo->getChave();
-                $usuario->addRole('ROLE_' . strtoupper(str_replace('.', '_', $chave)));
+                $role = 'ROLE_' . strtoupper(str_replace('.', '_', $modulo));
+                if (!in_array($role, $roles)) {
+                    $usuario->addRole($role);
+                }
             }
-
+            
             $service = new UsuarioService($em);
             $service->meta($em->getReference(Usuario::class, $usuario->getId()), 'session.unidade', $unidade->getId());
         }
