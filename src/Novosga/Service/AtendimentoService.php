@@ -680,7 +680,7 @@ class AtendimentoService extends MetaModelService
     public function ultimaSenhaUnidade($unidade)
     {
         return $this->em
-                ->createQuery("SELECT e FROM Novosga\Entity\Atendimento e JOIN e.servicoUnidade su WHERE su.unidade = :unidade ORDER BY e.numeroSenha DESC")
+                ->createQuery("SELECT e FROM Novosga\Entity\Atendimento e JOIN e.servicoUnidade su WHERE su.unidade = :unidade ORDER BY e.senha.numero DESC")
                 ->setParameter('unidade', $unidade)
                 ->setMaxResults(1)
                 ->getOneOrNullResult();

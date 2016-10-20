@@ -116,7 +116,7 @@ class FilaService extends ModelService
     {
         $qb = $this->em
             ->createQueryBuilder()
-            ->select('e')
+            ->select('e', 'p', 'su', 's', 'senha')
             ->from(Atendimento::class, 'e')
             ->join('e.prioridade', 'p')
             ->join('e.servicoUnidade', 'su')
@@ -154,7 +154,7 @@ class FilaService extends ModelService
             
             // ticket number
             $ordering[] = [
-                'exp'   => 'e.numeroSenha',
+                'exp'   => 'e.senha.numero',
                 'order' => 'ASC',
             ];
         }

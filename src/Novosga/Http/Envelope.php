@@ -2,6 +2,8 @@
 
 namespace Novosga\Http;
 
+use Exception;
+
 /**
  * Envelope
  *
@@ -76,6 +78,15 @@ class Envelope implements \JsonSerializable
     public function setMessage($message)
     {
         $this->message = $message;
+        return $this;
+    }
+    
+    public function exception(Exception $e)
+    {
+        $this
+            ->setSuccess(false)
+            ->setMessage($e->getMessage());
+        
         return $this;
     }
         

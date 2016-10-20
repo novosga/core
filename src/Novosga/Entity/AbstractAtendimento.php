@@ -49,6 +49,11 @@ abstract class AbstractAtendimento implements \JsonSerializable
     protected $local;
 
     /**
+     * @var Prioridade
+     */
+    private $prioridade;
+
+    /**
      * @var \DateTime
      */
     protected $dataAgendamento;
@@ -99,7 +104,18 @@ abstract class AbstractAtendimento implements \JsonSerializable
         $this->senha = new Senha();
         $this->cliente = new Cliente();
     }
+    
+    public function getId()
+    {
+        return $this->id;
+    }
 
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+    
     public function getUnidade()
     {
         return $this->unidade;
@@ -341,15 +357,30 @@ abstract class AbstractAtendimento implements \JsonSerializable
     {
         return $this->senha;
     }
+    
+    public function getPrioridade()
+    {
+        return $this->prioridade;
+    }
+
+    public function setPrioridade(Prioridade $prioridade)
+    {
+        $this->prioridade = $prioridade;
+        return $this;
+    }
 
     public function jsonSerialize($minimal = false)
     {
         $arr = [
             'id'             => $this->getId(),
             'senha'          => $this->getSenha(),
-            'servico'        => $this->getServicoUnidade()->getServico()->getNome(),
+            'servico'        => [
+                'id'   => $this->getServicoUnidade()->getServico()->getId(),
+                'nome' => $this->getServicoUnidade()->getServico()->getNome(),
+            ],
             'chegada'        => $this->getDataChegada()->format('Y-m-d H:i:s'),
             'espera'         => $this->getTempoEspera()->format('%H:%I:%S'),
+            'prioridade'     => $this->getPrioridade(),
         ];
         if (!$minimal) {
             $arr['numero'] = $this->getSenha()->getNumero();
@@ -367,10 +398,7 @@ abstract class AbstractAtendimento implements \JsonSerializable
             }
             $arr['status'] = $this->getStatus();
             $arr['nomeStatus'] = $this->getNomeStatus();
-            $arr['cliente'] = [
-                'nome'      => $this->getCliente()->getNome(),
-                'documento' => $this->getCliente()->getDocumento(),
-            ];
+            $arr['cliente'] = $this->getCliente();
         }
 
         return $arr;

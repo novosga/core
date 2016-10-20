@@ -22,11 +22,6 @@ class Senha implements \JsonSerializable
      */
     private $numero;
 
-    /**
-     * @var Prioridade
-     */
-    private $prioridade;
-
     public function __construct()
     {
     }
@@ -82,50 +77,6 @@ class Senha implements \JsonSerializable
     }
 
     /**
-     * Define a Prioridade da senha.
-     *
-     * @param Prioridade $prioridade
-     */
-    public function setPrioridade(Prioridade $prioridade)
-    {
-        $this->prioridade = $prioridade;
-    }
-
-    /**
-     * Retorna a Prioridade da Senha.
-     *
-     * @return Prioridade
-     */
-    public function getPrioridade()
-    {
-        return $this->prioridade;
-    }
-
-    /**
-     * Retorna a legenda da senha.
-     *
-     * @return string
-     */
-    public function getLegenda()
-    {
-        if ($this->getPrioridade()->getPeso() == 0) {
-            return _('Convencional');
-        } else {
-            return _('Prioridade');
-        }
-    }
-
-    /**
-     * Retorna se a senha tem ou nao prioridade.
-     *
-     * @return bool
-     */
-    public function isPrioridade()
-    {
-        return ($this->getPrioridade()->getPeso() > 0) ? true : false;
-    }
-
-    /**
      * Retorna a senha formatada para exibicao.
      *
      * @return string
@@ -140,8 +91,6 @@ class Senha implements \JsonSerializable
         return [
             'sigla'          => $this->getSigla(),
             'numero'         => $this->getNumero(),
-            'prioridade'     => $this->getSenha()->isPrioridade(),
-            'nomePrioridade' => $this->getSenha()->getPrioridade()->getNome(),
         ];
     }
  }
