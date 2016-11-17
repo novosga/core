@@ -20,6 +20,7 @@ class Atendimento extends AbstractAtendimento
 
     public function __construct()
     {
+        parent::__construct();
         $this->codificados = new ArrayCollection();
     }
 

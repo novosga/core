@@ -7,8 +7,13 @@ namespace Novosga\Entity;
  *
  * @author rogerio
  */
-class Cliente
+class Cliente implements \JsonSerializable
 {
+    /**
+     * @var mixed
+     */
+    protected $id;
+    
     /**
      * @var string
      */
@@ -18,14 +23,24 @@ class Cliente
      * @var string
      */
     private $documento;
+    
+    /**
+     * @var string
+     */
+    private $email;
+    
+    /**
+     * @var string
+     */
+    private $telefone;
 
     public function __construct()
     {
     }
 
-    public function setNome($nome)
+    public function getId()
     {
-        $this->nome = $nome;
+        return $this->id;
     }
 
     public function getNome()
@@ -33,16 +48,51 @@ class Cliente
         return $this->nome;
     }
 
-    public function setDocumento($documento)
-    {
-        $this->documento = $documento;
-    }
-
     public function getDocumento()
     {
         return $this->documento;
     }
 
+    public function getEmail()
+    {
+        return $this->email;
+    }
+
+    public function getTelefone()
+    {
+        return $this->telefone;
+    }
+
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    public function setNome($nome)
+    {
+        $this->nome = $nome;
+        return $this;
+    }
+
+    public function setDocumento($documento)
+    {
+        $this->documento = $documento;
+        return $this;
+    }
+
+    public function setEmail($email)
+    {
+        $this->email = $email;
+        return $this;
+    }
+
+    public function setTelefone($telefone)
+    {
+        $this->telefone = $telefone;
+        return $this;
+    }
+    
     public function __toString()
     {
         return $this->getNome();
@@ -53,6 +103,8 @@ class Cliente
         return [
             'nome'      => $this->getNome(),
             'documento' => $this->getDocumento(),
+            'email'     => $this->getEmail(),
+            'telefone'  => $this->getTelefone(),
         ];
     }
 }
