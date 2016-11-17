@@ -105,6 +105,7 @@ class Prioridade implements \JsonSerializable
             'nome'      => $this->getNome(),
             'descricao' => $this->getDescricao(),
             'peso'      => $this->getPeso(),
+            'status'    => $this->getStatus(),
         ];
     }
 }
