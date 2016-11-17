@@ -2,8 +2,8 @@
 
 namespace Novosga\Entity;
 
-use Novosga\Entity\Util\Cliente;
-use Novosga\Entity\Util\Senha;
+use Novosga\Entity\Cliente;
+use Novosga\Entity\Senha;
 use Novosga\Service\AtendimentoService;
 
 /**
@@ -102,7 +102,6 @@ abstract class AbstractAtendimento implements \JsonSerializable
     public function __construct()
     {
         $this->senha = new Senha();
-        $this->cliente = new Cliente();
     }
     
     public function getId()
