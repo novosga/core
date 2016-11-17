@@ -91,6 +91,7 @@ class Senha implements \JsonSerializable
         return [
             'sigla'          => $this->getSigla(),
             'numero'         => $this->getNumero(),
+            'format'         => $this->__toString(),
         ];
     }
  }
