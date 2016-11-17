@@ -8,13 +8,13 @@ use Doctrine\ORM\OptimisticLockException;
 use Exception;
 use Novosga\Config\AppConfig;
 use Novosga\Entity\Atendimento;
+use Novosga\Entity\AtendimentoMeta;
 use Novosga\Entity\Contador;
 use Novosga\Entity\PainelSenha;
 use Novosga\Entity\Prioridade;
 use Novosga\Entity\Servico;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
-use Novosga\Entity\Util\UsuarioSessao;
 use Novosga\Util\DateUtil;
 use PDO;
 
@@ -58,7 +58,7 @@ class AtendimentoService extends MetaModelService
 
     protected function getMetaClass()
     {
-        return 'Novosga\Entity\AtendimentoMeta';
+        return AtendimentoMeta::class;
     }
 
     protected function getMetaFieldname()
@@ -73,7 +73,7 @@ class AtendimentoService extends MetaModelService
      * @param string      $name
      * @param string      $value
      *
-     * @return \Novosga\Entity\AtendimentoMeta
+     * @return AtendimentoMeta
      */
     public function meta(Atendimento $atendimento, $name, $value = null)
     {
@@ -388,32 +388,28 @@ class AtendimentoService extends MetaModelService
     {
         // verificando a unidade
         if (!($unidade instanceof Unidade)) {
-            $unidade = $this->em->find(Unidade::class, (int) $unidade);
+            $unidade = $this->em->find(Unidade::class, $unidade);
         }
         if (!$unidade) {
             throw new Exception(_('Nenhum unidade escolhida'));
         }
         // verificando o usuario na sessao
-        if (!($usuario instanceof Usuario) || $usuario instanceof UsuarioSessao) {
-            if ($usuario instanceof UsuarioSessao) {
-                $usuario = $usuario->getWrapped();
-            } else {
-                $usuario = $this->em->find("Novosga\Entity\Usuario", (int) $usuario);
-            }
+        if (!($usuario instanceof Usuario)) {
+            $usuario = $this->em->find(Usuario::class, $usuario);
         }
         if (!$usuario) {
             throw new Exception(_('Nenhum usuário na sessão'));
         }
         // verificando o servico
         if (!($servico instanceof Servico)) {
-            $servico = $this->em->find("Novosga\Entity\Servico", (int) $servico);
+            $servico = $this->em->find(Servico::class, $servico);
         }
         if (!$servico) {
             throw new Exception(_('Serviço inválido'));
         }
         // verificando a prioridade
         if (!($prioridade instanceof Prioridade)) {
-            $prioridade = $this->em->find("Novosga\Entity\Prioridade", (int) $prioridade);
+            $prioridade = $this->em->find(Prioridade::class, $prioridade);
         }
         if (!$prioridade || $prioridade->getStatus() == 0) {
             throw new Exception(_('Prioridade inválida'));
@@ -451,10 +447,16 @@ class AtendimentoService extends MetaModelService
         $atendimento->setPrioridade($prioridade);
         $atendimento->setUsuarioTriagem($usuario);
         $atendimento->setStatus(self::SENHA_EMITIDA);
-        $atendimento->setLocal(0);
-        $atendimento->setNomeCliente($nomeCliente);
-        $atendimento->setDocumentoCliente($documentoCliente);
-        $atendimento->setSiglaSenha($su->getSigla());
+        $atendimento->setLocal(null);
+        $atendimento->getSenha()->setSigla($su->getSigla());
+        
+        if ($nomeCliente || $documentoCliente) {
+            $cliente = new \Novosga\Entity\Cliente();
+            $cliente->setNome($nomeCliente);
+            $cliente->setDocumento($documentoCliente);
+            
+            $atendimento->setCliente($cliente);
+        }
 
         AppConfig::getInstance()->hook('attending.pre-create', [$atendimento]);
         
@@ -478,7 +480,7 @@ class AtendimentoService extends MetaModelService
             do {
                 try {
                     $atendimento->setDataChegada(new DateTime());
-                    $atendimento->setNumeroSenha($numeroSenha);
+                    $atendimento->getSenha()->setNumero($numeroSenha);
 
                     $this->em->persist($atendimento);
                     $this->em->merge($contador);

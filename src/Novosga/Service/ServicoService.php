@@ -5,10 +5,10 @@ namespace Novosga\Service;
 use Doctrine\Common\Collections\ArrayCollection;
 use Novosga\Entity\Local;
 use Novosga\Entity\Servico;
+use Novosga\Entity\ServicoMeta;
+use Novosga\Entity\ServicoUnidade;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
-use Novosga\Entity\Util\UsuarioSessao;
-use Novosga\Entity\ServicoMeta;
 
 /**
  * ServicoService.
@@ -34,7 +34,7 @@ class ServicoService extends MetaModelService
      * @param string  $name
      * @param string  $value
      *
-     * @return \Novosga\Entity\ServicoMeta
+     * @return ServicoMeta
      */
     public function meta(Servico $servico, $name, $value = null)
     {
@@ -62,7 +62,6 @@ class ServicoService extends MetaModelService
     /**
      * Retorna a lista de serviços ativos.
      *
-     * @param Usuario|UsuarioSessao|int $usuario
      * @param Unidade|int               $unidade
      * @param string                    $where
      *
@@ -88,7 +87,7 @@ class ServicoService extends MetaModelService
      * @param Unidade|int $unidade
      * @param Servico|int $servico
      *
-     * @return \Novosga\Entity\ServicoUnidade
+     * @return ServicoUnidade
      */
     public function servicoUnidade($unidade, $servico)
     {
@@ -114,8 +113,8 @@ class ServicoService extends MetaModelService
         if ($local instanceof Local) {
             $local = $local->getId();
         }
-        $uniServTableName = $this->em->getClassMetadata('Novosga\Entity\ServicoUnidade')->getTableName();
-        $servTableName = $this->em->getClassMetadata('Novosga\Entity\Servico')->getTableName();
+        $uniServTableName = $this->em->getClassMetadata(ServicoUnidade::class)->getTableName();
+        $servTableName = $this->em->getClassMetadata(Servico::class)->getTableName();
 
         // atualizando relacionamento entre unidade e servicos mestre
         $conn = $this->em->getConnection();
