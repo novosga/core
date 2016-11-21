@@ -9,6 +9,7 @@ use Exception;
 use Novosga\Config\AppConfig;
 use Novosga\Entity\Atendimento;
 use Novosga\Entity\AtendimentoMeta;
+use Novosga\Entity\Cliente;
 use Novosga\Entity\Contador;
 use Novosga\Entity\PainelSenha;
 use Novosga\Entity\Prioridade;
@@ -384,7 +385,7 @@ class AtendimentoService extends MetaModelService
      *
      * @return Atendimento
      */
-    public function distribuiSenha($unidade, $usuario, $servico, $prioridade, $nomeCliente, $documentoCliente)
+    public function distribuiSenha($unidade, $usuario, $servico, $prioridade, Cliente $cliente = null)
     {
         // verificando a unidade
         if (!($unidade instanceof Unidade)) {
@@ -414,10 +415,33 @@ class AtendimentoService extends MetaModelService
         if (!$prioridade || $prioridade->getStatus() == 0) {
             throw new Exception(_('Prioridade inválida'));
         }
+        
+        // verificando se o cliente ja existe
+        if ($cliente) {
+            $clienteExistente = null;
+            $clienteRepository = $this->em->getRepository(Cliente::class);
+            
+            if ($cliente->getId()) {
+                $clienteExistente = $clienteRepository->find($cliente->getId());
+            }
+            
+            if (!$clienteExistente && $cliente->getEmail()) {
+                $clienteExistente = $clienteRepository->findOneBy(['email' => $cliente->getEmail()]);
+            }
+            
+            if (!$clienteExistente && $cliente->getDocumento()) {
+                $clienteExistente = $clienteRepository->findOneBy(['documento' => $cliente->getDocumento()]);
+            }
+            
+            if ($clienteExistente) {
+                $cliente = $clienteExistente;
+            }
+        }
 
         // verificando se o servico esta disponivel na unidade
         $service = new ServicoService($this->em);
         $su = $service->servicoUnidade($unidade, $servico);
+        
         if (!$su) {
             throw new Exception(_('Serviço não disponível para a unidade atual'));
         }
@@ -450,11 +474,7 @@ class AtendimentoService extends MetaModelService
         $atendimento->setLocal(null);
         $atendimento->getSenha()->setSigla($su->getSigla());
         
-        if ($nomeCliente || $documentoCliente) {
-            $cliente = new \Novosga\Entity\Cliente();
-            $cliente->setNome($nomeCliente);
-            $cliente->setDocumento($documentoCliente);
-            
+        if ($cliente) {
             $atendimento->setCliente($cliente);
         }
 
@@ -698,11 +718,22 @@ class AtendimentoService extends MetaModelService
      */
     public function ultimaSenhaServico($unidade, $servico)
     {
-        return $this->em
-                ->createQuery("SELECT e FROM Novosga\Entity\Atendimento e JOIN e.servicoUnidade su WHERE su.servico = :servico AND su.unidade = :unidade ORDER BY e.numeroSenha DESC")
-                ->setParameter('servico', $servico)
-                ->setParameter('unidade', $unidade)
+        $atendimento = $this->em
+                ->createQueryBuilder()
+                ->select('e')
+                ->from(Atendimento::class, 'e')
+                ->join('e.servicoUnidade', 'su')
+                ->where('su.servico = :servico')
+                ->andWhere('su.unidade = :unidade')
+                ->orderBy('e.senha.numero', 'DESC')
+                ->setParameters([
+                    'servico' => $servico,
+                    'unidade' => $unidade
+                ])
+                ->getQuery()
                 ->setMaxResults(1)
                 ->getOneOrNullResult();
+        
+        return $atendimento;
     }
 }
