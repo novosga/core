@@ -101,6 +101,7 @@ class Cliente implements \JsonSerializable
     public function jsonSerialize()
     {
         return [
+            'id'        => $this->getId(),
             'nome'      => $this->getNome(),
             'documento' => $this->getDocumento(),
             'email'     => $this->getEmail(),

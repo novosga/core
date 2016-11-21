@@ -282,7 +282,13 @@ abstract class AbstractAtendimento implements \JsonSerializable
 
         return $this;
     }
-
+    
+    public function setCliente(Cliente $cliente)
+    {
+        $this->cliente = $cliente;
+        return $this;
+    }
+    
     public function getPai()
     {
         return $this->pai;
