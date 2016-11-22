@@ -273,38 +273,42 @@ class AtendimentoService extends MetaModelService
 
     public function buscaAtendimentos(Unidade $unidade, $senha)
     {
-        $cond = '';
-        $sigla = strtoupper(substr($senha, 0, 1));
-        // verificando se a letra foi informada (o primeiro caracter diferente do valor convertido para int)
-        $porSigla = ctype_alpha($sigla);
-        if ($porSigla) {
-            $cond = 'e.siglaSenha = :sigla AND';
-            $numeroSenha = (int) substr($senha, 1);
-        } else {
-            $numeroSenha = (int) $senha;
-        }
-        $query = $this->em->createQuery("
-            SELECT
-                e
-            FROM
-                Novosga\Entity\Atendimento e
-                JOIN e.servicoUnidade su
-                JOIN su.servico s
-                JOIN e.usuarioTriagem ut
-                LEFT JOIN e.usuario u
-            WHERE
-                e.numeroSenha = :numero AND $cond
-                su.unidade = :unidade
-            ORDER BY
-                e.id
-        ");
-        $query->setParameter('numero', $numeroSenha);
-        if ($porSigla) {
-            $query->setParameter('sigla', $sigla);
-        }
-        $query->setParameter('unidade', $unidade->getId());
-
-        return $query->getResult();
+        $i = 0;
+        $sigla = '';
+        do {
+            $char = substr($senha, $i, 1);
+            $isAlpha = ctype_alpha($char);
+            if ($isAlpha) {
+                $sigla .= strtoupper($char);
+            }
+            $i++;
+        } while ($i < strlen($senha) && $isAlpha);
+        
+        $numero = (int) substr($senha, $i - 1);
+        
+        $rs = $this->em
+                ->createQueryBuilder()
+                ->select([
+                    'e', 'su', 's', 'ut', 'u'
+                ])
+                ->from(Atendimento::class, 'e')
+                ->join('e.servicoUnidade', 'su')
+                ->join('e.servico', 's')
+                ->join('e.usuarioTriagem', 'ut')
+                ->leftJoin('e.usuario', 'u')
+                ->where(':numero = 0 OR e.senha.numero = :numero')
+                ->andWhere(':sigla IS NULL OR e.senha.sigla = :sigla')
+                ->andWhere('su.unidade = :unidade')
+                ->orderBy('e.id', 'ASC')
+                ->setParameters([
+                    'numero' => $numero,
+                    'sigla' => empty($sigla) ? null : $sigla,
+                    'unidade' => $unidade->getId()
+                ])
+                ->getQuery()
+                ->getResult();
+        
+        return $rs;
     }
 
     public function chamar(Atendimento $atendimento, Usuario $usuario, $local)
@@ -415,6 +419,10 @@ class AtendimentoService extends MetaModelService
         if (!$prioridade || $prioridade->getStatus() == 0) {
             throw new Exception(_('Prioridade inválida'));
         }
+        
+        /*
+         * TODO: validar unidade x usuario x servico
+         */
         
         // verificando se o cliente ja existe
         if ($cliente) {
@@ -555,7 +563,7 @@ class AtendimentoService extends MetaModelService
         AppConfig::getInstance()->hook('attending.pre-redirect', [$atendimento, $su, $usuario]);
 
         $novo = new Atendimento();
-        $novo->setLocal(0);
+        $novo->setLocal(null);
         $novo->setServicoUnidade($su);
         $novo->setPai($atendimento);
         $novo->setDataChegada(new DateTime());
@@ -702,8 +710,14 @@ class AtendimentoService extends MetaModelService
     public function ultimaSenhaUnidade($unidade)
     {
         return $this->em
-                ->createQuery("SELECT e FROM Novosga\Entity\Atendimento e JOIN e.servicoUnidade su WHERE su.unidade = :unidade ORDER BY e.senha.numero DESC")
+                ->createQueryBuilder()
+                ->select('e')
+                ->from(Atendimento::class, 'e')
+                ->join('e.servicoUnidade', 'su')
+                ->where('su.unidade = :unidade')
+                ->orderBy('e.id', 'DESC')
                 ->setParameter('unidade', $unidade)
+                ->getQuery()
                 ->setMaxResults(1)
                 ->getOneOrNullResult();
     }

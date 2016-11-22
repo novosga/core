@@ -252,11 +252,12 @@ class ServicoUnidade implements \JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'sigla'   => $this->getSigla(),
-            'peso'    => $this->getPeso(),
-            'local'   => $this->getLocal(),
-            'servico' => $this->getServico(),
-            'status'  => !!$this->getStatus(),
+            'sigla'      => $this->getSigla(),
+            'peso'       => $this->getPeso(),
+            'local'      => $this->getLocal(),
+            'servico'    => $this->getServico(),
+            'status'     => !!$this->getStatus(),
+            'prioridade' => $this->getPrioridade(),
         ];
     }
 }
