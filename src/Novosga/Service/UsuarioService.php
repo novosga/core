@@ -43,35 +43,6 @@ class UsuarioService extends MetaModelService
     }
 
     /**
-     * @param Usuario|int $usuario
-     * @param Unidade|int $unidade
-     *
-     * @return ArrayCollection
-     */
-    public function lotacoes($usuario, $unidade)
-    {
-        return $this->em
-                ->createQuery("
-                    SELECT
-                        l
-                    FROM
-                        Novosga\Entity\Lotacao l
-                        LEFT JOIN l.usuario u
-                        LEFT JOIN l.grupo g
-                        LEFT JOIN l.cargo c
-                    WHERE
-                        g.left <= (
-                            SELECT g2.left FROM Novosga\Entity\Grupo g2 WHERE g2.id = (SELECT u2g.id FROM Novosga\Entity\Unidade u2 INNER JOIN u2.grupo u2g WHERE u2.id = :unidade)
-                        ) AND
-                        g.right >= (
-                            SELECT g3.right FROM Novosga\Entity\Grupo g3 WHERE g3.id = (SELECT u3g.id FROM Novosga\Entity\Unidade u3 INNER JOIN u3.grupo u3g WHERE u3.id = :unidade)
-                        )
-                ")
-                ->setParameter('usuario', $usuario)
-                ->setParameter('unidade', $unidade);
-    }
-
-    /**
      * Retorna a lista de serviços que o usuário atende na determinada unidade.
      *
      * @param Usuario $usuario

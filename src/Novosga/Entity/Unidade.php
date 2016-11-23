@@ -30,11 +30,6 @@ class Unidade implements \JsonSerializable
     private $status;
 
     /**
-     * @var Grupo
-     */
-    private $grupo;
-
-    /**
      * @var string
      */
     private $mensagemImpressao;
@@ -84,19 +79,6 @@ class Unidade implements \JsonSerializable
         $this->status = $status;
     }
 
-    public function setGrupo(Grupo $grupo)
-    {
-        $this->grupo = $grupo;
-    }
-
-    /**
-     * @return Grupo
-     */
-    public function getGrupo()
-    {
-        return $this->grupo;
-    }
-
     public function getMensagemImpressao()
     {
         return $this->mensagemImpressao;
@@ -118,7 +100,6 @@ class Unidade implements \JsonSerializable
             'id'                => $this->getId(),
             'codigo'            => $this->getCodigo(),
             'nome'              => $this->getNome(),
-            'grupo'             => $this->getGrupo(),
             'status'            => $this->getStatus() == true,
             'mensagemImpressao' => $this->getMensagemImpressao(),
         ];

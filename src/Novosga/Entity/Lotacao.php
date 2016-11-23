@@ -15,9 +15,9 @@ class Lotacao implements \JsonSerializable
     private $usuario;
 
     /**
-     * @var Grupo
+     * @var Unidade
      */
-    private $grupo;
+    private $unidade;
 
     /**
      * @var Cargo
@@ -51,25 +51,23 @@ class Lotacao implements \JsonSerializable
     }
 
     /**
-     * Modifica grupo.
+     * Modifica unidade.
      *
-     * @param $grupo
-     *
-     * @return none
+     * @param $unidade
      */
-    public function setGrupo(Grupo $grupo)
+    public function setUnidade(Unidade $unidade)
     {
-        $this->grupo = $grupo;
+        $this->unidade = $unidade;
     }
 
     /**
-     * Retorna objeto Grupo.
+     * Retorna objeto Unidade.
      *
-     * @return Grupo $grupo
+     * @return Unidade
      */
-    public function getGrupo()
+    public function getUnidade()
     {
-        return $this->grupo;
+        return $this->unidade;
     }
 
     /**
@@ -98,7 +96,7 @@ class Lotacao implements \JsonSerializable
     {
         return [
             'cargo'   => $this->getCargo(),
-            'grupo'   => $this->getGrupo(),
+            'unidade'   => $this->getUnidade(),
             'usuario' => $this->getUsuario(),
         ];
     }
