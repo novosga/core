@@ -15,7 +15,7 @@ abstract class Metadata implements \JsonSerializable
     private $name;
 
     /**
-     * @var string
+     * @var mixed
      */
     private $value;
 
