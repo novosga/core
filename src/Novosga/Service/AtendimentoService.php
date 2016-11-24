@@ -2,13 +2,18 @@
 
 namespace Novosga\Service;
 
+use PDO;
 use DateTime;
+use Exception;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\OptimisticLockException;
-use Exception;
 use Novosga\Config\AppConfig;
 use Novosga\Entity\Atendimento;
 use Novosga\Entity\AtendimentoMeta;
+use Novosga\Entity\AtendimentoCodificado;
+use Novosga\Entity\AtendimentoHistorico;
+use Novosga\Entity\AtendimentoHistoricoMeta;
+use Novosga\Entity\AtendimentoCodificadoHistorico;
 use Novosga\Entity\Cliente;
 use Novosga\Entity\Contador;
 use Novosga\Entity\PainelSenha;
@@ -17,7 +22,7 @@ use Novosga\Entity\Servico;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
 use Novosga\Util\DateUtil;
-use PDO;
+
 
 /**
  * AtendimentoService.
@@ -136,12 +141,13 @@ class AtendimentoService extends MetaModelService
         $conn = $this->em->getConnection();
 
         // tables name
-        $historicoTable = $this->em->getClassMetadata('Novosga\Entity\AtendimentoHistorico')->getTableName();
-        $historicoCodifTable = $this->em->getClassMetadata('Novosga\Entity\AtendimentoCodificadoHistorico')->getTableName();
-        $atendimentoTable = $this->em->getClassMetadata('Novosga\Entity\Atendimento')->getTableName();
-        $atendimentoCodifTable = $this->em->getClassMetadata('Novosga\Entity\AtendimentoCodificado')->getTableName();
-        $atendimentoMetaTable = $this->em->getClassMetadata('Novosga\Entity\AtendimentoMeta')->getTableName();
-        $historicoMetaTable = $this->em->getClassMetadata('Novosga\Entity\AtendimentoHistoricoMeta')->getTableName();
+        $historicoTable = $this->em->getClassMetadata(AtendimentoHistorico::class)->getTableName();
+        $historicoCodifTable = $this->em->getClassMetadata(AtendimentoCodificadoHistorico::class)->getTableName();
+        $historicoMetaTable = $this->em->getClassMetadata(AtendimentoHistoricoMeta::class)->getTableName();
+        $atendimentoTable = $this->em->getClassMetadata(Atendimento::class)->getTableName();
+        $atendimentoCodifTable = $this->em->getClassMetadata(AtendimentoCodificado::class)->getTableName();
+        $atendimentoMetaTable = $this->em->getClassMetadata(AtendimentoMeta::class)->getTableName();
+        $contadorTable = $this->em->getClassMetadata(Contador::class)->getTableName();
 
         try {
             $conn->beginTransaction();
@@ -150,12 +156,12 @@ class AtendimentoService extends MetaModelService
             $sql = "
                 INSERT INTO $historicoTable
                 (
-                    id, unidade_id, usuario_id, servico_id, prioridade_id, status, sigla_senha, num_senha, num_senha_serv,
-                    nm_cli, num_local, dt_cheg, dt_cha, dt_ini, dt_fim, ident_cli, usuario_tri_id, atendimento_id
+                    id, unidade_id, usuario_id, servico_id, prioridade_id, status, senha_sigla, senha_numero,
+                    cliente_id, num_local, dt_cheg, dt_cha, dt_ini, dt_fim, usuario_tri_id, atendimento_id
                 )
                 SELECT
-                    a.id, a.unidade_id, a.usuario_id, a.servico_id, a.prioridade_id, a.status, a.sigla_senha, a.num_senha, a.num_senha_serv,
-                    a.nm_cli, a.num_local, a.dt_cheg, a.dt_cha, a.dt_ini, a.dt_fim, a.ident_cli, a.usuario_tri_id, a.atendimento_id
+                    a.id, a.unidade_id, a.usuario_id, a.servico_id, a.prioridade_id, a.status, a.senha_sigla, a.senha_numero,
+                    a.cliente_id, a.num_local, a.dt_cheg, a.dt_cha, a.dt_ini, a.dt_fim, a.usuario_tri_id, a.atendimento_id
                 FROM
                     $atendimentoTable a
                 WHERE
@@ -245,10 +251,14 @@ class AtendimentoService extends MetaModelService
                     ->setParameter('unidade', $unidadeId)
                     ->execute();
 
-            // zera o contador das senhas
-            $this->em->createQuery('UPDATE Novosga\Entity\Contador e SET e.total = 0 WHERE (e.unidade = :unidade OR :unidade = 0)')
-                    ->setParameter('unidade', $unidadeId)
-                    ->execute();
+            // reinicia o contador das senhas
+            $this->em->createQuery('
+                    UPDATE Novosga\Entity\Contador e 
+                    SET e.numero = (SELECT su.numeroInicial FROM Novosga\Entity\ServicoUnidade su WHERE su.unidade = e.unidade AND su.servico = e.servico)
+                    WHERE (e.unidade = :unidade OR :unidade = 0)
+                ')
+                ->setParameter('unidade', $unidadeId)
+                ->execute();
 
             $conn->commit();
         } catch (Exception $e) {
@@ -470,6 +480,7 @@ class AtendimentoService extends MetaModelService
             $contador = new Contador();
             $contador->setUnidade($unidade);
             $contador->setServico($servico);
+            $contador->setNumero($su->getNumeroInicial());
             $this->em->persist($contador);
             $this->em->flush();
         }
@@ -494,16 +505,7 @@ class AtendimentoService extends MetaModelService
             $attempts = 5;
             $this->em->lock($contador, LockMode::PESSIMISTIC_WRITE);
             
-            if (!$contador->getNumero()) {
-                $numeroSenha = $su->getNumeroInicial();
-            } else {
-                $numeroSenha = $contador->getNumero() + $su->getIncremento();
-                if ($su->getNumeroFinal() > 0 && $numeroSenha > $su->getNumeroFinal()) {
-                    $numeroSenha = $su->getNumeroInicial();
-                }
-            }
-            
-            $contador->setNumero($numeroSenha);
+            $numeroSenha = $contador->getNumero();
             
             do {
                 try {
@@ -511,6 +513,14 @@ class AtendimentoService extends MetaModelService
                     $atendimento->getSenha()->setNumero($numeroSenha);
 
                     $this->em->persist($atendimento);
+                    
+                    $numeroSenha += $su->getIncremento();
+                    if ($su->getNumeroFinal() > 0 && $numeroSenha > $su->getNumeroFinal()) {
+                        $numeroSenha = $su->getNumeroInicial();
+                    }
+                    
+                    $contador->setNumero($numeroSenha);
+                    
                     $this->em->merge($contador);
                     $this->em->commit();
                     $this->em->flush();

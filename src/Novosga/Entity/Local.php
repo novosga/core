@@ -44,6 +44,11 @@ class Local implements \JsonSerializable
     {
         return $this->nome;
     }
+    
+    public function __toString()
+    {
+        return $this->getNome();
+    }
 
     public function jsonSerialize()
     {

@@ -30,12 +30,13 @@ class Unidade implements \JsonSerializable
     private $status;
 
     /**
-     * @var string
+     * @var ConfiguracaoImpressao
      */
-    private $mensagemImpressao;
+    private $impressao;
 
     public function __construct()
     {
+        $this->impressao = new ConfiguracaoImpressao($this);
     }
     
     public function getId()
@@ -79,16 +80,11 @@ class Unidade implements \JsonSerializable
         $this->status = $status;
     }
 
-    public function getMensagemImpressao()
+    public function getImpressao()
     {
-        return $this->mensagemImpressao;
+        return $this->impressao;
     }
-
-    public function setMensagemImpressao($mensagemImpressao)
-    {
-        $this->mensagemImpressao = $mensagemImpressao;
-    }
-
+    
     public function __toString()
     {
         return $this->getNome();
@@ -97,11 +93,11 @@ class Unidade implements \JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'id'                => $this->getId(),
-            'codigo'            => $this->getCodigo(),
-            'nome'              => $this->getNome(),
-            'status'            => $this->getStatus() == true,
-            'mensagemImpressao' => $this->getMensagemImpressao(),
+            'id'        => $this->getId(),
+            'codigo'    => $this->getCodigo(),
+            'nome'      => $this->getNome(),
+            'status'    => $this->getStatus() == true,
+            'impressao' => $this->getImpressao(),
         ];
     }
 }

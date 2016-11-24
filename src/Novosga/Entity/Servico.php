@@ -76,9 +76,9 @@ class Servico implements \JsonSerializable
         return $this->nome;
     }
 
-    public function setDescricao($desc)
+    public function setDescricao($descricao)
     {
-        $this->descricao = $desc;
+        $this->descricao = $descricao;
     }
 
     public function getDescricao()

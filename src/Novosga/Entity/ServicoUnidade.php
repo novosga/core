@@ -41,26 +41,6 @@ class ServicoUnidade implements \JsonSerializable
     private $peso;
 
     /**
-     * @var int
-     */
-    private $tempoAtendimento;
-
-    /**
-     * @var int
-     */
-    private $horaInicio;
-
-    /**
-     * @var int
-     */
-    private $horaFim;
-
-    /**
-     * @var int
-     */
-    private $maximoAtendimentos;
-
-    /**
      * @var bool
      */
     private $prioridade;
@@ -79,6 +59,11 @@ class ServicoUnidade implements \JsonSerializable
      * @var int
      */
     private $numeroFinal;
+
+    /**
+     * @var string
+     */
+    private $mensagem;
     
     public function __construct()
     {
@@ -128,12 +113,12 @@ class ServicoUnidade implements \JsonSerializable
 
     public function setStatus($status)
     {
-        $this->status = $status;
+        $this->status = !!$status;
     }
 
     public function getStatus()
     {
-        return $this->status;
+        return $this->status == true;
     }
 
     public function getPeso()
@@ -156,26 +141,6 @@ class ServicoUnidade implements \JsonSerializable
         return $this->sigla;
     }
     
-    public function getTempoAtendimento()
-    {
-        return $this->tempoAtendimento;
-    }
-
-    public function getHoraInicio()
-    {
-        return $this->horaInicio;
-    }
-
-    public function getHoraFim()
-    {
-        return $this->horaFim;
-    }
-
-    public function getMaximoAtendimentos()
-    {
-        return $this->maximoAtendimentos;
-    }
-
     public function getPrioridade()
     {
         return $this->prioridade;
@@ -194,30 +159,6 @@ class ServicoUnidade implements \JsonSerializable
     public function getNumeroFinal()
     {
         return $this->numeroFinal;
-    }
-
-    public function setTempoAtendimento($tempoAtendimento)
-    {
-        $this->tempoAtendimento = $tempoAtendimento;
-        return $this;
-    }
-
-    public function setHoraInicio($horaInicio)
-    {
-        $this->horaInicio = $horaInicio;
-        return $this;
-    }
-
-    public function setHoraFim($horaFim)
-    {
-        $this->horaFim = $horaFim;
-        return $this;
-    }
-
-    public function setMaximoAtendimentos($maximoAtendimentos)
-    {
-        $this->maximoAtendimentos = $maximoAtendimentos;
-        return $this;
     }
 
     public function setPrioridade($prioridade)
@@ -243,7 +184,18 @@ class ServicoUnidade implements \JsonSerializable
         $this->numeroFinal = $numeroFinal;
         return $this;
     }
+    
+    public function getMensagem()
+    {
+        return $this->mensagem;
+    }
 
+    public function setMensagem($mensagem)
+    {
+        $this->mensagem = $mensagem;
+        return $this;
+    }
+    
     public function __toString()
     {
         return $this->sigla.' - '.$this->getServico()->getNome();
@@ -252,12 +204,16 @@ class ServicoUnidade implements \JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'sigla'      => $this->getSigla(),
-            'peso'       => $this->getPeso(),
-            'local'      => $this->getLocal(),
-            'servico'    => $this->getServico(),
-            'status'     => !!$this->getStatus(),
-            'prioridade' => $this->getPrioridade(),
+            'sigla'         => $this->getSigla(),
+            'peso'          => $this->getPeso(),
+            'local'         => $this->getLocal(),
+            'servico'       => $this->getServico(),
+            'status'        => !!$this->getStatus(),
+            'prioridade'    => $this->getPrioridade(),
+            'mensagem'      => $this->getMensagem(),
+            'numeroInicial' => $this->getNumeroInicial(),
+            'numeroFinal'   => $this->getNumeroFinal(),
+            'incremento'    => $this->getIncremento()
         ];
     }
 }
