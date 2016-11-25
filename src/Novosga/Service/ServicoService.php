@@ -71,7 +71,7 @@ class ServicoService extends MetaModelService
     {
         $dql = "SELECT e FROM Novosga\Entity\ServicoUnidade e JOIN e.servico s WHERE e.unidade = :unidade ";
         if (!empty($where)) {
-            $dql .= " AND $where";
+            $dql .= " AND $where ";
         }
         $dql .= ' ORDER BY s.nome';
 

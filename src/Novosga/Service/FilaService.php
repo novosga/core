@@ -104,9 +104,12 @@ class FilaService extends ModelService
         
         $this->applyOrders($builder, $unidade);
 
-        $builder->setParameters($params);
+        $rs = $builder
+                ->setParameters($params)
+                ->getQuery()
+                ->getResult();
 
-        return $builder->getQuery()->getResult();
+        return $rs;
     }
 
     /**
@@ -116,7 +119,9 @@ class FilaService extends ModelService
     {
         $qb = $this->em
             ->createQueryBuilder()
-            ->select('e', 'p', 'su', 's', 'senha')
+            ->select([
+                'e', 'p', 'su', 's'
+            ])
             ->from(Atendimento::class, 'e')
             ->join('e.prioridade', 'p')
             ->join('e.servicoUnidade', 'su')
