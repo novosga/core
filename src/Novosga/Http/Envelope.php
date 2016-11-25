@@ -65,7 +65,7 @@ class Envelope implements \JsonSerializable
 
     public function setSessionStatus($session)
     {
-        $this->session = $session;
+        $this->sessionStatus = $session;
         return $this;
     }
 

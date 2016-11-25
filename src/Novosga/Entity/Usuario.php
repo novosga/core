@@ -295,7 +295,8 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         return serialize([
             $this->id,
             $this->login,
-            $this->nome
+            $this->nome,
+            $this->sessionId,
         ]);
     }
 
@@ -304,7 +305,8 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         list (
             $this->id,
             $this->login,
-            $this->nome
+            $this->nome,
+            $this->sessionId,
         ) = unserialize($serialized);
     }
 
