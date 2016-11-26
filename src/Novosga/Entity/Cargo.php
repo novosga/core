@@ -108,6 +108,7 @@ class Cargo implements \JsonSerializable
             'id'        => $this->getId(),
             'nome'      => $this->getNome(),
             'descricao' => $this->getDescricao(),
+            'modulos'   => $this->getModulos(),
         ];
     }
 }

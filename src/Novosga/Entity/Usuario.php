@@ -64,6 +64,11 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
     private $lotacoes;
 
     /**
+     * @var Lotacao
+     */
+    private $lotacao;
+
+    /**
      * @var bool
      */
     private $admin;
@@ -157,7 +162,18 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         $this->status = $status;
         return $this;
     }
+    
+    public function getLotacao()
+    {
+        return $this->lotacao;
+    }
 
+    public function setLotacao(Lotacao $lotacao)
+    {
+        $this->lotacao = $lotacao;
+        return $this;
+    }
+    
     public function getLotacoes()
     {
         return $this->lotacoes;
@@ -173,6 +189,17 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
     {
         $this->lotacoes = $lotacoes;
         return $this;
+    }
+
+    public function addLotacoe(Lotacao $lotacao)
+    {
+        $lotacao->setUsuario($this);
+        $this->getLotacoes()->add($lotacao);
+    }
+
+    public function removeLotacoe(Lotacao $lotacao)
+    {
+        $this->getLotacoes()->removeElement($lotacao);
     }
 
     public function getStatus()
