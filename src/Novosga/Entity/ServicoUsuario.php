@@ -28,12 +28,18 @@ class ServicoUsuario
     private $usuario;
 
     /**
-     * @var peso
+     * @var int
      */
     private $peso;
 
     public function __construct()
     {
+    }
+    
+    public function setServicoUnidade(ServicoUnidade $servicoUnidade)
+    {
+        $this->setServico($servicoUnidade->getServico());
+        $this->setUnidade($servicoUnidade->getUnidade());
     }
 
     public function getServico()
@@ -74,7 +80,7 @@ class ServicoUsuario
         return $this->peso;
     }
 
-    public function setPeso(peso $peso)
+    public function setPeso($peso)
     {
         $this->peso = $peso;
         return $this;
