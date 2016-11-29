@@ -32,15 +32,14 @@ use Novosga\Util\DateUtil;
 class AtendimentoService extends MetaModelService
 {
     // estados do atendimento
-    const SENHA_EMITIDA = 1;
-    const CHAMADO_PELA_MESA = 2;
-    const ATENDIMENTO_INICIADO = 3;
-    const ATENDIMENTO_ENCERRADO = 4;
-    const NAO_COMPARECEU = 5;
-    const SENHA_CANCELADA = 6;
-    const ERRO_TRIAGEM = 7;
-    const ATENDIMENTO_ENCERRADO_CODIFICADO = 8;
-
+    const SENHA_EMITIDA = 'emitida';
+    const CHAMADO_PELA_MESA = 'chamada';
+    const ATENDIMENTO_INICIADO = 'iniciado';
+    const ATENDIMENTO_ENCERRADO = 'encerrado';
+    const NAO_COMPARECEU = 'nao_compareceu';
+    const SENHA_CANCELADA = 'cancelada';
+    const ERRO_TRIAGEM = 'erro_triagem';
+    
     public static function situacoes()
     {
         return [
@@ -51,7 +50,6 @@ class AtendimentoService extends MetaModelService
             self::NAO_COMPARECEU                   => _('Não compareceu'),
             self::SENHA_CANCELADA                  => _('Senha cancelada'),
             self::ERRO_TRIAGEM                     => _('Erro triagem'),
-            self::ATENDIMENTO_ENCERRADO_CODIFICADO => _('Atendimento encerrado e codificado'),
         ];
     }
 
@@ -361,7 +359,6 @@ class AtendimentoService extends MetaModelService
         $status = [
             self::CHAMADO_PELA_MESA,
             self::ATENDIMENTO_INICIADO,
-            self::ATENDIMENTO_ENCERRADO,
         ];
         try {
             return $this->em
