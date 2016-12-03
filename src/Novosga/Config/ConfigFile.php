@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Novo SGA project.
+ *
+ * (c) Rogerio Lino <rogeriolino@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Novosga\Config;
 
 use Novosga\Util\Arrays;
@@ -77,6 +86,15 @@ abstract class ConfigFile
             throw new Exception(sprintf(_('Arquivo de configuação (%s) somente leitura'), $this->filename));
         }
         $arr = Arrays::toString($this->data);
-        file_put_contents($filename, "<?php\nreturn $arr;");
+        file_put_contents($filename, "<?php
+
+/*
+ * This file is part of the Novo SGA project.
+ *
+ * (c) Rogerio Lino <rogeriolino@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */\nreturn $arr;");
     }
 }
