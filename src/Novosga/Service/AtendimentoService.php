@@ -30,7 +30,6 @@ use Novosga\Entity\Prioridade;
 use Novosga\Entity\Servico;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
-use Novosga\Util\DateUtil;
 
 
 /**
@@ -144,7 +143,7 @@ class AtendimentoService extends MetaModelService
 
         AppConfig::getInstance()->hook('attending.pre-reset', $unidade);
 
-        $data = DateUtil::nowSQL();
+        $data = (new \DateTime())->format('Y-m-d H:i:s');
         $conn = $this->em->getConnection();
 
         // tables name
