@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Novo SGA project.
+ *
+ * (c) Rogerio Lino <rogeriolino@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Novosga\Service;
 
 use PDO;
@@ -21,7 +30,6 @@ use Novosga\Entity\Prioridade;
 use Novosga\Entity\Servico;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
-use Novosga\Util\DateUtil;
 
 
 /**
@@ -135,7 +143,7 @@ class AtendimentoService extends MetaModelService
 
         AppConfig::getInstance()->hook('attending.pre-reset', $unidade);
 
-        $data = DateUtil::nowSQL();
+        $data = (new \DateTime())->format('Y-m-d H:i:s');
         $conn = $this->em->getConnection();
 
         // tables name
