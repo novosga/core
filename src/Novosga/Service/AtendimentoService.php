@@ -33,7 +33,7 @@ class AtendimentoService extends MetaModelService
 {
     // estados do atendimento
     const SENHA_EMITIDA = 'emitida';
-    const CHAMADO_PELA_MESA = 'chamada';
+    const CHAMADO_PELA_MESA = 'chamado';
     const ATENDIMENTO_INICIADO = 'iniciado';
     const ATENDIMENTO_ENCERRADO = 'encerrado';
     const NAO_COMPARECEU = 'nao_compareceu';
@@ -97,13 +97,13 @@ class AtendimentoService extends MetaModelService
         $senha->setServico($atendimento->getServicoUnidade()->getServico());
         $senha->setNumeroSenha($atendimento->getSenha()->getNumero());
         $senha->setSiglaSenha($atendimento->getSenha()->getSigla());
-        $senha->setMensagem($atendimento->getSenha()->getLegenda());
+        $senha->setMensagem('TODO');
         // local
         $senha->setLocal($atendimento->getServicoUnidade()->getLocal()->getNome());
         $senha->setNumeroLocal($atendimento->getLocal());
         // prioridade
-        $senha->setPeso($atendimento->getSenha()->getPrioridade()->getPeso());
-        $senha->setPrioridade($atendimento->getSenha()->getPrioridade()->getNome());
+        $senha->setPeso($atendimento->getPrioridade()->getPeso());
+        $senha->setPrioridade($atendimento->getPrioridade()->getNome());
         // cliente
         $senha->setNomeCliente($atendimento->getCliente()->getNome());
         $senha->setDocumentoCliente($atendimento->getCliente()->getDocumento());
@@ -575,13 +575,13 @@ class AtendimentoService extends MetaModelService
         $novo->setPai($atendimento);
         $novo->setDataChegada(new DateTime());
         $novo->setStatus(self::SENHA_EMITIDA);
-        $novo->setSiglaSenha($atendimento->getSenha()->getSigla());
-        $novo->setNumeroSenha($atendimento->getNumeroSenha());
+        $novo->getSenha()->setSigla($atendimento->getSenha()->getSigla());
+        $novo->getSenha()->setNumero($atendimento->getSenha()->getNumero());
         $novo->setUsuario($usuario);
         $novo->setUsuarioTriagem($usuario);
         $novo->setPrioridade($atendimento->getPrioridade());
-        $novo->setNomeCliente($atendimento->getCliente()->getNome());
-        $novo->setDocumentoCliente($atendimento->getCliente()->getDocumento());
+        $novo->setCliente($atendimento->getCliente());
+        
         $this->em->persist($novo);
         $this->em->flush();
 
