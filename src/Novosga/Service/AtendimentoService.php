@@ -40,24 +40,24 @@ use Novosga\Entity\Usuario;
 class AtendimentoService extends MetaModelService
 {
     // estados do atendimento
-    const SENHA_EMITIDA = 'emitida';
-    const CHAMADO_PELA_MESA = 'chamado';
-    const ATENDIMENTO_INICIADO = 'iniciado';
+    const SENHA_EMITIDA         = 'emitida';
+    const CHAMADO_PELA_MESA     = 'chamado';
+    const ATENDIMENTO_INICIADO  = 'iniciado';
     const ATENDIMENTO_ENCERRADO = 'encerrado';
-    const NAO_COMPARECEU = 'nao_compareceu';
-    const SENHA_CANCELADA = 'cancelada';
-    const ERRO_TRIAGEM = 'erro_triagem';
+    const NAO_COMPARECEU        = 'nao_compareceu';
+    const SENHA_CANCELADA       = 'cancelada';
+    const ERRO_TRIAGEM          = 'erro_triagem';
     
     public static function situacoes()
     {
         return [
-            self::SENHA_EMITIDA                    => _('Senha emitida'),
-            self::CHAMADO_PELA_MESA                => _('Chamado pela mesa'),
-            self::ATENDIMENTO_INICIADO             => _('Atendimento iniciado'),
-            self::ATENDIMENTO_ENCERRADO            => _('Atendimento encerrado'),
-            self::NAO_COMPARECEU                   => _('Não compareceu'),
-            self::SENHA_CANCELADA                  => _('Senha cancelada'),
-            self::ERRO_TRIAGEM                     => _('Erro triagem'),
+            self::SENHA_EMITIDA          => _('Senha emitida'),
+            self::CHAMADO_PELA_MESA      => _('Chamado pela mesa'),
+            self::ATENDIMENTO_INICIADO   => _('Atendimento iniciado'),
+            self::ATENDIMENTO_ENCERRADO  => _('Atendimento encerrado'),
+            self::NAO_COMPARECEU         => _('Não compareceu'),
+            self::SENHA_CANCELADA        => _('Senha cancelada'),
+            self::ERRO_TRIAGEM           => _('Erro triagem'),
         ];
     }
 
@@ -105,7 +105,7 @@ class AtendimentoService extends MetaModelService
         $senha->setServico($atendimento->getServicoUnidade()->getServico());
         $senha->setNumeroSenha($atendimento->getSenha()->getNumero());
         $senha->setSiglaSenha($atendimento->getSenha()->getSigla());
-        $senha->setMensagem('TODO');
+        $senha->setMensagem($atendimento->getServicoUnidade()->getMensagem());
         // local
         $senha->setLocal($atendimento->getServicoUnidade()->getLocal()->getNome());
         $senha->setNumeroLocal($atendimento->getLocal());
