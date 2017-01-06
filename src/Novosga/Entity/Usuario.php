@@ -177,7 +177,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         return $this->lotacao;
     }
 
-    public function setLotacao(Lotacao $lotacao)
+    public function setLotacao(Lotacao $lotacao = null)
     {
         $this->lotacao = $lotacao;
         return $this;
