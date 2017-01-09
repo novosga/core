@@ -206,15 +206,18 @@ class AtendimentoService extends MetaModelService
 
             // copia os atendimentos codificados para o historico
             $query = $conn->prepare("
-                INSERT INTO $historicoCodifTable
+                INSERT INTO $historicoCodifTable 
+                (
+                    atendimento_id, servico_id, valor_peso
+                )
                 SELECT
                     ac.atendimento_id, ac.servico_id, ac.valor_peso
                 FROM
                     $atendimentoCodifTable ac
+                    JOIN $atendimentoTable a ON a.id = ac.atendimento_id
                 WHERE
-                    ac.atendimento_id IN (
-                        SELECT a.id FROM $atendimentoTable a WHERE dt_cheg <= :data AND (a.unidade_id = :unidade OR :unidade = 0)
-                    )
+                    a.dt_cheg <= :data AND 
+                    (a.unidade_id = :unidade OR :unidade = 0)
             ");
             $query->bindValue('data', $data, PDO::PARAM_STR);
             $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
