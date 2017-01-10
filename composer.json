@@ -3,7 +3,7 @@
     "license": "MIT",
     "type": "library",
     "autoload": {
-        "psr-4": { "Novosga\\": "src/Novosga" }
+        "psr-4": { "Novosga\\": "" }
     },
     "require": {
         "php": ">=5.5.9"
