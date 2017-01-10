@@ -45,6 +45,11 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
     /**
      * @var string
      */
+    private $email;
+
+    /**
+     * @var string
+     */
     private $senha;
 
     /**
@@ -154,7 +159,18 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
     {
         return $this->nome . ' ' . $this->sobrenome;
     }
+    
+    public function getEmail()
+    {
+        return $this->email;
+    }
 
+    public function setEmail($email)
+    {
+        $this->email = $email;
+        return $this;
+    }
+    
     public function getSenha()
     {
         return $this->senha;
