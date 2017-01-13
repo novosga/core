@@ -332,7 +332,7 @@ abstract class AbstractAtendimento implements \JsonSerializable
      */
     public function getTempoPermanencia()
     {
-        $interval = new \DateInterval();
+        $interval = new \DateInterval('P0M');
         if ($this->getDataFim()) {
             $interval = $this->getDataFim()->diff($this->getDataChegada());
         }
@@ -348,7 +348,7 @@ abstract class AbstractAtendimento implements \JsonSerializable
      */
     public function getTempoAtendimento()
     {
-        $interval = new \DateInterval();
+        $interval = new \DateInterval('P0M');
         if ($this->getDataFim()) {
             $interval = $this->getDataFim()->diff($this->getDataInicio());
         }
