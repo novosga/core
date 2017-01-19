@@ -12,12 +12,12 @@
 namespace Novosga\Entity;
 
 /**
- * Classe Cargo
- * Um cargo define permissões de acesso a módulos do sistema.
+ * Classe Perfil
+ * O perfil define permissões de acesso a módulos do sistema.
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class Cargo implements \JsonSerializable
+class Perfil implements \JsonSerializable
 {
     /**
      * @var mixed
@@ -56,7 +56,7 @@ class Cargo implements \JsonSerializable
     }
     
     /**
-     * Define o nome do Cargo.
+     * Define o nome do perfil.
      *
      * @param string $nome
      */
@@ -66,7 +66,7 @@ class Cargo implements \JsonSerializable
     }
 
     /**
-     * Retorna a descrição do Cargo.
+     * Retorna a descrição do perfil.
      *
      * @return int
      */
@@ -76,9 +76,9 @@ class Cargo implements \JsonSerializable
     }
 
     /**
-     * Define a descrição do Cargo.
+     * Define a descrição do perfil.
      *
-     * @param string $nome
+     * @param string $descricao
      */
     public function setDescricao($descricao)
     {
@@ -86,7 +86,7 @@ class Cargo implements \JsonSerializable
     }
 
     /**
-     * Retorna o nome do Cargo.
+     * Retorna o nome do perfil.
      *
      * @return string
      */

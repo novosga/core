@@ -29,9 +29,9 @@ class Lotacao implements \JsonSerializable
     private $unidade;
 
     /**
-     * @var Cargo
+     * @var Perfil
      */
-    private $cargo;
+    private $perfil;
 
     public function __construct()
     {
@@ -80,31 +80,31 @@ class Lotacao implements \JsonSerializable
     }
 
     /**
-     * Modifica cargo.
+     * Modifica perfil.
      *
-     * @param $cargo
+     * @param $perfil
      *
      * @return none
      */
-    public function setCargo(Cargo $cargo)
+    public function setPerfil(Perfil $perfil)
     {
-        $this->cargo = $cargo;
+        $this->perfil = $perfil;
     }
 
     /**
-     * Retorna objeto Cargo.
+     * Retorna objeto Perfil.
      *
-     * @return Cargo $cargo
+     * @return Perfil $perfil
      */
-    public function getCargo()
+    public function getPerfil()
     {
-        return $this->cargo;
+        return $this->perfil;
     }
 
     public function jsonSerialize()
     {
         return [
-            'cargo'   => $this->getCargo(),
+            'perfil'   => $this->getPerfil(),
             'unidade'   => $this->getUnidade(),
             'usuario' => $this->getUsuario(),
         ];
