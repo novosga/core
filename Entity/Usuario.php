@@ -104,6 +104,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
 
     public function __construct()
     {
+        $this->lotacoes = new \Doctrine\Common\Collections\ArrayCollection();
     }
     
     public function getId()
