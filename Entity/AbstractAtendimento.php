@@ -407,6 +407,12 @@ abstract class AbstractAtendimento implements \JsonSerializable
             if ($this->getDataInicio()) {
                 $arr['inicio'] = $this->getDataInicio()->format('Y-m-d H:i:s');
             }
+            if ($this->getDataChamada()) {
+                $arr['chamada'] = $this->getDataChamada()->format('Y-m-d H:i:s');
+            }
+            if ($this->getDataAgendamento()) {
+                $arr['agendamento'] = $this->DataAgendamento()->format('Y-m-d H:i:s');
+            }
             if ($this->getDataFim()) {
                 $arr['fim'] = $this->getDataFim()->format('Y-m-d H:i:s');
             }
