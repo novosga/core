@@ -434,7 +434,7 @@ class AtendimentoService extends MetaModelService
         if (!($prioridade instanceof Prioridade)) {
             $prioridade = $this->em->find(Prioridade::class, $prioridade);
         }
-        if (!$prioridade || $prioridade->getStatus() == 0) {
+        if (!$prioridade || !$prioridade->isAtivo()) {
             throw new Exception(_('Prioridade inválida'));
         }
         

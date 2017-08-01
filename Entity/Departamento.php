@@ -12,11 +12,11 @@
 namespace Novosga\Entity;
 
 /**
- * Servico
+ * Departamento
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class Servico implements \JsonSerializable
+class Departamento implements \JsonSerializable
 {
     /**
      * @var mixed
@@ -36,33 +36,16 @@ class Servico implements \JsonSerializable
     /**
      * @var int
      */
-    private $ativo;
+    private $peso;
 
     /**
      * @var int
      */
-    private $peso;
-
-    /**
-     * @var Servico
-     */
-    private $mestre;
-
-    /**
-     * @var Servico[]
-     */
-    private $subServicos;
-
-    /**
-     * @var ServicoUnidade[]
-     */
-    private $servicosUnidade;
+    private $ativo;
 
     public function __construct()
     {
         $this->ativo = true;
-        $this->subServicos = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->servicosUnidade = new \Doctrine\Common\Collections\ArrayCollection();
     }
     
     public function getId()
@@ -86,9 +69,9 @@ class Servico implements \JsonSerializable
         return $this->nome;
     }
 
-    public function setDescricao($descricao)
+    public function setDescricao($desc)
     {
-        $this->descricao = $descricao;
+        $this->descricao = $desc;
     }
 
     public function getDescricao()
@@ -96,29 +79,13 @@ class Servico implements \JsonSerializable
         return $this->descricao;
     }
 
-    public function setMestre(Servico $servico = null)
+    public function setPeso($peso)
     {
-        $this->mestre = $servico;
-    }
-
-    public function getMestre()
-    {
-        return $this->mestre;
-    }
-
-    public function isMestre()
-    {
-        return ($this->getId() && !$this->getMestre());
-    }
-
-    public function setAtivo(bool $ativo)
-    {
-        $this->ativo = $ativo;
-    }
-
-    public function isAtivo(): bool
-    {
-        return $this->ativo;
+        if (is_int($peso) && $peso >= 0) {
+            $this->peso = $peso;
+        } else {
+            throw new Exception(_('O peso da prioridade deve ser um inteiro positivo'));
+        }
     }
 
     public function getPeso()
@@ -126,34 +93,19 @@ class Servico implements \JsonSerializable
         return $this->peso;
     }
 
-    public function setPeso($peso)
+    public function isAtivo(): bool
     {
-        $this->peso = $peso;
+        return $this->ativo;
     }
 
-    public function getSubServicos()
+    public function setAtivo(bool $ativo)
     {
-        return $this->subServicos;
-    }
-
-    public function setSubServicos($subServicos)
-    {
-        $this->subServicos = $subServicos;
-    }
-
-    public function getServicosUnidade()
-    {
-        return $this->servicosUnidade;
-    }
-
-    public function setServicosUnidade(array $servicosUnidade)
-    {
-        $this->servicosUnidade = $servicosUnidade;
+        $this->ativo = $ativo;
     }
 
     public function __toString()
     {
-        return $this->nome;
+        return $this->getNome();
     }
 
     public function jsonSerialize()
@@ -164,7 +116,6 @@ class Servico implements \JsonSerializable
             'descricao' => $this->getDescricao(),
             'peso'      => $this->getPeso(),
             'ativo'     => $this->isAtivo(),
-            'macro'     => $this->getMestre(),
         ];
     }
 }

@@ -129,9 +129,9 @@ class ServicoService extends MetaModelService
         $conn = $this->em->getConnection();
         $conn->executeUpdate("
             INSERT INTO $uniServTableName
-                (unidade_id, servico_id, local_id, sigla, status, peso, numero_inicial, incremento, prioridade)
+                (unidade_id, servico_id, local_id, sigla, ativo, peso, numero_inicial, incremento, prioridade)
             SELECT
-                :unidade, id, :local, :sigla, 0, peso, 1, 1, 1
+                :unidade, id, :local, :sigla, false, peso, 1, 1, 1
             FROM
                 $servTableName
             WHERE
@@ -164,7 +164,7 @@ class ServicoService extends MetaModelService
                 WHERE
                     e.usuario = :usuario AND
                     e.unidade = :unidade AND
-                    s.status = 1
+                    s.ativo = TRUE
             ")
                 ->setParameter('usuario', $usuario)
                 ->setParameter('unidade', $unidade)
@@ -188,7 +188,7 @@ class ServicoService extends MetaModelService
                     Novosga\Entity\ServicoUnidade e
                     JOIN e.servico s
                 WHERE
-                    e.status = 1 AND
+                    e.ativo = TRUE AND
                     e.unidade = :unidade AND
                     s.id NOT IN (
                         SELECT s2.id FROM Novosga\Entity\ServicoUsuario a JOIN a.servico s2 WHERE a.usuario = :usuario AND a.unidade = :unidade

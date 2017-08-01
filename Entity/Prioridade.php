@@ -41,10 +41,11 @@ class Prioridade implements \JsonSerializable
     /**
      * @var int
      */
-    private $status;
+    private $ativo;
 
     public function __construct()
     {
+        $this->ativo = true;
     }
     
     public function getId()
@@ -92,14 +93,14 @@ class Prioridade implements \JsonSerializable
         return $this->peso;
     }
 
-    public function getStatus()
+    public function isAtivo(): bool
     {
-        return $this->status;
+        return $this->ativo;
     }
 
-    public function setStatus($status)
+    public function setAtivo(bool $ativo)
     {
-        $this->status = $status;
+        $this->ativo = $ativo;
     }
 
     public function __toString()
@@ -114,7 +115,7 @@ class Prioridade implements \JsonSerializable
             'nome'      => $this->getNome(),
             'descricao' => $this->getDescricao(),
             'peso'      => $this->getPeso(),
-            'status'    => $this->getStatus(),
+            'ativo'     => $this->isAtivo(),
         ];
     }
 }

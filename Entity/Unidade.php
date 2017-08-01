@@ -36,7 +36,7 @@ class Unidade implements \JsonSerializable
     /**
      * @var bool
      */
-    private $status;
+    private $ativo;
 
     /**
      * @var ConfiguracaoImpressao
@@ -45,6 +45,7 @@ class Unidade implements \JsonSerializable
 
     public function __construct()
     {
+        $this->ativo = true;
         $this->impressao = new ConfiguracaoImpressao($this);
     }
     
@@ -79,14 +80,14 @@ class Unidade implements \JsonSerializable
         return $this->nome;
     }
 
-    public function getStatus()
+    public function isAtivo(): bool
     {
-        return $this->status;
+        return $this->ativo;
     }
 
-    public function setStatus($status)
+    public function setAtivo(bool $ativo)
     {
-        $this->status = $status;
+        $this->ativo = $ativo;
     }
 
     public function getImpressao()
@@ -105,7 +106,7 @@ class Unidade implements \JsonSerializable
             'id'        => $this->getId(),
             'codigo'    => $this->getCodigo(),
             'nome'      => $this->getNome(),
-            'status'    => $this->getStatus() == true,
+            'ativo'     => $this->isAtivo(),
             'impressao' => $this->getImpressao(),
         ];
     }

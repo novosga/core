@@ -66,7 +66,7 @@ class UsuarioService extends MetaModelService
                 ->select('e')
                 ->from(ServicoUsuario::class, 'e')
                 ->join('e.servico', 's')
-                ->where('e.usuario = :usuario AND e.unidade = :unidade AND s.status = 1')
+                ->where('e.usuario = :usuario AND e.unidade = :unidade AND s.ativo = TRUE')
                 ->orderBy('s.nome', 'ASC')
                 ->setParameters([
                     'usuario' => $usuario,

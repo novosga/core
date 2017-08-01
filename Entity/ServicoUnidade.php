@@ -42,7 +42,7 @@ class ServicoUnidade implements \JsonSerializable
     /**
      * @var int
      */
-    private $status;
+    private $ativo;
 
     /**
      * @var int
@@ -120,14 +120,14 @@ class ServicoUnidade implements \JsonSerializable
         $this->local = $local;
     }
 
-    public function setStatus($status)
+    public function setAtivo(bool $ativo)
     {
-        $this->status = !!$status;
+        $this->ativo = !!$ativo;
     }
 
-    public function getStatus()
+    public function isAtivo(): bool
     {
-        return $this->status == true;
+        return $this->ativo;
     }
 
     public function getPeso()
@@ -217,7 +217,7 @@ class ServicoUnidade implements \JsonSerializable
             'peso'          => $this->getPeso(),
             'local'         => $this->getLocal(),
             'servico'       => $this->getServico(),
-            'status'        => !!$this->getStatus(),
+            'ativo'         => $this->isAtivo(),
             'prioridade'    => $this->getPrioridade(),
             'mensagem'      => $this->getMensagem(),
             'numeroInicial' => $this->getNumeroInicial(),

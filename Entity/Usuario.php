@@ -55,7 +55,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
     /**
      * @var bool
      */
-    private $status;
+    private $ativo;
 
     /**
      * @var DateTime
@@ -104,6 +104,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
 
     public function __construct()
     {
+        $this->ativo = true;
         $this->lotacoes = new \Doctrine\Common\Collections\ArrayCollection();
     }
     
@@ -183,9 +184,9 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         return $this;
     }
 
-    public function setStatus($status)
+    public function setAtivo(bool $ativo)
     {
-        $this->status = $status;
+        $this->ativo = $ativo;
         return $this;
     }
     
@@ -228,9 +229,9 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         $this->getLotacoes()->removeElement($lotacao);
     }
 
-    public function getStatus()
+    public function isAtivo(): bool
     {
-        return $this->status;
+        return $this->ativo;
     }
 
     public function getUltimoAcesso()
@@ -305,7 +306,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
 
     public function isEnabled()
     {
-        return !!$this->getStatus();
+        return $this->isAtivo();
     }
 
     public function eraseCredentials()
@@ -370,7 +371,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
             'login'     => $this->getLogin(),
             'nome'      => $this->getNome(),
             'sobrenome' => $this->getSobrenome(),
-            'status'    => $this->getStatus()
+            'ativo'     => $this->isAtivo()
         ];
     }
     
