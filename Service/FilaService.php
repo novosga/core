@@ -20,7 +20,7 @@ use Novosga\Entity\Atendimento;
 use Novosga\Entity\ServicoUsuario;
 
 /**
- * FilaService.
+ * FilaService
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
@@ -51,13 +51,13 @@ class FilaService extends ModelService
         // se nao atende todos, filtra pelo tipo de atendimento
         if ($tipoAtendimento !== 1) {
             $s = ($tipoAtendimento === 2) ? '=' : '>';
-            $where = "p.peso $s 0";
+            $where = "prioridade.peso $s 0";
         }
         
         $builder = $this->builder($usuario)
-                        ->andWhere('e.status = :status')
-                        ->andWhere('su.unidade = :unidade')
-                        ->andWhere('s.id IN (:servicos)');
+                        ->andWhere('atendimento.status = :status')
+                        ->andWhere('servicoUnidade.unidade = :unidade')
+                        ->andWhere('servico.id IN (:servicos)');
         
         $params = [
             'status' => AtendimentoService::SENHA_EMITIDA,
@@ -66,7 +66,7 @@ class FilaService extends ModelService
         ];
         
         if ($usuario) {
-            $builder->join(ServicoUsuario::class, 'servicoUsuario', 'WITH', 'servicoUsuario.servico = s AND servicoUsuario.usuario = :usuario');
+            $builder->join(ServicoUsuario::class, 'servicoUsuario', 'WITH', 'servicoUsuario.servico = servico AND servicoUsuario.usuario = :usuario');
             $params['usuario'] = $usuario;
         }
         
@@ -107,9 +107,9 @@ class FilaService extends ModelService
         ];
         
         $builder
-                ->where('e.status = :status')
-                ->andWhere('su.unidade = :unidade')
-                ->andWhere('su.servico = :servico');
+                ->where('atendimento.status = :status')
+                ->andWhere('servicoUnidade.unidade = :unidade')
+                ->andWhere('servicoUnidade.servico = :servico');
         
         $this->applyOrders($builder, $unidade);
 
@@ -129,12 +129,15 @@ class FilaService extends ModelService
         $qb = $this->em
             ->createQueryBuilder()
             ->select([
-                'e', 'p', 'su', 's'
+                'atendimento',
+                'prioridade',
+                'servicoUnidade', 
+                'servico'
             ])
-            ->from(Atendimento::class, 'e')
-            ->join('e.prioridade', 'p')
-            ->join('e.servicoUnidade', 'su')
-            ->join('su.servico', 's');
+            ->from(Atendimento::class, 'atendimento')
+            ->join('atendimento.prioridade', 'prioridade')
+            ->join('atendimento.servicoUnidade', 'servicoUnidade')
+            ->join('servicoUnidade.servico', 'servico');
         
         return $qb;
     }
@@ -154,7 +157,7 @@ class FilaService extends ModelService
             $ordering = [
                 // priority
                 [
-                    'exp'   => 'p.peso',
+                    'exp'   => 'prioridade.peso',
                     'order' => 'DESC',
                 ]
             ];
@@ -168,7 +171,7 @@ class FilaService extends ModelService
             
             // ticket number
             $ordering[] = [
-                'exp'   => 'e.senha.numero',
+                'exp'   => 'atendimento.senha.numero',
                 'order' => 'ASC',
             ];
         }
