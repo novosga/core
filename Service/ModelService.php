@@ -11,7 +11,7 @@
 
 namespace Novosga\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Persistence\ObjectManager;
 
 /**
  * ModelService.
@@ -21,11 +21,11 @@ use Doctrine\ORM\EntityManager;
 abstract class ModelService
 {
     /**
-     * @var EntityManager
+     * @var ObjectManager
      */
     protected $em;
 
-    public function __construct(EntityManager $em)
+    public function __construct(ObjectManager $em)
     {
         $this->em = $em;
     }
