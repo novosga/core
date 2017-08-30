@@ -768,4 +768,75 @@ class AtendimentoService extends MetaModelService
         
         return $atendimento;
     }
+    
+    public function alteraStatusAtendimentoUsuario(Usuario $usuario, $novoStatus)
+    {
+        $atual = $this->atendimentoAndamento($usuario->getId());
+            
+        if (!$atual) {
+            throw new Exception(_('Nenhum atendimento disponível'));
+        }
+            
+        $campoData = null;
+        
+        switch ($novoStatus) {
+            case AtendimentoService::ATENDIMENTO_INICIADO:
+                $statusAtual = [ AtendimentoService::CHAMADO_PELA_MESA ];
+                $campoData   = 'dataInicio';
+                break;
+            case AtendimentoService::NAO_COMPARECEU:
+                $statusAtual = [ AtendimentoService::CHAMADO_PELA_MESA ];
+                $campoData   = 'dataFim';
+                break;
+            case AtendimentoService::ATENDIMENTO_ENCERRADO:
+                $statusAtual = [ AtendimentoService::ATENDIMENTO_INICIADO ];
+                $campoData   = 'dataFim';
+                break;
+            case AtendimentoService::ERRO_TRIAGEM:
+                $statusAtual = [ AtendimentoService::ATENDIMENTO_INICIADO, AtendimentoService::ATENDIMENTO_ENCERRADO ];
+                $campoData   = 'dataFim';
+                break;
+        }
+
+        if (!is_array($statusAtual)) {
+            $statusAtual = [$statusAtual];
+        }
+
+        $data = (new \DateTime())->format('Y-m-d H:i:s');
+
+        $qb = $this->em->createQueryBuilder()
+                ->update(Atendimento::class, 'e')
+                ->set('e.status', ':novoStatus');
+        
+        if ($campoData !== null) {
+            $qb->set("e.{$campoData}", ':data');
+        }        
+        
+        $qb
+            ->where('e.id = :id')
+            ->andWhere('e.status IN (:statusAtual)');
+        
+        $params = [
+            'novoStatus'  => $novoStatus,
+            'id'          => $atual->getId(),
+            'statusAtual' => $statusAtual
+        ];
+        
+        if ($campoData !== null) {
+            $params['data'] = $data;
+        }
+
+        $success = $qb
+                ->setParameters($params)
+                ->getQuery()
+                ->execute() > 0;
+
+        if (!$success) {
+            throw new Exception(sprintf(_('Erro ao mudar status do atendimento #%s para %s'), $atual->getId(), $novoStatus));
+        }
+
+        $atual->setStatus($novoStatus);
+
+        return $atual;
+    }
 }
