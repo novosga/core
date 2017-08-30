@@ -796,6 +796,8 @@ class AtendimentoService extends MetaModelService
                 $statusAtual = [ AtendimentoService::ATENDIMENTO_INICIADO, AtendimentoService::ATENDIMENTO_ENCERRADO ];
                 $campoData   = 'dataFim';
                 break;
+            default:
+                throw new Exception('Novo status inválido.');
         }
 
         if (!is_array($statusAtual)) {
