@@ -39,6 +39,11 @@ class Envelope implements \JsonSerializable
      * @var string
      */
     private $message;
+    
+    /**
+     * @var string
+     */
+    private $detail;
 
     public function __construct()
     {
@@ -90,11 +95,27 @@ class Envelope implements \JsonSerializable
         return $this;
     }
     
-    public function exception(Exception $e)
+    public function getDetail()
+    {
+        return $this->detail;
+    }
+
+    public function setDetail($detail)
+    {
+        $this->detail = $detail;
+        return $this;
+    }
+    
+    public function exception(Exception $e, $debug = false)
     {
         $this
             ->setSuccess(false)
             ->setMessage($e->getMessage());
+        
+        if ($debug) {
+            $detail = "{$e->getFile()}:{$e->getLine()}\n{$e->getTraceAsString()}";
+            $this->setDetail($detail);
+        }
         
         return $this;
     }
@@ -110,7 +131,10 @@ class Envelope implements \JsonSerializable
         if ($this->success) {
             $body['data'] = $this->data;
         } else {
-            $body['message']  = $this->message;
+            $body['message'] = $this->message;
+            if ($this->detail) {
+                $body['detail'] = $this->detail;
+            }
         }
         
         return $body;

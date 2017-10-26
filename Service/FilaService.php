@@ -12,7 +12,7 @@
 namespace Novosga\Service;
 
 use Doctrine\ORM\QueryBuilder;
-use Novosga\Config\AppConfig;
+use Doctrine\Common\Persistence\ObjectManager;
 use Novosga\Entity\Servico;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
@@ -26,6 +26,16 @@ use Novosga\Entity\ServicoUsuario;
  */
 class FilaService extends ModelService
 {
+    /**
+     * @var Configuration
+     */
+    private $config;
+    
+    public function __construct(ObjectManager $em, Configuration $config)
+    {
+        parent::__construct($em);
+        $this->config = $config;
+    }
 
     /**
      * Retorna a fila de atendimentos do usuario.
@@ -149,10 +159,12 @@ class FilaService extends ModelService
      */
     public function applyOrders(QueryBuilder $builder, Unidade $unidade, Usuario $usuario = null)
     {
-        $ordering = AppConfig::getInstance()->get('queue.ordering');
+        $ordering = $this->config->get('queue.ordering');
+        
         if (is_callable($ordering)) {
             $ordering = $ordering($unidade, $usuario);
         }
+        
         if (!$ordering || empty($ordering)) {
             $ordering = [
                 // priority

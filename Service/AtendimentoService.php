@@ -15,8 +15,8 @@ use PDO;
 use DateTime;
 use Exception;
 use Doctrine\DBAL\LockMode;
+use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\OptimisticLockException;
-use Novosga\Config\AppConfig;
 use Novosga\Entity\Atendimento;
 use Novosga\Entity\AtendimentoMeta;
 use Novosga\Entity\AtendimentoCodificado;
@@ -47,6 +47,17 @@ class AtendimentoService extends MetaModelService
     const NAO_COMPARECEU        = 'nao_compareceu';
     const SENHA_CANCELADA       = 'cancelada';
     const ERRO_TRIAGEM          = 'erro_triagem';
+    
+    /**
+     * @var Dispatcher
+     */
+    private $dispatcher;
+    
+    public function __construct(ObjectManager $em, Dispatcher $dispatcher)
+    {
+        parent::__construct($em);
+        $this->dispatcher = $dispatcher;
+    }
     
     public static function situacoes()
     {
@@ -116,12 +127,12 @@ class AtendimentoService extends MetaModelService
         $senha->setNomeCliente($atendimento->getCliente()->getNome());
         $senha->setDocumentoCliente($atendimento->getCliente()->getDocumento());
 
-        AppConfig::getInstance()->hook('panel.pre-call', [$atendimento, $senha]);
+        $this->dispatcher->dispatch('panel.pre-call', [$atendimento, $senha]);
 
         $this->em->persist($senha);
         $this->em->flush();
 
-        AppConfig::getInstance()->hook('panel.call', [$atendimento, $senha]);
+        $this->dispatcher->dispatch('panel.call', [$atendimento, $senha]);
     }
 
     /**
@@ -141,7 +152,7 @@ class AtendimentoService extends MetaModelService
             $unidade = ($unidadeId > 0) ? $this->em->find('Novosga\Entity\Unidade', $unidadeId) : null;
         }
 
-        AppConfig::getInstance()->hook('attending.pre-reset', $unidade);
+        $this->dispatcher->dispatch('attending.pre-reset', $unidade);
 
         $data = (new \DateTime())->format('Y-m-d H:i:s');
         $conn = $this->em->getConnection();
@@ -278,7 +289,7 @@ class AtendimentoService extends MetaModelService
             throw $e;
         }
 
-        AppConfig::getInstance()->hook('attending.reset', $unidade);
+        $this->dispatcher->dispatch('attending.reset', $unidade);
     }
 
     public function buscaAtendimento(Unidade $unidade, $id)
@@ -332,7 +343,7 @@ class AtendimentoService extends MetaModelService
 
     public function chamar(Atendimento $atendimento, Usuario $usuario, $local)
     {
-        AppConfig::getInstance()->hook('attending.pre-call', [$atendimento, $usuario, $local]);
+        $this->dispatcher->dispatch('attending.pre-call', [$atendimento, $usuario, $local]);
 
         $this->em->getConnection()->beginTransaction();
 
@@ -348,7 +359,7 @@ class AtendimentoService extends MetaModelService
             $this->em->getConnection()->commit();
             $this->em->flush();
 
-            AppConfig::getInstance()->hook('attending.call', [$atendimento, $usuario]);
+            $this->dispatcher->dispatch('attending.call', [$atendimento, $usuario]);
         } catch (Exception $e) {
             $this->em->getConnection()->rollback();
 
@@ -505,7 +516,7 @@ class AtendimentoService extends MetaModelService
             $atendimento->setCliente($cliente);
         }
 
-        AppConfig::getInstance()->hook('attending.pre-create', [$atendimento]);
+        $this->dispatcher->dispatch('attending.pre-create', [$atendimento]);
         
         $this->em->beginTransaction();
 
@@ -550,7 +561,7 @@ class AtendimentoService extends MetaModelService
                 throw new \Exception(sprintf(_('O último ID retornado pelo banco não é de um atendimento válido: %s'), $id));
             }
 
-            AppConfig::getInstance()->hook('attending.create', $atendimento);
+            $this->dispatcher->dispatch('attending.create', $atendimento);
 
             return $atendimento;
         } catch (Exception $e) {
@@ -578,7 +589,7 @@ class AtendimentoService extends MetaModelService
         $service = new ServicoService($this->em);
         $su = $service->servicoUnidade($unidade, $servico);
 
-        AppConfig::getInstance()->hook('attending.pre-redirect', [$atendimento, $su, $usuario]);
+        $this->dispatcher->dispatch('attending.pre-redirect', [$atendimento, $su, $usuario]);
 
         $novo = new Atendimento();
         $novo->setLocal(null);
@@ -596,7 +607,7 @@ class AtendimentoService extends MetaModelService
         $this->em->persist($novo);
         $this->em->flush();
 
-        AppConfig::getInstance()->hook('attending.redirect', $atendimento);
+        $this->dispatcher->dispatch('attending.redirect', $atendimento);
 
         return $novo;
     }
@@ -613,7 +624,7 @@ class AtendimentoService extends MetaModelService
      */
     public function transferir(Atendimento $atendimento, Unidade $unidade, $novoServico, $novaPrioridade)
     {
-        AppConfig::getInstance()->hook('attending.pre-transfer', $atendimento, $unidade, $novoServico, $novaPrioridade);
+        $this->dispatcher->dispatch('attending.pre-transfer', $atendimento, $unidade, $novoServico, $novaPrioridade);
 
         // transfere apenas se a data fim for nula (nao finalizados)
         $success = $this->em->createQuery('
@@ -635,7 +646,7 @@ class AtendimentoService extends MetaModelService
 
         if ($success) {
             $this->em->refresh($atendimento);
-            AppConfig::getInstance()->hook('attending.transfer', [$atendimento]);
+            $this->dispatcher->dispatch('attending.transfer', [$atendimento]);
         }
 
         return $success;
@@ -651,7 +662,7 @@ class AtendimentoService extends MetaModelService
      */
     public function cancelar(Atendimento $atendimento, Unidade $unidade)
     {
-        AppConfig::getInstance()->hook('attending.pre-cancel', $atendimento);
+        $this->dispatcher->dispatch('attending.pre-cancel', $atendimento);
 
         // cancela apenas se a data fim for nula
         $success = $this->em->createQuery('
@@ -673,7 +684,7 @@ class AtendimentoService extends MetaModelService
 
         if ($success) {
             $this->em->refresh($atendimento);
-            AppConfig::getInstance()->hook('attending.cancel', $atendimento);
+            $this->dispatcher->dispatch('attending.cancel', $atendimento);
         }
 
         return $success;
@@ -690,7 +701,7 @@ class AtendimentoService extends MetaModelService
      */
     public function reativar(Atendimento $atendimento, Unidade $unidade)
     {
-        AppConfig::getInstance()->hook('attending.pre-reactivate', $atendimento);
+        $this->dispatcher->dispatch('attending.pre-reactivate', $atendimento);
 
         // reativa apenas se estiver finalizada (data fim diferente de nulo)
         $success = $this->em->createQuery('
@@ -712,10 +723,59 @@ class AtendimentoService extends MetaModelService
 
         if ($success) {
             $this->em->refresh($atendimento);
-            AppConfig::getInstance()->hook('attending.reactivate', $atendimento);
+            $this->dispatcher->dispatch('attending.reactivate', $atendimento);
         }
 
         return $success;
+    }
+    
+    public function encerrar(Atendimento $atendimento, Unidade $unidade, Usuario $usuario, array $servicos, $servicoRedirecionado = null)
+    {
+        if ($atendimento->getStatus() !== AtendimentoService::ATENDIMENTO_INICIADO) {
+            throw new Exception(sprintf('Erro ao tentar encerrar um atendimento nao iniciado (%s)', $atendimento->getId()));
+        }
+        
+        $this->em->beginTransaction();
+        
+        try {
+            foreach ($servicos as $s) {
+                if ($s instanceof Servico) {
+                    $servico = $s;
+                } else {
+                    $servico = $this->em->find('Novosga\Entity\Servico', $s);
+                }
+
+                if (!$servico) {
+                    throw new Exception(_('Serviço inválido'));
+                }
+
+                $codificado = new \Novosga\Entity\AtendimentoCodificado();
+                $codificado->setAtendimento($atendimento);
+                $codificado->setServico($servico);
+                $codificado->setPeso(1);
+                $this->em->persist($codificado);
+            }
+            // verifica se esta encerrando e redirecionando
+            if ($servicoRedirecionado) {
+                $redirecionado = $this->redirecionar($atendimento, $usuario, $unidade, $servicoRedirecionado);
+                if (!$redirecionado->getId()) {
+                    throw new Exception(sprintf(_('Erro ao redirecionar atendimento %s para o serviço %s'), $atendimento->getId(), $servico));
+                }
+            }
+            
+            $atendimento->setDataFim(new \DateTime);
+            $atendimento->setStatus(AtendimentoService::ATENDIMENTO_ENCERRADO);
+            $this->em->merge($atendimento);
+
+            $this->em->commit();
+            $this->em->flush();
+        } catch (Exception $e) {
+            try {
+                $this->em->rollback();
+            } catch (Exception $ex) {
+            }
+            throw new Exception(sprintf(_('Erro ao encerrar o atendimento %s'), $atendimento->getId()));
+        }
     }
 
     /**
