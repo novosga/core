@@ -38,6 +38,16 @@ class Perfil implements \JsonSerializable
      * @var Modulo[]
      */
     private $modulos;
+
+    /**
+     * @var \DateTime
+     */
+    private $createdAt;
+
+    /**
+     * @var \DateTime
+     */
+    private $updatedAt;
     
     public function __construct()
     {
@@ -106,6 +116,28 @@ class Perfil implements \JsonSerializable
         return $this;
     }
     
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt()
+    {
+        return $this->updatedAt;
+    }
+
+    public function setCreatedAt(\DateTime $createdAt)
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function setUpdatedAt(\DateTime $updatedAt)
+    {
+        $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
     public function __toString()
     {
         return $this->nome;

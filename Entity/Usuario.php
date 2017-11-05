@@ -102,6 +102,21 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
      */
     private $roles = [];
 
+    /**
+     * @var \DateTime
+     */
+    private $createdAt;
+
+    /**
+     * @var \DateTime
+     */
+    private $updatedAt;
+
+    /**
+     * @var \DateTime
+     */
+    private $deletedAt;
+
     public function __construct()
     {
         $this->ativo = true;
@@ -289,6 +304,39 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         return $this;
     }
     
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt()
+    {
+        return $this->updatedAt;
+    }
+
+    public function getDeletedAt()
+    {
+        return $this->deletedAt;
+    }
+
+    public function setCreatedAt(\DateTime $createdAt)
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function setUpdatedAt(\DateTime $updatedAt)
+    {
+        $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    public function setDeletedAt(\DateTime $deletedAt)
+    {
+        $this->deletedAt = $deletedAt;
+        return $this;
+    }
+    
     public function isAccountNonExpired()
     {
         return true;
@@ -306,7 +354,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
 
     public function isEnabled()
     {
-        return $this->isAtivo();
+        return !$this->getDeletedAt() && $this->isAtivo();
     }
 
     public function eraseCredentials()

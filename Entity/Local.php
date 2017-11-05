@@ -28,10 +28,16 @@ class Local implements \JsonSerializable
      */
     private $nome;
 
-    public function __construct()
-    {
-    }
-    
+    /**
+     * @var \DateTime
+     */
+    private $createdAt;
+
+    /**
+     * @var \DateTime
+     */
+    private $updatedAt;
+
     public function getId()
     {
         return $this->id;
@@ -52,6 +58,28 @@ class Local implements \JsonSerializable
     public function getNome()
     {
         return $this->nome;
+    }
+    
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt()
+    {
+        return $this->updatedAt;
+    }
+
+    public function setCreatedAt(\DateTime $createdAt)
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function setUpdatedAt(\DateTime $updatedAt)
+    {
+        $this->updatedAt = $updatedAt;
+        return $this;
     }
     
     public function __toString()
