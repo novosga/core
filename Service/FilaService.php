@@ -165,33 +165,11 @@ class FilaService extends ModelService
             $ordering = $ordering($unidade, $usuario);
         }
         
-        if (!$ordering || empty($ordering)) {
-            $ordering = [
-                // priority
-                [
-                    'exp'   => 'prioridade.peso',
-                    'order' => 'DESC',
-                ]
-            ];
-            if ($usuario) {
-                // peso servico x usuario
-                $ordering[] = [
-                    'exp'   => 'servicoUsuario.peso',
-                    'order' => 'ASC',
-                ];
-            }
-            
-            // ticket number
-            $ordering[] = [
-                'exp'   => 'atendimento.senha.numero',
-                'order' => 'ASC',
-            ];
-        }
         foreach ($ordering as $item) {
             if (!isset($item['exp'])) {
                 break;
             }
-            $exp = $item['exp'];
+            $exp   = $item['exp'];
             $order = isset($item['order']) ? $item['order'] : 'ASC';
             $builder->addOrderBy($exp, $order);
         }
