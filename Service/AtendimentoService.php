@@ -155,23 +155,27 @@ class AtendimentoService extends MetaModelService
         $this->dispatcher->dispatch('attending.pre-reset', $unidade);
 
         $data = (new \DateTime())->format('Y-m-d H:i:s');
-        $conn = $this->em->getConnection();
 
         // tables name
-        $historicoTable = $this->em->getClassMetadata(AtendimentoHistorico::class)->getTableName();
-        $historicoCodifTable = $this->em->getClassMetadata(AtendimentoCodificadoHistorico::class)->getTableName();
-        $historicoMetaTable = $this->em->getClassMetadata(AtendimentoHistoricoMeta::class)->getTableName();
-        $atendimentoTable = $this->em->getClassMetadata(Atendimento::class)->getTableName();
+        $historicoTable        = $this->em->getClassMetadata(AtendimentoHistorico::class)->getTableName();
+        $historicoCodifTable   = $this->em->getClassMetadata(AtendimentoCodificadoHistorico::class)->getTableName();
+        $historicoMetaTable    = $this->em->getClassMetadata(AtendimentoHistoricoMeta::class)->getTableName();
+        $atendimentoTable      = $this->em->getClassMetadata(Atendimento::class)->getTableName();
         $atendimentoCodifTable = $this->em->getClassMetadata(AtendimentoCodificado::class)->getTableName();
-        $atendimentoMetaTable = $this->em->getClassMetadata(AtendimentoMeta::class)->getTableName();
-        $contadorTable = $this->em->getClassMetadata(Contador::class)->getTableName();
+        $atendimentoMetaTable  = $this->em->getClassMetadata(AtendimentoMeta::class)->getTableName();
+        $contadorTable         = $this->em->getClassMetadata(Contador::class)->getTableName();
+        $painelSenhaTable      = $this->em->getClassMetadata(PainelSenha::class)->getTableName();
+        $servicoUnidadeTable   = $this->em->getClassMetadata(\Novosga\Entity\ServicoUnidade::class)->getTableName();
+        
+        $conn = $this->em->getConnection();
+        $conn->beginTransaction();
 
         try {
-            $conn->beginTransaction();
-
+            $conn->exec('SET foreign_key_checks = 0');
+            
             // copia os atendimentos para o historico
             $sql = "
-                INSERT INTO $historicoTable
+                INSERT INTO {$historicoTable}
                 (
                     id, unidade_id, usuario_id, servico_id, prioridade_id, status, senha_sigla, senha_numero,
                     cliente_id, num_local, dt_cheg, dt_cha, dt_ini, dt_fim, usuario_tri_id, atendimento_id
@@ -180,7 +184,7 @@ class AtendimentoService extends MetaModelService
                     a.id, a.unidade_id, a.usuario_id, a.servico_id, a.prioridade_id, a.status, a.senha_sigla, a.senha_numero,
                     a.cliente_id, a.num_local, a.dt_cheg, a.dt_cha, a.dt_ini, a.dt_fim, a.usuario_tri_id, a.atendimento_id
                 FROM
-                    $atendimentoTable a
+                    {$atendimentoTable} a
                 WHERE
                     a.dt_cheg <= :data AND (a.unidade_id = :unidade OR :unidade = 0)
             ";
@@ -192,7 +196,7 @@ class AtendimentoService extends MetaModelService
             $query->execute();
 
             // atendimentos filhos (oriundos de redirecionamento)
-            $query = $conn->prepare("$sql AND a.atendimento_id IS NOT NULL");
+            $query = $conn->prepare("{$sql} AND a.atendimento_id IS NOT NULL");
             $query->bindValue('data', $data, PDO::PARAM_STR);
             $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
             $query->execute();
@@ -206,9 +210,9 @@ class AtendimentoService extends MetaModelService
                 SELECT
                     a.atendimento_id, a.name, a.value
                 FROM
-                    $atendimentoMetaTable  a
+                    {$atendimentoMetaTable}  a
                 WHERE
-                    a.atendimento_id IN (SELECT b.id FROM $atendimentoTable b WHERE b.dt_cheg <= :data AND (b.unidade_id = :unidade OR :unidade = 0))
+                    a.atendimento_id IN (SELECT b.id FROM {$atendimentoTable} b WHERE b.dt_cheg <= :data AND (b.unidade_id = :unidade OR :unidade = 0))
             ";
             $query = $conn->prepare($sql);
             $query->bindValue('data', $data, PDO::PARAM_STR);
@@ -224,8 +228,8 @@ class AtendimentoService extends MetaModelService
                 SELECT
                     ac.atendimento_id, ac.servico_id, ac.valor_peso
                 FROM
-                    $atendimentoCodifTable ac
-                    JOIN $atendimentoTable a ON a.id = ac.atendimento_id
+                    {$atendimentoCodifTable} ac
+                    JOIN {$atendimentoTable} a ON a.id = ac.atendimento_id
                 WHERE
                     a.dt_cheg <= :data AND 
                     (a.unidade_id = :unidade OR :unidade = 0)
@@ -235,50 +239,50 @@ class AtendimentoService extends MetaModelService
             $query->execute();
 
             // limpa atendimentos codificados
-            $this->em->createQuery('
-                        DELETE Novosga\Entity\AtendimentoCodificado e WHERE e.atendimento IN (
-                            SELECT a.id FROM Novosga\Entity\Atendimento a WHERE a.dataChegada <= :data AND (a.unidade = :unidade OR :unidade = 0)
-                        )
-                    ')
-                    ->setParameter('data', $data)
-                    ->setParameter('unidade', $unidadeId)
-                    ->execute();
+            $query = $conn->prepare("
+                DELETE FROM {$atendimentoCodifTable} WHERE atendimento_id IN (
+                    SELECT id FROM {$atendimentoTable} WHERE dt_cheg <= :data AND (unidade_id = :unidade OR :unidade = 0)
+                )
+            ");
+            $query->bindValue('data', $data, PDO::PARAM_STR);
+            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
+            $query->execute();
 
             // limpa metadata
-            $this->em->createQuery('
-                        DELETE Novosga\Entity\AtendimentoMeta e WHERE e.atendimento IN (
-                            SELECT a.id FROM Novosga\Entity\Atendimento a WHERE a.dataChegada <= :data AND (a.unidade = :unidade OR :unidade = 0)
-                        )
-                    ')
-                    ->setParameter('data', $data)
-                    ->setParameter('unidade', $unidadeId)
-                    ->execute();
+            $query = $conn->prepare("
+                DELETE FROM {$atendimentoMetaTable} WHERE atendimento_id IN (
+                    SELECT id FROM {$atendimentoTable} WHERE dt_cheg <= :data AND (unidade_id = :unidade OR :unidade = 0)
+                )
+            ");
+            $query->bindValue('data', $data, PDO::PARAM_STR);
+            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
+            $query->execute();
 
             // limpa o auto-relacionamento para poder excluir os atendimento sem dar erro de constraint (#136)
-            $this->em->createQuery('UPDATE Novosga\Entity\Atendimento e SET e.pai = NULL WHERE e.dataChegada <= :data AND (e.unidade = :unidade OR :unidade = 0)')
-                    ->setParameter('unidade', $unidadeId)
-                    ->setParameter('data', $data)
-                    ->execute();
+            $query = $conn->prepare("DELETE FROM {$atendimentoTable} WHERE atendimento_id IS NOT NULL AND dt_cheg <= :data AND (unidade_id = :unidade OR :unidade = 0)");
+            $query->bindValue('data', $data, PDO::PARAM_STR);
+            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
+            $query->execute();
 
             // limpa atendimentos da unidade
-            $this->em->createQuery('DELETE Novosga\Entity\Atendimento e WHERE e.dataChegada <= :data AND (e.unidade = :unidade OR :unidade = 0)')
-                    ->setParameter('data', $data)
-                    ->setParameter('unidade', $unidadeId)
-                    ->execute();
+            $query = $conn->prepare("DELETE FROM {$atendimentoTable} WHERE dt_cheg <= :data AND (unidade_id = :unidade OR :unidade = 0)");
+            $query->bindValue('data', $data, PDO::PARAM_STR);
+            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
+            $query->execute();
 
             // limpa a tabela de senhas a serem exibidas no painel
-            $this->em->createQuery('DELETE Novosga\Entity\PainelSenha e WHERE (e.unidade = :unidade OR :unidade = 0)')
-                    ->setParameter('unidade', $unidadeId)
-                    ->execute();
+            $query = $conn->prepare("DELETE FROM {$painelSenhaTable} WHERE (unidade_id = :unidade OR :unidade = 0)");
+            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
+            $query->execute();
 
             // reinicia o contador das senhas
-            $this->em->createQuery('
-                    UPDATE Novosga\Entity\Contador e 
-                    SET e.numero = (SELECT su.numeroInicial FROM Novosga\Entity\ServicoUnidade su WHERE su.unidade = e.unidade AND su.servico = e.servico)
-                    WHERE (e.unidade = :unidade OR :unidade = 0)
-                ')
-                ->setParameter('unidade', $unidadeId)
-                ->execute();
+            $query = $conn->prepare("
+                UPDATE {$contadorTable}
+                SET numero = (SELECT su.numero_inicial FROM {$servicoUnidadeTable} su WHERE su.unidade_id = {$contadorTable}.unidade_id AND su.servico_id = {$contadorTable}.servico_id)
+                WHERE (unidade_id = :unidade OR :unidade = 0)
+            ");
+            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
+            $query->execute();
 
             $conn->commit();
         } catch (Exception $e) {
