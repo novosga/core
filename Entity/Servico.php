@@ -213,6 +213,9 @@ class Servico implements \JsonSerializable
             'peso'      => $this->getPeso(),
             'ativo'     => $this->isAtivo(),
             'macro'     => $this->getMestre(),
+            'createdAt' => $this->getCreatedAt(),
+            'updatedAt' => $this->getUpdatedAt(),
+            'deletedAt' => $this->getDeletedAt(),
         ];
     }
 }

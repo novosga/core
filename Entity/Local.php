@@ -92,6 +92,8 @@ class Local implements \JsonSerializable
         return [
             'id'   => $this->getId(),
             'nome' => $this->getNome(),
+            'createdAt' => $this->getCreatedAt(),
+            'updatedAt' => $this->getUpdatedAt(),
         ];
     }
 }

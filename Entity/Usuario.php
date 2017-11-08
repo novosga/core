@@ -419,7 +419,10 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
             'login'     => $this->getLogin(),
             'nome'      => $this->getNome(),
             'sobrenome' => $this->getSobrenome(),
-            'ativo'     => $this->isAtivo()
+            'ativo'     => $this->isAtivo(),
+            'createdAt' => $this->getCreatedAt(),
+            'updatedAt' => $this->getUpdatedAt(),
+            'deletedAt' => $this->getDeletedAt(),
         ];
     }
     

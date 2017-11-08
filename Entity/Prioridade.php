@@ -164,6 +164,9 @@ class Prioridade implements \JsonSerializable
             'descricao' => $this->getDescricao(),
             'peso'      => $this->getPeso(),
             'ativo'     => $this->isAtivo(),
+            'createdAt' => $this->getCreatedAt(),
+            'updatedAt' => $this->getUpdatedAt(),
+            'deletedAt' => $this->getDeletedAt(),
         ];
     }
 }

@@ -156,6 +156,9 @@ class Unidade implements \JsonSerializable
             'nome'      => $this->getNome(),
             'ativo'     => $this->isAtivo(),
             'impressao' => $this->getImpressao(),
+            'createdAt' => $this->getCreatedAt(),
+            'updatedAt' => $this->getUpdatedAt(),
+            'deletedAt' => $this->getDeletedAt(),
         ];
     }
 }

@@ -150,6 +150,8 @@ class Perfil implements \JsonSerializable
             'nome'      => $this->getNome(),
             'descricao' => $this->getDescricao(),
             'modulos'   => $this->getModulos(),
+            'createdAt' => $this->getCreatedAt(),
+            'updatedAt' => $this->getUpdatedAt(),
         ];
     }
 }
