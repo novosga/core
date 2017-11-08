@@ -22,55 +22,59 @@ class Configuration
      * @var string
      */
     private $default;
-    
+
     /**
      * @var string
      */
     private $custom;
-    
+
     public function __construct($rootDir)
     {
         $this->default = require("{$rootDir}/config/app.default.php");
-        $this->custom  = @require("{$rootDir}/config/app.php");
-        
+
+        $customFile = "{$rootDir}/config/app.php";
+        if (file_exists($customFile)) {
+          $this->custom  = require($customFile);
+        }
+
         if (!$this->default) {
             $this->default = [];
         }
-        
+
         if (!$this->custom) {
             $this->custom = [];
         }
     }
-    
+
     public function get($key)
     {
         $value  = null;
         $obj    = $this->default;
         $tokens = explode('.', $key);
-        
+
         foreach ($tokens as $prop) {
             $value = $this->resolve($prop, $obj);
             $obj   = $value;
         }
-        
+
         return $value;
     }
-    
+
     private function resolve($key, array $obj)
     {
         return $this->resolveValue($key, $this->custom, $obj);
     }
-    
+
     private function resolveValue($key, array $primary, array $secondary)
     {
         if (isset($primary[$key])) {
             return $primary[$key];
         }
-        
+
         if (isset($secondary[$key])) {
             return $secondary[$key];
         }
-        
+
         return null;
     }
 }
