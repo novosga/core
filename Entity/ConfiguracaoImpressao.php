@@ -56,13 +56,14 @@ class ConfiguracaoImpressao implements \JsonSerializable
     
     public function __construct(Unidade $unidade)
     {
-        $this->unidade = $unidade;
-        $this->cabecalho = 'Novo SGA';
+        $this->unidade    = $unidade;
+        $this->cabecalho  = 'Novo SGA';
+        $this->rodape     = 'Novo SGA';
         $this->exibirData = true;
         $this->exibirMensagemServico = true;
-        $this->exibirNomeServico = true;
-        $this->exibirNomeUnidade = true;
-        $this->exibirPrioridade = true;
+        $this->exibirNomeServico     = true;
+        $this->exibirNomeUnidade     = true;
+        $this->exibirPrioridade      = true;
     }
     
     public function getUnidade()
