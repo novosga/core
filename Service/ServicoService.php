@@ -78,7 +78,7 @@ class ServicoService extends MetaModelService
      */
     public function servicosUnidade($unidade, $where = '')
     {
-        $dql = "SELECT e FROM Novosga\Entity\ServicoUnidade e JOIN e.servico s WHERE e.unidade = :unidade ";
+        $dql = "SELECT e FROM Novosga\Entity\ServicoUnidade e JOIN e.servico s WHERE e.unidade = :unidade AND s.deletedAt IS NULL";
         if (!empty($where)) {
             $dql .= " AND $where ";
         }
@@ -101,7 +101,7 @@ class ServicoService extends MetaModelService
     public function servicoUnidade($unidade, $servico)
     {
         return $this->em
-                ->createQuery('SELECT e FROM Novosga\Entity\ServicoUnidade e WHERE e.servico = :servico AND e.unidade = :unidade')
+                ->createQuery('SELECT e FROM Novosga\Entity\ServicoUnidade e JOIN e.servico s WHERE s = :servico AND e.unidade = :unidade AND s.deletedAt IS NULL')
                 ->setParameter('servico', $servico)
                 ->setParameter('unidade', $unidade)
                 ->getOneOrNullResult();
@@ -188,6 +188,7 @@ class ServicoService extends MetaModelService
                     Novosga\Entity\ServicoUnidade e
                     JOIN e.servico s
                 WHERE
+                    s.deletedAt IS NULL AND
                     e.ativo = TRUE AND
                     e.unidade = :unidade AND
                     s.id NOT IN (
