@@ -122,7 +122,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         $this->ativo = true;
         $this->lotacoes = new \Doctrine\Common\Collections\ArrayCollection();
     }
-    
+
     public function getId()
     {
         return $this->id;
@@ -176,7 +176,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
     {
         return $this->nome . ' ' . $this->sobrenome;
     }
-    
+
     public function getEmail()
     {
         return $this->email;
@@ -187,7 +187,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         $this->email = $email;
         return $this;
     }
-    
+
     public function getSenha()
     {
         return $this->senha;
@@ -204,7 +204,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         $this->ativo = $ativo;
         return $this;
     }
-    
+
     public function getLotacao()
     {
         return $this->lotacao;
@@ -215,13 +215,13 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         $this->lotacao = $lotacao;
         return $this;
     }
-    
+
     public function getLotacoes()
     {
         return $this->lotacoes;
     }
-    
-    public function setSalt($salt) 
+
+    public function setSalt($salt)
     {
         $this->salt = $salt;
         return $this;
@@ -246,7 +246,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
 
     public function isAtivo(): bool
     {
-        return $this->ativo;
+        return (bool) $this->ativo;
     }
 
     public function getUltimoAcesso()
@@ -259,7 +259,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         $this->ultimoAcesso = $ultimoAcesso;
         return $this;
     }
-    
+
     public function getIp()
     {
         return $this->ip;
@@ -292,7 +292,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         $this->algorithm = $algorithm;
         return $this;
     }
-    
+
     public function isAdmin()
     {
         return $this->admin;
@@ -303,7 +303,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         $this->admin = $admin;
         return $this;
     }
-    
+
     public function getCreatedAt()
     {
         return $this->createdAt;
@@ -336,7 +336,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
         $this->deletedAt = $deletedAt;
         return $this;
     }
-    
+
     public function isAccountNonExpired()
     {
         return true;
@@ -399,6 +399,9 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
             $this->login,
             $this->nome,
             $this->sessionId,
+            $this->senha,
+            $this->salt,
+            $this->ativo,
         ]);
     }
 
@@ -409,6 +412,9 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
             $this->login,
             $this->nome,
             $this->sessionId,
+            $this->senha,
+            $this->salt,
+            $this->ativo,
         ) = unserialize($serialized);
     }
 
@@ -425,7 +431,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
             'deletedAt' => $this->getDeletedAt(),
         ];
     }
-    
+
     public function __tostring() {
         return $this->getLogin() . '';
     }
