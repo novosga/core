@@ -57,17 +57,17 @@ class FilaService extends ModelService
             $ids[] = $servico->getServico()->getId();
         }
         
-        $where = '';
-        // se nao atende todos, filtra pelo tipo de atendimento
-        if ($tipoAtendimento !== 1) {
-            $s = ($tipoAtendimento === 2) ? '=' : '>';
-            $where = "prioridade.peso $s 0";
-        }
-        
         $builder = $this->builder($usuario)
                         ->andWhere('atendimento.status = :status')
                         ->andWhere('servicoUnidade.unidade = :unidade')
                         ->andWhere('servico.id IN (:servicos)');
+        
+        // se nao atende todos, filtra pelo tipo de atendimento
+        if ($tipoAtendimento !== 1) {
+            $s = ($tipoAtendimento === 2) ? '=' : '>';
+            $where = "prioridade.peso $s 0";
+            $builder->andWhere($where);
+        }
         
         $params = [
             'status' => AtendimentoService::SENHA_EMITIDA,
@@ -80,10 +80,6 @@ class FilaService extends ModelService
             $params['usuario'] = $usuario;
         }
         
-        if (!empty($where)) {
-            $builder->andWhere($where);
-        }
-
         $this->applyOrders($builder, $unidade, $usuario);
 
         $query = $builder
@@ -134,7 +130,7 @@ class FilaService extends ModelService
     /**
      * @return QueryBuilder
      */
-    public function builder(Usuario $usuario = null)
+    private function builder()
     {
         $qb = $this->em
             ->createQueryBuilder()
@@ -157,7 +153,7 @@ class FilaService extends ModelService
      *
      * @param QueryBuilder $builder
      */
-    public function applyOrders(QueryBuilder $builder, Unidade $unidade, Usuario $usuario = null)
+    private function applyOrders(QueryBuilder $builder, Unidade $unidade, Usuario $usuario = null)
     {
         $ordering = $this->config->get('queue.ordering');
         

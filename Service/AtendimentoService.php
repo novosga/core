@@ -116,7 +116,7 @@ class AtendimentoService extends MetaModelService
         $senha->setServico($atendimento->getServicoUnidade()->getServico());
         $senha->setNumeroSenha($atendimento->getSenha()->getNumero());
         $senha->setSiglaSenha($atendimento->getSenha()->getSigla());
-        $senha->setMensagem($atendimento->getServicoUnidade()->getMensagem());
+        $senha->setMensagem($atendimento->getServicoUnidade()->getMensagem() . '');
         // local
         $senha->setLocal($atendimento->getServicoUnidade()->getLocal()->getNome());
         $senha->setNumeroLocal($atendimento->getLocal());
