@@ -12,15 +12,22 @@
 namespace Novosga\Entity;
 
 use DateTime;
-use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
+use Symfony\Component\Security\Core\User\AdvancedUserInterface;
+use Symfony\Component\Security\Core\User\EquatableInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * Usuario
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareInterface, \Serializable
+class Usuario implements 
+        \Serializable, 
+        \JsonSerializable, 
+        AdvancedUserInterface,
+        EquatableInterface,
+        EncoderAwareInterface
 {
     /**
      * @var mixed
@@ -391,6 +398,35 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
     {
         return $this->algorithm;
     }
+    
+    public function isEqualTo(UserInterface $user)
+    {
+        if (!$user instanceof Usuario) {
+            return false;
+        }
+
+        if ($this->getPassword() !== $user->getPassword()) {
+            return false;
+        }
+
+        if ($this->getSalt() !== $user->getSalt()) {
+            return false;
+        }
+
+        if ($this->getUsername() !== $user->getUsername()) {
+            return false;
+        }
+
+        if ($this->isEnabled() !== $user->isEnabled()) {
+            return false;
+        }
+
+        if ($this->getSessionId() !== $user->getSessionId()) {
+            return false;
+        }
+        
+        return true;
+    }
 
     public function serialize()
     {
@@ -433,7 +469,7 @@ class Usuario implements \JsonSerializable, AdvancedUserInterface, EncoderAwareI
     }
 
     public function __tostring() {
-        return $this->getLogin() . '';
+        return (string) $this->getLogin();
     }
 
 }
