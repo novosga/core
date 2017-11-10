@@ -14,36 +14,34 @@
 
 namespace Novosga\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\EntityManager;
 
 /**
- * @ ORM\Entity
- * @ ORM\Table(name="config")
+ * Configuracao
  */
 class Configuracao implements \JsonSerializable
 {
-    const STRING = 1;
+    const STRING  = 1;
     const NUMERIC = 2;
     const COMPLEX = 3;
 
     /**
-     * @ ORM\Id @ ORM\Column(type="string", name="chave", length=150, nullable=false)
+     * @var string
      */
     private $chave;
 
     /**
-     * @ ORM\Column(type="text", name="valor", nullable=false)
+     * @var string
      */
     private $valor;
 
     /**
-     * @ ORM\Column(type="integer", name="tipo", nullable=false)
+     * @var int
      */
     private $tipo;
 
     // transient
-    private $_valor;
+    private $parsedValue;
 
     public function __construct($chave = '', $valor = '')
     {
@@ -63,16 +61,16 @@ class Configuracao implements \JsonSerializable
 
     public function getValor()
     {
-        if (!$this->_valor) {
-            $this->_valor = ($this->tipo == self::COMPLEX) ? unserialize($this->valor) : $this->valor;
+        if (!$this->parsedValue) {
+            $this->parsedValue = ($this->tipo == self::COMPLEX) ? unserialize($this->valor) : $this->valor;
         }
 
-        return $this->_valor;
+        return $this->parsedValue;
     }
 
     public function setValor($valor)
     {
-        $this->_valor = $valor;
+        $this->parsedValue = $valor;
         $this->tipo = self::tipo($valor);
         $this->valor = ($this->tipo == self::COMPLEX) ? serialize($valor) : $valor;
     }
@@ -103,10 +101,10 @@ class Configuracao implements \JsonSerializable
     public static function get(EntityManager $em, $key)
     {
         try {
-            $query = $em->createQuery("SELECT e FROM Novosga\Entity\Configuracao e WHERE e.chave = :key");
-            $query->setParameter('key', $key);
-
-            return $query->getOneOrNullResult();
+            return $em
+                ->createQuery("SELECT e FROM Novosga\Entity\Configuracao e WHERE e.chave = :key")
+                ->setParameter('key', $key)
+                ->getOneOrNullResult();
         } catch (\Exception $e) {
             return false;
         }
@@ -122,9 +120,11 @@ class Configuracao implements \JsonSerializable
     public static function set(EntityManager $em, $key, $value)
     {
         try {
-            $query = $em->createQuery("SELECT e FROM Novosga\Entity\Configuracao e WHERE e.chave = :key");
-            $query->setParameter('key', $key);
-            $config = $query->getSingleResult();
+            $config = $em
+                ->createQuery("SELECT e FROM Novosga\Entity\Configuracao e WHERE e.chave = :key")
+                ->setParameter('key', $key)
+                ->getSingleResult();
+            
             $config->setValor($value);
             $em->merge($config);
             $em->flush();
@@ -144,10 +144,10 @@ class Configuracao implements \JsonSerializable
      */
     public static function del(EntityManager $em, $key)
     {
-        $query = $em->createQuery("DELETE FROM Novosga\Entity\Configuracao e WHERE e.chave = :key");
-        $query->setParameter('key', $key);
-
-        return $query->execute();
+        return $em
+            ->createQuery("DELETE FROM Novosga\Entity\Configuracao e WHERE e.chave = :key")
+            ->setParameter('key', $key)
+            ->execute();
     }
 
     public function jsonSerialize()

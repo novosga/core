@@ -54,13 +54,13 @@ class FilaService extends ModelService
         $ids = [0];
         foreach ($servicosUsuario as $servico) {
             $usuario = $servico->getUsuario();
-            $ids[] = $servico->getServico()->getId();
+            $ids[]   = $servico->getServico()->getId();
         }
         
         $builder = $this->builder($usuario)
-                        ->andWhere('atendimento.status = :status')
-                        ->andWhere('servicoUnidade.unidade = :unidade')
-                        ->andWhere('servico.id IN (:servicos)');
+            ->andWhere('atendimento.status = :status')
+            ->andWhere('servicoUnidade.unidade = :unidade')
+            ->andWhere('servico.id IN (:servicos)');
         
         // se nao atende todos, filtra pelo tipo de atendimento
         if ($tipoAtendimento !== 1) {
@@ -76,7 +76,12 @@ class FilaService extends ModelService
         ];
         
         if ($usuario) {
-            $builder->join(ServicoUsuario::class, 'servicoUsuario', 'WITH', 'servicoUsuario.servico = servico AND servicoUsuario.usuario = :usuario');
+            $builder->join(
+                ServicoUsuario::class,
+                'servicoUsuario',
+                'WITH',
+                'servicoUsuario.servico = servico AND servicoUsuario.usuario = :usuario'
+            );
             $params['usuario'] = $usuario;
         }
         
@@ -107,22 +112,22 @@ class FilaService extends ModelService
         $builder = $this->builder();
         
         $params = [
-            'status' => AtendimentoService::SENHA_EMITIDA,
+            'status'  => AtendimentoService::SENHA_EMITIDA,
             'unidade' => $unidade,
             'servico' => $servico
         ];
         
         $builder
-                ->where('atendimento.status = :status')
-                ->andWhere('servicoUnidade.unidade = :unidade')
-                ->andWhere('servicoUnidade.servico = :servico');
+            ->where('atendimento.status = :status')
+            ->andWhere('servicoUnidade.unidade = :unidade')
+            ->andWhere('servicoUnidade.servico = :servico');
         
         $this->applyOrders($builder, $unidade);
 
         $rs = $builder
-                ->setParameters($params)
-                ->getQuery()
-                ->getResult();
+            ->setParameters($params)
+            ->getQuery()
+            ->getResult();
 
         return $rs;
     }
@@ -137,7 +142,7 @@ class FilaService extends ModelService
             ->select([
                 'atendimento',
                 'prioridade',
-                'servicoUnidade', 
+                'servicoUnidade',
                 'servico'
             ])
             ->from(Atendimento::class, 'atendimento')

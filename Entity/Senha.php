@@ -14,7 +14,7 @@ namespace Novosga\Entity;
 /**
  * Classe Senha
  * Responsavel pelas informacoes do Senha.
- * 
+ *
  * @author Rogério Lino <rogeriolino@gmail.com>
  */
 class Senha implements \JsonSerializable
@@ -103,4 +103,4 @@ class Senha implements \JsonSerializable
             'format'         => $this->__toString(),
         ];
     }
- }
+}

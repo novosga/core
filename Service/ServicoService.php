@@ -78,10 +78,19 @@ class ServicoService extends MetaModelService
      */
     public function servicosUnidade($unidade, $where = '')
     {
-        $dql = "SELECT e FROM Novosga\Entity\ServicoUnidade e JOIN e.servico s WHERE e.unidade = :unidade AND s.deletedAt IS NULL";
+        $dql = "
+            SELECT e 
+            FROM Novosga\Entity\ServicoUnidade e
+            JOIN e.servico s
+            WHERE
+                e.unidade = :unidade AND
+                s.deletedAt IS NULL
+        ";
+        
         if (!empty($where)) {
             $dql .= " AND $where ";
         }
+        
         $dql .= ' ORDER BY s.nome';
 
         return $this->em
@@ -101,7 +110,15 @@ class ServicoService extends MetaModelService
     public function servicoUnidade($unidade, $servico)
     {
         return $this->em
-                ->createQuery('SELECT e FROM Novosga\Entity\ServicoUnidade e JOIN e.servico s WHERE s = :servico AND e.unidade = :unidade AND s.deletedAt IS NULL')
+                ->createQuery('
+                    SELECT e
+                    FROM Novosga\Entity\ServicoUnidade e
+                    JOIN e.servico s
+                    WHERE
+                        s = :servico AND
+                        e.unidade = :unidade AND
+                        s.deletedAt IS NULL
+                ')
                 ->setParameter('servico', $servico)
                 ->setParameter('unidade', $unidade)
                 ->getOneOrNullResult();
@@ -192,7 +209,10 @@ class ServicoService extends MetaModelService
                     e.ativo = TRUE AND
                     e.unidade = :unidade AND
                     s.id NOT IN (
-                        SELECT s2.id FROM Novosga\Entity\ServicoUsuario a JOIN a.servico s2 WHERE a.usuario = :usuario AND a.unidade = :unidade
+                        SELECT s2.id
+                        FROM Novosga\Entity\ServicoUsuario a
+                        JOIN a.servico s2
+                        WHERE a.usuario = :usuario AND a.unidade = :unidade
                     )
             ")
                 ->setParameter('usuario', $usuario)

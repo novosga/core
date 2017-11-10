@@ -113,5 +113,4 @@ class Contador implements \JsonSerializable
             'servico' => $this->getServico()
         ];
     }
-
 }

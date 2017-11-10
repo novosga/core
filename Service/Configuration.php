@@ -34,7 +34,7 @@ class Configuration
 
         $customFile = "{$rootDir}/config/app.php";
         if (file_exists($customFile)) {
-          $this->custom  = require($customFile);
+            $this->custom  = require($customFile);
         }
 
         if (!$this->default) {

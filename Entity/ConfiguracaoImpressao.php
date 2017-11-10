@@ -11,7 +11,6 @@
 
 namespace Novosga\Entity;
 
-
 class ConfiguracaoImpressao implements \JsonSerializable
 {
     /**

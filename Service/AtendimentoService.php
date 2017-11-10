@@ -31,7 +31,6 @@ use Novosga\Entity\Servico;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
 
-
 /**
  * AtendimentoService.
  *
@@ -177,12 +176,14 @@ class AtendimentoService extends MetaModelService
             $sql = "
                 INSERT INTO {$historicoTable}
                 (
-                    id, unidade_id, usuario_id, servico_id, prioridade_id, status, senha_sigla, senha_numero,
-                    cliente_id, num_local, dt_cheg, dt_cha, dt_ini, dt_fim, usuario_tri_id, atendimento_id
+                    id, unidade_id, usuario_id, servico_id, prioridade_id, status,
+                    senha_sigla, senha_numero, cliente_id, num_local, dt_cheg,
+                    dt_cha, dt_ini, dt_fim, usuario_tri_id, atendimento_id
                 )
                 SELECT
-                    a.id, a.unidade_id, a.usuario_id, a.servico_id, a.prioridade_id, a.status, a.senha_sigla, a.senha_numero,
-                    a.cliente_id, a.num_local, a.dt_cheg, a.dt_cha, a.dt_ini, a.dt_fim, a.usuario_tri_id, a.atendimento_id
+                    a.id, a.unidade_id, a.usuario_id, a.servico_id, a.prioridade_id, a.status,
+                    a.senha_sigla, a.senha_numero, a.cliente_id, a.num_local, a.dt_cheg,
+                    a.dt_cha, a.dt_ini, a.dt_fim, a.usuario_tri_id, a.atendimento_id
                 FROM
                     {$atendimentoTable} a
                 WHERE
@@ -212,7 +213,13 @@ class AtendimentoService extends MetaModelService
                 FROM
                     {$atendimentoMetaTable}  a
                 WHERE
-                    a.atendimento_id IN (SELECT b.id FROM {$atendimentoTable} b WHERE b.dt_cheg <= :data AND (b.unidade_id = :unidade OR :unidade = 0))
+                    a.atendimento_id IN (
+                        SELECT b.id
+                        FROM {$atendimentoTable} b
+                        WHERE
+                            b.dt_cheg <= :data AND
+                            (b.unidade_id = :unidade OR :unidade = 0)
+                    )
             ";
             $query = $conn->prepare($sql);
             $query->bindValue('data', $data, PDO::PARAM_STR);
@@ -240,8 +247,13 @@ class AtendimentoService extends MetaModelService
 
             // limpa atendimentos codificados
             $query = $conn->prepare("
-                DELETE FROM {$atendimentoCodifTable} WHERE atendimento_id IN (
-                    SELECT id FROM {$atendimentoTable} WHERE dt_cheg <= :data AND (unidade_id = :unidade OR :unidade = 0)
+                DELETE FROM {$atendimentoCodifTable}
+                WHERE atendimento_id IN (
+                    SELECT id
+                    FROM {$atendimentoTable}
+                    WHERE
+                        dt_cheg <= :data AND
+                        (unidade_id = :unidade OR :unidade = 0)
                 )
             ");
             $query->bindValue('data', $data, PDO::PARAM_STR);
@@ -250,8 +262,13 @@ class AtendimentoService extends MetaModelService
 
             // limpa metadata
             $query = $conn->prepare("
-                DELETE FROM {$atendimentoMetaTable} WHERE atendimento_id IN (
-                    SELECT id FROM {$atendimentoTable} WHERE dt_cheg <= :data AND (unidade_id = :unidade OR :unidade = 0)
+                DELETE FROM {$atendimentoMetaTable}
+                WHERE atendimento_id IN (
+                    SELECT id
+                    FROM {$atendimentoTable}
+                    WHERE
+                        dt_cheg <= :data AND
+                        (unidade_id = :unidade OR :unidade = 0)
                 )
             ");
             $query->bindValue('data', $data, PDO::PARAM_STR);
@@ -259,26 +276,46 @@ class AtendimentoService extends MetaModelService
             $query->execute();
 
             // limpa o auto-relacionamento para poder excluir os atendimento sem dar erro de constraint (#136)
-            $query = $conn->prepare("DELETE FROM {$atendimentoTable} WHERE atendimento_id IS NOT NULL AND dt_cheg <= :data AND (unidade_id = :unidade OR :unidade = 0)");
+            $query = $conn->prepare("
+                DELETE FROM {$atendimentoTable}
+                WHERE
+                    atendimento_id IS NOT NULL AND
+                    dt_cheg <= :data AND
+                    (unidade_id = :unidade OR :unidade = 0)
+            ");
             $query->bindValue('data', $data, PDO::PARAM_STR);
             $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
             $query->execute();
 
             // limpa atendimentos da unidade
-            $query = $conn->prepare("DELETE FROM {$atendimentoTable} WHERE dt_cheg <= :data AND (unidade_id = :unidade OR :unidade = 0)");
+            $query = $conn->prepare("
+                DELETE FROM {$atendimentoTable}
+                WHERE 
+                    dt_cheg <= :data AND
+                    (unidade_id = :unidade OR :unidade = 0)
+            ");
             $query->bindValue('data', $data, PDO::PARAM_STR);
             $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
             $query->execute();
 
             // limpa a tabela de senhas a serem exibidas no painel
-            $query = $conn->prepare("DELETE FROM {$painelSenhaTable} WHERE (unidade_id = :unidade OR :unidade = 0)");
+            $query = $conn->prepare("
+                DELETE FROM {$painelSenhaTable}
+                WHERE (unidade_id = :unidade OR :unidade = 0)
+            ");
             $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
             $query->execute();
 
             // reinicia o contador das senhas
             $query = $conn->prepare("
                 UPDATE {$contadorTable}
-                SET numero = (SELECT su.numero_inicial FROM {$servicoUnidadeTable} su WHERE su.unidade_id = {$contadorTable}.unidade_id AND su.servico_id = {$contadorTable}.servico_id)
+                SET numero = (
+                    SELECT su.numero_inicial
+                    FROM {$servicoUnidadeTable} su
+                    WHERE
+                        su.unidade_id = {$contadorTable}.unidade_id AND
+                        su.servico_id = {$contadorTable}.servico_id
+                )
                 WHERE (unidade_id = :unidade OR :unidade = 0)
             ");
             $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
@@ -298,7 +335,14 @@ class AtendimentoService extends MetaModelService
 
     public function buscaAtendimento(Unidade $unidade, $id)
     {
-        $query = $this->em->createQuery("SELECT e FROM Novosga\Entity\Atendimento e JOIN e.servicoUnidade su WHERE e.id = :id AND su.unidade = :unidade");
+        $query = $this->em->createQuery("
+            SELECT e
+            FROM Novosga\Entity\Atendimento e
+            JOIN e.servicoUnidade su
+            WHERE
+                e.id = :id AND
+                su.unidade = :unidade
+        ");
         $query->setParameter('id', (int) $id);
         $query->setParameter('unidade', $unidade->getId());
 
@@ -388,7 +432,12 @@ class AtendimentoService extends MetaModelService
         ];
         try {
             return $this->em
-                ->createQuery("SELECT e FROM Novosga\Entity\Atendimento e WHERE e.usuario = :usuario AND e.status IN (:status)")
+                ->createQuery("
+                    SELECT e FROM Novosga\Entity\Atendimento e
+                    WHERE
+                        e.usuario = :usuario AND
+                        e.status IN (:status)
+                ")
                 ->setParameter('usuario', $usuario)
                 ->setParameter('status', $status)
                 ->getOneOrNullResult();
@@ -399,7 +448,15 @@ class AtendimentoService extends MetaModelService
              * BUG #213
              */
             $this->em
-                ->createQuery('UPDATE Novosga\Entity\Atendimento e SET e.status = 1, e.usuario = NULL WHERE e.usuario = :usuario AND e.status IN (:status)')
+                ->createQuery('
+                    UPDATE Novosga\Entity\Atendimento e
+                    SET 
+                        e.status = 1,
+                        e.usuario = NULL
+                    WHERE
+                        e.usuario = :usuario AND
+                        e.status IN (:status)
+                ')
                 ->setParameter('usuario', $usuario)
                 ->setParameter('status', $status)
                 ->execute();
@@ -491,7 +548,8 @@ class AtendimentoService extends MetaModelService
                         ->createQueryBuilder()
                         ->select('e')
                         ->from(Contador::class, 'e')
-                        ->where('e.unidade = :unidade AND e.servico = :servico')
+                        ->where('e.unidade = :unidade')
+                        ->andWhere('e.servico = :servico')
                         ->setParameters([
                             'unidade' => $unidade->getId(),
                             'servico' => $servico->getId()
@@ -562,7 +620,12 @@ class AtendimentoService extends MetaModelService
             }
 
             if (!$atendimento || !$atendimento->getId()) {
-                throw new \Exception(sprintf(_('O último ID retornado pelo banco não é de um atendimento válido: %s'), $id));
+                throw new \Exception(
+                    sprintf(
+                        _('O último ID retornado pelo banco não é de um atendimento válido: %s'),
+                        $id
+                    )
+                );
             }
 
             $this->dispatcher->dispatch('attending.create', $atendimento);
@@ -632,21 +695,21 @@ class AtendimentoService extends MetaModelService
 
         // transfere apenas se a data fim for nula (nao finalizados)
         $success = $this->em->createQuery('
-                UPDATE
-                    Novosga\Entity\Atendimento e
-                SET
-                    e.servico = :servico,
-                    e.prioridade = :prioridade
-                WHERE
-                    e.id = :id AND
-                    e.unidade = :unidade AND
-                    e.dataFim IS NULL
-                ')
-                ->setParameter('servico', $novoServico)
-                ->setParameter('prioridade', $novaPrioridade)
-                ->setParameter('id', $atendimento)
-                ->setParameter('unidade', $unidade)
-                ->execute() > 0;
+            UPDATE
+                Novosga\Entity\Atendimento e
+            SET
+                e.servico = :servico,
+                e.prioridade = :prioridade
+            WHERE
+                e.id = :id AND
+                e.unidade = :unidade AND
+                e.dataFim IS NULL
+            ')
+            ->setParameter('servico', $novoServico)
+            ->setParameter('prioridade', $novaPrioridade)
+            ->setParameter('id', $atendimento)
+            ->setParameter('unidade', $unidade)
+            ->execute() > 0;
 
         if ($success) {
             $this->em->refresh($atendimento);
@@ -670,21 +733,21 @@ class AtendimentoService extends MetaModelService
 
         // cancela apenas se a data fim for nula
         $success = $this->em->createQuery('
-                UPDATE
-                    Novosga\Entity\Atendimento e
-                SET
-                    e.status = :status,
-                    e.dataFim = :data
-                WHERE
-                    e.id = :id AND
-                    e.unidade = :unidade AND
-                    e.dataFim IS NULL
-                ')
-                ->setParameter('status', self::SENHA_CANCELADA)
-                ->setParameter('data', new DateTime())
-                ->setParameter('id', $atendimento)
-                ->setParameter('unidade', $unidade)
-                ->execute() > 0;
+            UPDATE
+                Novosga\Entity\Atendimento e
+            SET
+                e.status = :status,
+                e.dataFim = :data
+            WHERE
+                e.id = :id AND
+                e.unidade = :unidade AND
+                e.dataFim IS NULL
+            ')
+            ->setParameter('status', self::SENHA_CANCELADA)
+            ->setParameter('data', new DateTime())
+            ->setParameter('id', $atendimento)
+            ->setParameter('unidade', $unidade)
+            ->execute() > 0;
 
         if ($success) {
             $this->em->refresh($atendimento);
@@ -709,21 +772,21 @@ class AtendimentoService extends MetaModelService
 
         // reativa apenas se estiver finalizada (data fim diferente de nulo)
         $success = $this->em->createQuery('
-                UPDATE
-                    Novosga\Entity\Atendimento e
-                SET
-                    e.status = :status,
-                    e.dataFim = NULL
-                WHERE
-                    e.id = :id AND
-                    e.unidade = :unidade AND
-                    e.status IN (:statuses)
-                ')
-                ->setParameter('status', self::SENHA_EMITIDA)
-                ->setParameter('statuses', [self::SENHA_CANCELADA, self::NAO_COMPARECEU])
-                ->setParameter('id', $atendimento)
-                ->setParameter('unidade', $unidade)
-                ->execute() > 0;
+            UPDATE
+                Novosga\Entity\Atendimento e
+            SET
+                e.status = :status,
+                e.dataFim = NULL
+            WHERE
+                e.id = :id AND
+                e.unidade = :unidade AND
+                e.status IN (:statuses)
+            ')
+            ->setParameter('status', self::SENHA_EMITIDA)
+            ->setParameter('statuses', [self::SENHA_CANCELADA, self::NAO_COMPARECEU])
+            ->setParameter('id', $atendimento)
+            ->setParameter('unidade', $unidade)
+            ->execute() > 0;
 
         if ($success) {
             $this->em->refresh($atendimento);
@@ -733,10 +796,20 @@ class AtendimentoService extends MetaModelService
         return $success;
     }
     
-    public function encerrar(Atendimento $atendimento, Unidade $unidade, Usuario $usuario, array $servicos, $servicoRedirecionado = null)
-    {
+    public function encerrar(
+        Atendimento $atendimento,
+        Unidade $unidade,
+        Usuario $usuario,
+        array $servicos,
+        $servicoRedirecionado = null
+    ) {
         if ($atendimento->getStatus() !== AtendimentoService::ATENDIMENTO_INICIADO) {
-            throw new Exception(sprintf('Erro ao tentar encerrar um atendimento nao iniciado (%s)', $atendimento->getId()));
+            throw new Exception(
+                sprintf(
+                    'Erro ao tentar encerrar um atendimento nao iniciado (%s)',
+                    $atendimento->getId()
+                )
+            );
         }
         
         $this->em->beginTransaction();
@@ -763,7 +836,13 @@ class AtendimentoService extends MetaModelService
             if ($servicoRedirecionado) {
                 $redirecionado = $this->redirecionar($atendimento, $usuario, $unidade, $servicoRedirecionado);
                 if (!$redirecionado->getId()) {
-                    throw new Exception(sprintf(_('Erro ao redirecionar atendimento %s para o serviço %s'), $atendimento->getId(), $servico));
+                    throw new Exception(
+                        sprintf(
+                            _('Erro ao redirecionar atendimento %s para o serviço %s'),
+                            $atendimento->getId(),
+                            $servico
+                        )
+                    );
                 }
             }
             
@@ -792,16 +871,16 @@ class AtendimentoService extends MetaModelService
     public function ultimaSenhaUnidade($unidade)
     {
         return $this->em
-                ->createQueryBuilder()
-                ->select('e')
-                ->from(Atendimento::class, 'e')
-                ->join('e.servicoUnidade', 'su')
-                ->where('su.unidade = :unidade')
-                ->orderBy('e.id', 'DESC')
-                ->setParameter('unidade', $unidade)
-                ->getQuery()
-                ->setMaxResults(1)
-                ->getOneOrNullResult();
+            ->createQueryBuilder()
+            ->select('e')
+            ->from(Atendimento::class, 'e')
+            ->join('e.servicoUnidade', 'su')
+            ->where('su.unidade = :unidade')
+            ->orderBy('e.id', 'DESC')
+            ->setParameter('unidade', $unidade)
+            ->getQuery()
+            ->setMaxResults(1)
+            ->getOneOrNullResult();
     }
 
     /**
@@ -815,20 +894,20 @@ class AtendimentoService extends MetaModelService
     public function ultimaSenhaServico($unidade, $servico)
     {
         $atendimento = $this->em
-                ->createQueryBuilder()
-                ->select('e')
-                ->from(Atendimento::class, 'e')
-                ->join('e.servicoUnidade', 'su')
-                ->where('su.servico = :servico')
-                ->andWhere('su.unidade = :unidade')
-                ->orderBy('e.senha.numero', 'DESC')
-                ->setParameters([
-                    'servico' => $servico,
-                    'unidade' => $unidade
-                ])
-                ->getQuery()
-                ->setMaxResults(1)
-                ->getOneOrNullResult();
+            ->createQueryBuilder()
+            ->select('e')
+            ->from(Atendimento::class, 'e')
+            ->join('e.servicoUnidade', 'su')
+            ->where('su.servico = :servico')
+            ->andWhere('su.unidade = :unidade')
+            ->orderBy('e.senha.numero', 'DESC')
+            ->setParameters([
+                'servico' => $servico,
+                'unidade' => $unidade
+            ])
+            ->getQuery()
+            ->setMaxResults(1)
+            ->getOneOrNullResult();
         
         return $atendimento;
     }
@@ -857,7 +936,10 @@ class AtendimentoService extends MetaModelService
                 $campoData   = 'dataFim';
                 break;
             case AtendimentoService::ERRO_TRIAGEM:
-                $statusAtual = [ AtendimentoService::ATENDIMENTO_INICIADO, AtendimentoService::ATENDIMENTO_ENCERRADO ];
+                $statusAtual = [
+                    AtendimentoService::ATENDIMENTO_INICIADO,
+                    AtendimentoService::ATENDIMENTO_ENCERRADO,
+                ];
                 $campoData   = 'dataFim';
                 break;
             default:
@@ -876,7 +958,7 @@ class AtendimentoService extends MetaModelService
         
         if ($campoData !== null) {
             $qb->set("e.{$campoData}", ':data');
-        }        
+        }
         
         $qb
             ->where('e.id = :id')
@@ -898,7 +980,13 @@ class AtendimentoService extends MetaModelService
                 ->execute() > 0;
 
         if (!$success) {
-            throw new Exception(sprintf(_('Erro ao mudar status do atendimento #%s para %s'), $atual->getId(), $novoStatus));
+            throw new Exception(
+                sprintf(
+                    _('Erro ao mudar status do atendimento #%s para %s'),
+                    $atual->getId(),
+                    $novoStatus
+                )
+            );
         }
 
         $atual->setStatus($novoStatus);

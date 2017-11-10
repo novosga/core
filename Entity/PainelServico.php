@@ -69,6 +69,6 @@ class PainelServico implements \JsonSerializable
            'painel'  => $this->getPainel(),
            'servico' => $this->getServico(),
            'unidade' => $this->getUnidade(),
-       ];
+        ];
     }
- }
+}

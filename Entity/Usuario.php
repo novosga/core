@@ -22,12 +22,12 @@ use Symfony\Component\Security\Core\User\UserInterface;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class Usuario implements 
-        \Serializable, 
-        \JsonSerializable, 
-        AdvancedUserInterface,
-        EquatableInterface,
-        EncoderAwareInterface
+class Usuario implements
+    \Serializable,
+    \JsonSerializable,
+    AdvancedUserInterface,
+    EquatableInterface,
+    EncoderAwareInterface
 {
     /**
      * @var mixed
@@ -468,8 +468,8 @@ class Usuario implements
         ];
     }
 
-    public function __tostring() {
+    public function __tostring()
+    {
         return (string) $this->getLogin();
     }
-
 }

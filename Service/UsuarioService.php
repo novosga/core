@@ -88,7 +88,14 @@ class UsuarioService extends MetaModelService
                         Novosga\Entity\UsuarioMeta e
                     WHERE
                         (e.name = :metaLocal AND e.value = :numero AND e.usuario != :usuario)
-                        AND EXISTS (SELECT e2 FROM Novosga\Entity\UsuarioMeta e2 WHERE e2.name = :metaUnidade AND e2.value = :unidade AND e2.usuario = e.usuario)
+                        AND EXISTS (
+                            SELECT e2
+                            FROM Novosga\Entity\UsuarioMeta e2
+                            WHERE
+                                e2.name = :metaUnidade AND
+                                e2.value = :unidade AND
+                                e2.usuario = e.usuario
+                        )
                 ')
                 ->setParameters([
                     'metaLocal'   => self::ATTR_ATENDIMENTO_LOCAL,

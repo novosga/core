@@ -29,12 +29,11 @@ class Dispatcher
     }
     
     /**
-     * 
+     *
      * @param string $name
      * @param mixed  $args
      */
     public function dispatch($name, $args)
     {
-        
     }
 }

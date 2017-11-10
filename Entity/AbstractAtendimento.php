@@ -198,12 +198,12 @@ abstract class AbstractAtendimento implements \JsonSerializable
         return $this;
     }
     
-    public function getDataAgendamento() 
+    public function getDataAgendamento()
     {
         return $this->dataAgendamento;
     }
 
-    public function setDataAgendamento(\DateTime $dataAgendamento = null) 
+    public function setDataAgendamento(\DateTime $dataAgendamento = null)
     {
         $this->dataAgendamento = $dataAgendamento;
         
