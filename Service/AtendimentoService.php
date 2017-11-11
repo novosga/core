@@ -16,7 +16,6 @@ use DateTime;
 use Exception;
 use Doctrine\DBAL\LockMode;
 use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\ORM\OptimisticLockException;
 use Novosga\Entity\Atendimento;
 use Novosga\Entity\AtendimentoMeta;
 use Novosga\Entity\AtendimentoCodificado;
@@ -30,6 +29,7 @@ use Novosga\Entity\Prioridade;
 use Novosga\Entity\Servico;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
+use Psr\Log\LoggerInterface;
 
 /**
  * AtendimentoService.
@@ -52,10 +52,16 @@ class AtendimentoService extends MetaModelService
      */
     private $dispatcher;
     
-    public function __construct(ObjectManager $em, Dispatcher $dispatcher)
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+    
+    public function __construct(ObjectManager $em, Dispatcher $dispatcher, LoggerInterface $logger)
     {
         parent::__construct($em);
         $this->dispatcher = $dispatcher;
+        $this->logger = $logger;
     }
     
     public static function situacoes()
@@ -543,28 +549,6 @@ class AtendimentoService extends MetaModelService
         if (!$su) {
             throw new Exception(_('Serviço não disponível para a unidade atual'));
         }
-
-        $contador = $this->em
-                        ->createQueryBuilder()
-                        ->select('e')
-                        ->from(Contador::class, 'e')
-                        ->where('e.unidade = :unidade')
-                        ->andWhere('e.servico = :servico')
-                        ->setParameters([
-                            'unidade' => $unidade->getId(),
-                            'servico' => $servico->getId()
-                        ])
-                        ->getQuery()
-                        ->getOneOrNullResult();
-        
-        if (!$contador) {
-            $contador = new Contador();
-            $contador->setUnidade($unidade);
-            $contador->setServico($servico);
-            $contador->setNumero($su->getNumeroInicial());
-            $this->em->persist($contador);
-            $this->em->flush();
-        }
         
         $atendimento = new Atendimento();
         $atendimento->setServicoUnidade($su);
@@ -573,71 +557,73 @@ class AtendimentoService extends MetaModelService
         $atendimento->setStatus(self::SENHA_EMITIDA);
         $atendimento->setLocal(null);
         $atendimento->getSenha()->setSigla($su->getSigla());
-        
+
         if ($cliente) {
             $atendimento->setCliente($cliente);
         }
 
         $this->dispatcher->dispatch('attending.pre-create', [$atendimento]);
         
-        $this->em->beginTransaction();
-
+        $conn = $this->em->getConnection();
+        $contadorTable = $this->em->getClassMetadata(Contador::class)->getTableName();
+        
         try {
-            $attempts = 5;
-            $this->em->lock($contador, LockMode::PESSIMISTIC_WRITE);
+            $stmt = $conn->prepare("
+                SELECT numero 
+                FROM {$contadorTable} 
+                WHERE
+                    unidade_id = :unidade AND
+                    servico_id = :servico
+                FOR UPDATE
+            ");
+            $stmt->bindValue('unidade', $unidade->getId());
+            $stmt->bindValue('servico', $servico->getId());
+            $stmt->execute();
+            $numeroAtual = (int) $stmt->fetchColumn();
+            $numeroSenha = $numeroAtual;
             
-            $numeroSenha = $contador->getNumero();
+            if (!$numeroAtual) {
+                throw new Exception();
+            }
             
-            do {
-                try {
-                    $atendimento->setDataChegada(new DateTime());
-                    $atendimento->getSenha()->setNumero($numeroSenha);
-
-                    $this->em->persist($atendimento);
-                    
-                    $numeroSenha += $su->getIncremento();
-                    if ($su->getNumeroFinal() > 0 && $numeroSenha > $su->getNumeroFinal()) {
-                        $numeroSenha = $su->getNumeroInicial();
-                    }
-                    
-                    $contador->setNumero($numeroSenha);
-                    
-                    $this->em->merge($contador);
-                    $this->em->commit();
-                    $this->em->flush();
-                    break;
-                } catch (OptimisticLockException $e) {
-                    --$attempts;
-                    if ($attempts <= 0) {
-                        throw $e;
-                    }
-                    usleep(100);
-                }
-            } while ($attempts > 0);
-
-            if ($attempts === 0) {
-                throw new Exception(_('Erro ao tentar gerar nova senha'));
+            $numeroSenha += $su->getIncremento();
+            if ($su->getNumeroFinal() > 0 && $numeroSenha > $su->getNumeroFinal()) {
+                $numeroSenha = $su->getNumeroInicial();
             }
 
-            if (!$atendimento || !$atendimento->getId()) {
-                throw new \Exception(
-                    sprintf(
-                        _('O último ID retornado pelo banco não é de um atendimento válido: %s'),
-                        $id
-                    )
-                );
+            $stmt = $conn->prepare("
+                UPDATE {$contadorTable} 
+                SET numero = :numero
+                WHERE
+                    unidade_id = :unidade AND
+                    servico_id = :servico AND
+                    numero = :numeroAtual
+            ");
+            $stmt->bindValue('numero', $numeroSenha);
+            $stmt->bindValue('unidade', $unidade->getId());
+            $stmt->bindValue('servico', $servico->getId());
+            $stmt->bindValue('numeroAtual', $numeroAtual);
+            $stmt->execute();
+            $success = $stmt->rowCount() === 1;
+            
+            if (!$success) {
+                throw new Exception();
             }
+            
+            $atendimento->setDataChegada(new DateTime());
+            $atendimento->getSenha()->setNumero($numeroSenha);
 
-            $this->dispatcher->dispatch('attending.create', $atendimento);
-
-            return $atendimento;
+            $this->em->persist($atendimento);
+            $this->em->flush();
         } catch (Exception $e) {
-            try {
-                $this->em->rollback();
-            } catch (Exception $ex) {
-            }
-            throw $e;
+            $this->logger->error($e->getMessage());
         }
+        
+        if (!$atendimento->getId()) {
+            throw new Exception(_('Erro ao tentar gerar nova senha'));
+        }
+        
+        return $atendimento;
     }
 
     /**
