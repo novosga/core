@@ -427,25 +427,37 @@ class AtendimentoService extends MetaModelService
      * Retorna o atendimento em andamento do usuario informado.
      *
      * @param int|Usuario $usuario
+     * @param int|Unidade $unidade
      *
      * @return Atendimento
      */
-    public function atendimentoAndamento($usuario)
+    public function atendimentoAndamento($usuario, $unidade = null)
     {
         $status = [
             self::CHAMADO_PELA_MESA,
             self::ATENDIMENTO_INICIADO,
         ];
         try {
-            return $this->em
-                ->createQuery("
-                    SELECT e FROM Novosga\Entity\Atendimento e
-                    WHERE
-                        e.usuario = :usuario AND
-                        e.status IN (:status)
-                ")
-                ->setParameter('usuario', $usuario)
-                ->setParameter('status', $status)
+            $qb = $this->em
+                ->createQueryBuilder()
+                ->select('e')
+                ->from(Atendimento::class, 'e')
+                ->where('e.usuario = :usuario')
+                ->andWhere('e.status IN (:status)');
+            
+            $params = [
+                'usuario' => $usuario,
+                'status' => $status,
+            ];
+            
+            if ($unidade) {
+                $qb->andWhere('e.unidade = :unidade');
+                $params['unidade'] = $unidade;
+            }
+            
+            return $qb
+                ->setParameters($params)
+                ->getQuery()
                 ->getOneOrNullResult();
         } catch (\Doctrine\ORM\NonUniqueResultException $e) {
             /*
