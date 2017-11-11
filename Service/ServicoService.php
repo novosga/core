@@ -12,6 +12,7 @@
 namespace Novosga\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Novosga\Entity\Contador;
 use Novosga\Entity\Local;
 use Novosga\Entity\Servico;
 use Novosga\Entity\ServicoMeta;
@@ -139,25 +140,49 @@ class ServicoService extends MetaModelService
         if ($local instanceof Local) {
             $local = $local->getId();
         }
+        
         $uniServTableName = $this->em->getClassMetadata(ServicoUnidade::class)->getTableName();
-        $servTableName = $this->em->getClassMetadata(Servico::class)->getTableName();
+        $servTableName    = $this->em->getClassMetadata(Servico::class)->getTableName();
+        $counterTableName = $this->em->getClassMetadata(Contador::class)->getTableName();
 
         // atualizando relacionamento entre unidade e servicos mestre
         $conn = $this->em->getConnection();
         $conn->executeUpdate("
-            INSERT INTO $uniServTableName
+            INSERT INTO {$uniServTableName}
                 (unidade_id, servico_id, local_id, sigla, ativo, peso, numero_inicial, incremento, prioridade)
             SELECT
                 :unidade, id, :local, :sigla, false, peso, 1, 1, 1
             FROM
-                $servTableName
+                {$servTableName}
             WHERE
                 macro_id IS NULL AND
-                id NOT IN (SELECT servico_id FROM $uniServTableName WHERE unidade_id = :unidade)
+                id NOT IN (
+                    SELECT servico_id FROM {$uniServTableName} WHERE unidade_id = :unidade
+                )
         ", [
             'unidade' => $unidade,
             'local'   => $local,
             'sigla'   => $sigla,
+        ]);
+        
+        $conn->executeUpdate("
+            INSERT INTO {$counterTableName}
+                (unidade_id, servico_id, numero)
+            SELECT
+                unidade_id, servico_id, 1
+            FROM
+                {$uniServTableName} su
+            WHERE
+                su.unidade_id = :unidade AND
+                NOT EXISTS (
+                    SELECT 1 
+                    FROM {$counterTableName} c2
+                    WHERE 
+                        c2.unidade_id = su.unidade_id AND
+                        c2.servico_id = su.servico_id
+                )
+        ", [
+            'unidade' => $unidade
         ]);
     }
 
