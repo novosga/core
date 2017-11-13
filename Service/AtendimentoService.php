@@ -528,9 +528,19 @@ class AtendimentoService extends MetaModelService
             throw new Exception(_('Prioridade inválida'));
         }
         
-        /*
-         * TODO: validar unidade x usuario x servico
-         */
+        if (!$usuario->isAdmin()) {
+            $lotacao = $this
+                ->em
+                ->getRepository(\Novosga\Entity\Lotacao::class)
+                ->findOneBy([
+                    'usuario' => $usuario,
+                    'unidade' => $unidade,
+                ]);
+
+            if (!$lotacao) {
+                throw new Exception(_('O usuário que está tentando distribuir senha não tem lotação na unidade escolhida.'));
+            }
+        }
         
         // verificando se o cliente ja existe
         if ($cliente) {
