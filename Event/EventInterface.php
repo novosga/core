@@ -9,31 +9,26 @@
  * file that was distributed with this source code.
  */
 
-namespace Novosga\Service;
+namespace Novosga\Event;
 
 /**
- * Dispatcher
+ * Event
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class Dispatcher
+interface EventInterface
 {
     /**
-     * @var Configuration
+     * Returns event name
+     * 
+     * @return string
      */
-    private $config;
-    
-    public function __construct(Configuration $config)
-    {
-        $this->config = $config;
-    }
+    public function getName(): string;
     
     /**
-     *
-     * @param string $name
-     * @param mixed  $args
+     * Returns event data
+     * 
+     * @return mixed
      */
-    public function dispatch($name, $args)
-    {
-    }
+    public function getData();
 }

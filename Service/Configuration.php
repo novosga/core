@@ -51,10 +51,14 @@ class Configuration
         $value  = null;
         $obj    = $this->default;
         $tokens = explode('.', $key);
-
+        
         foreach ($tokens as $prop) {
-            $value = $this->resolve($prop, $obj);
-            $obj   = $value;
+            if (is_array($obj)) {
+                $value = $this->resolve($prop, $obj);
+                $obj   = $value;
+            } else {
+                break;
+            }
         }
 
         return $value;
