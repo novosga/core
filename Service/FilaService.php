@@ -26,6 +26,11 @@ use Novosga\Entity\ServicoUsuario;
  */
 class FilaService extends ModelService
 {
+    const TIPO_TODOS       = 'todos';
+    const TIPO_NORMAL      = 'normal';
+    const TIPO_PRIORIDADE  = 'prioridade';
+    const TIPO_AGENDAMENTO = 'agendamento';
+    
     /**
      * @var Configuration
      */
@@ -42,12 +47,12 @@ class FilaService extends ModelService
      *
      * @param Unidade          $unidade
      * @param ServicoUsuario[] $servicosUsuario
-     * @param int              $tipoAtendimento
+     * @param string           $tipoFila
      * @param int              $maxResults
      *
      * @return array
      */
-    public function filaAtendimento(Unidade $unidade, $servicosUsuario, $tipoAtendimento = 1, $maxResults = 0)
+    public function filaAtendimento(Unidade $unidade, $servicosUsuario, $tipoFila = 1, $maxResults = 0)
     {
         $usuario = null;
         
@@ -63,10 +68,16 @@ class FilaService extends ModelService
             ->andWhere('servico.id IN (:servicos)');
         
         // se nao atende todos, filtra pelo tipo de atendimento
-        if ($tipoAtendimento !== 1) {
-            $s = ($tipoAtendimento === 2) ? '=' : '>';
-            $where = "prioridade.peso $s 0";
-            $builder->andWhere($where);
+        switch ($tipoFila) {
+            case self::TIPO_NORMAL:
+            case self::TIPO_PRIORIDADE:
+                $s = ($tipoFila === self::TIPO_NORMAL) ? '=' : '>';
+                $where = "prioridade.peso $s 0";
+                $builder->andWhere($where);
+                break;
+            case self::TIPO_AGENDAMENTO:
+                $builder->andWhere("atendimento.dataAgendamento IS NOT NULL");
+                break;
         }
         
         $params = [

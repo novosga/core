@@ -12,7 +12,7 @@
 namespace Novosga\Entity;
 
 /**
- * Classe auxiliar.
+ * Cliente.
  *
  * @author rogerio
  */

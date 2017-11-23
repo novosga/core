@@ -16,6 +16,7 @@ use DateTime;
 use Exception;
 use Doctrine\DBAL\LockMode;
 use Doctrine\Common\Persistence\ObjectManager;
+use Novosga\Entity\Agendamento;
 use Novosga\Entity\Atendimento;
 use Novosga\Entity\AtendimentoMeta;
 use Novosga\Entity\AtendimentoCodificado;
@@ -159,7 +160,7 @@ class AtendimentoService extends MetaModelService
 
         $this->dispatcher->createAndDispatch('attending.pre-reset', $unidade, true);
 
-        $data = (new \DateTime())->format('Y-m-d H:i:s');
+        $data = (new DateTime())->format('Y-m-d H:i:s');
 
         // tables name
         $historicoTable        = $this->em->getClassMetadata(AtendimentoHistorico::class)->getTableName();
@@ -486,18 +487,18 @@ class AtendimentoService extends MetaModelService
     /**
      * Gera um novo atendimento.
      *
-     * @param int|Unidade    $unidade
-     * @param int|Usuario    $usuario
-     * @param int|Servico    $servico
-     * @param int|Prioridade $prioridade
-     * @param string         $nomeCliente
-     * @param string         $documentoCliente
+     * @param int|Unidade       $unidade
+     * @param int|Usuario       $usuario
+     * @param int|Servico       $servico
+     * @param int|Prioridade    $prioridade
+     * @param Cliente|null      $cliente
+     * @param Agendamento|null  $agendamento
      *
      * @throws Exception
      *
      * @return Atendimento
      */
-    public function distribuiSenha($unidade, $usuario, $servico, $prioridade, Cliente $cliente = null)
+    public function distribuiSenha($unidade, $usuario, $servico, $prioridade, Cliente $cliente = null, Agendamento $agendamento = null)
     {
         // verificando a unidade
         if (!($unidade instanceof Unidade)) {
@@ -562,6 +563,11 @@ class AtendimentoService extends MetaModelService
             if ($clienteExistente) {
                 $cliente = $clienteExistente;
             }
+            
+            // evita gerar cliente sem nome e/ou documento
+            if (!$cliente->getDocumento() || !$cliente->getNome()) {
+                $cliente = null;
+            }
         }
 
         // verificando se o servico esta disponivel na unidade
@@ -579,6 +585,13 @@ class AtendimentoService extends MetaModelService
         $atendimento->setStatus(self::SENHA_EMITIDA);
         $atendimento->setLocal(null);
         $atendimento->getSenha()->setSigla($su->getSigla());
+        
+        if ($agendamento) {
+            $data = $agendamento->getData()->format('Y-m-d');
+            $hora = $agendamento->getHora()->format('H:i');
+            $dtAge = DateTime::createFromFormat('Y-m-d H:i', "{$data} {$hora}");
+            $atendimento->setDataAgendamento($dtAge);
+        }
 
         if ($cliente) {
             $atendimento->setCliente($cliente);
@@ -634,6 +647,10 @@ class AtendimentoService extends MetaModelService
             
             $atendimento->setDataChegada(new DateTime());
             $atendimento->getSenha()->setNumero($numeroSenha);
+            
+            if ($agendamento) {
+                $agendamento->setDataConfirmacao(new DateTime());
+            }
 
             $this->em->persist($atendimento);
             $this->em->flush();
@@ -854,7 +871,7 @@ class AtendimentoService extends MetaModelService
                 }
             }
             
-            $atendimento->setDataFim(new \DateTime);
+            $atendimento->setDataFim(new DateTime);
             $atendimento->setStatus(AtendimentoService::ATENDIMENTO_ENCERRADO);
             $this->em->merge($atendimento);
 
@@ -958,7 +975,7 @@ class AtendimentoService extends MetaModelService
             $statusAtual = [$statusAtual];
         }
 
-        $data = (new \DateTime())->format('Y-m-d H:i:s');
+        $data = (new DateTime())->format('Y-m-d H:i:s');
 
         $qb = $this->em->createQueryBuilder()
                 ->update(Atendimento::class, 'e')
