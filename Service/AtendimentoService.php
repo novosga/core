@@ -11,25 +11,27 @@
 
 namespace Novosga\Service;
 
-use PDO;
 use DateTime;
-use Exception;
-use Doctrine\DBAL\LockMode;
 use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\DBAL\LockMode;
+use Exception;
 use Novosga\Entity\Agendamento;
 use Novosga\Entity\Atendimento;
-use Novosga\Entity\AtendimentoMeta;
 use Novosga\Entity\AtendimentoCodificado;
+use Novosga\Entity\AtendimentoCodificadoHistorico;
 use Novosga\Entity\AtendimentoHistorico;
 use Novosga\Entity\AtendimentoHistoricoMeta;
-use Novosga\Entity\AtendimentoCodificadoHistorico;
+use Novosga\Entity\AtendimentoMeta;
 use Novosga\Entity\Cliente;
 use Novosga\Entity\Contador;
+use Novosga\Entity\Lotacao;
 use Novosga\Entity\PainelSenha;
 use Novosga\Entity\Prioridade;
 use Novosga\Entity\Servico;
+use Novosga\Entity\ServicoUnidade;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
+use PDO;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -171,7 +173,7 @@ class AtendimentoService extends MetaModelService
         $atendimentoMetaTable  = $this->em->getClassMetadata(AtendimentoMeta::class)->getTableName();
         $contadorTable         = $this->em->getClassMetadata(Contador::class)->getTableName();
         $painelSenhaTable      = $this->em->getClassMetadata(PainelSenha::class)->getTableName();
-        $servicoUnidadeTable   = $this->em->getClassMetadata(\Novosga\Entity\ServicoUnidade::class)->getTableName();
+        $servicoUnidadeTable   = $this->em->getClassMetadata(ServicoUnidade::class)->getTableName();
         
         $conn = $this->em->getConnection();
         $conn->beginTransaction();
@@ -532,7 +534,7 @@ class AtendimentoService extends MetaModelService
         if (!$usuario->isAdmin()) {
             $lotacao = $this
                 ->em
-                ->getRepository(\Novosga\Entity\Lotacao::class)
+                ->getRepository(Lotacao::class)
                 ->findOneBy([
                     'usuario' => $usuario,
                     'unidade' => $unidade,
@@ -543,40 +545,7 @@ class AtendimentoService extends MetaModelService
             }
         }
         
-        // verificando se o cliente ja existe
-        if ($cliente) {
-            $clienteExistente = null;
-            $clienteRepository = $this->em->getRepository(Cliente::class);
-            
-            if ($cliente->getId()) {
-                $clienteExistente = $clienteRepository->find($cliente->getId());
-            }
-            
-            if (!$clienteExistente && $cliente->getEmail()) {
-                $clienteExistente = $clienteRepository->findOneBy(['email' => $cliente->getEmail()]);
-            }
-            
-            if (!$clienteExistente && $cliente->getDocumento()) {
-                $clienteExistente = $clienteRepository->findOneBy(['documento' => $cliente->getDocumento()]);
-            }
-            
-            if ($clienteExistente) {
-                $cliente = $clienteExistente;
-            }
-            
-            // evita gerar cliente sem nome e/ou documento
-            if (!$cliente->getDocumento() || !$cliente->getNome()) {
-                $cliente = null;
-            }
-        }
-
-        // verificando se o servico esta disponivel na unidade
-        $service = new ServicoService($this->em);
-        $su = $service->servicoUnidade($unidade, $servico);
-        
-        if (!$su) {
-            throw new Exception(_('Serviço não disponível para a unidade atual'));
-        }
+        $su = $this->checkServicoUnidade($unidade, $servico);
         
         $atendimento = new Atendimento();
         $atendimento->setServicoUnidade($su);
@@ -592,9 +561,11 @@ class AtendimentoService extends MetaModelService
             $dtAge = DateTime::createFromFormat('Y-m-d H:i', "{$data} {$hora}");
             $atendimento->setDataAgendamento($dtAge);
         }
+        
+        $clienteValido = $this->getClienteValido($cliente);
 
-        if ($cliente) {
-            $atendimento->setCliente($cliente);
+        if ($clienteValido) {
+            $atendimento->setCliente($clienteValido);
         }
 
         $this->dispatcher->createAndDispatch('attending.pre-create', [$atendimento], true);
@@ -851,7 +822,7 @@ class AtendimentoService extends MetaModelService
                     throw new Exception(_('Serviço inválido'));
                 }
 
-                $codificado = new \Novosga\Entity\AtendimentoCodificado();
+                $codificado = new AtendimentoCodificado();
                 $codificado->setAtendimento($atendimento);
                 $codificado->setServico($servico);
                 $codificado->setPeso(1);
@@ -1017,5 +988,59 @@ class AtendimentoService extends MetaModelService
         $atual->setStatus($novoStatus);
 
         return $atual;
+    }
+    
+    public function checkServicoUnidade(Unidade $unidade, Servico $servico): ServicoUnidade
+    {
+        // verificando se o servico esta disponivel na unidade
+        $service = new ServicoService($this->em);
+        $su = $service->servicoUnidade($unidade, $servico);
+        
+        if (!$su) {
+            throw new Exception(_('Serviço não disponível para a unidade atual'));
+        }
+        
+        if (!$su->isAtivo()) {
+            throw new Exception(_('Serviço escolhido na está ativo na unidade desejada'));
+        }
+        
+        return $su;
+    }
+    
+    /**
+     * 
+     * @param Cliente $cliente
+     * @return Cliente
+     */
+    public function getClienteValido(Cliente $cliente)
+    {
+        // verificando se o cliente ja existe
+        if ($cliente) {
+            $clienteExistente = null;
+            $clienteRepository = $this->em->getRepository(Cliente::class);
+            
+            if ($cliente->getId()) {
+                $clienteExistente = $clienteRepository->find($cliente->getId());
+            }
+            
+            if (!$clienteExistente && $cliente->getEmail()) {
+                $clienteExistente = $clienteRepository->findOneBy(['email' => $cliente->getEmail()]);
+            }
+            
+            if (!$clienteExistente && $cliente->getDocumento()) {
+                $clienteExistente = $clienteRepository->findOneBy(['documento' => $cliente->getDocumento()]);
+            }
+            
+            if ($clienteExistente) {
+                $cliente = $clienteExistente;
+            }
+            
+            // evita gerar cliente sem nome e/ou documento
+            if (!$cliente->getDocumento() || !$cliente->getNome()) {
+                $cliente = null;
+            }
+        }
+        
+        return $cliente;
     }
 }
