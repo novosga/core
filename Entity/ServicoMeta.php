@@ -18,30 +18,13 @@ namespace Novosga\Entity;
  */
 class ServicoMeta extends Metadata
 {
-    /**
-     * @var Servico
-     */
-    private $servico;
-
-    public function getEntity()
-    {
-        return $this->getServico();
-    }
-
-    public function setEntity($entity)
-    {
-        $this->setServico($entity);
-    }
-
     public function getServico()
     {
-        return $this->servico;
+        return $this->getEntity();
     }
 
     public function setServico(Servico $servico)
     {
-        $this->servico = $servico;
-
-        return $this;
+        return $this->setEntity($servico);
     }
 }

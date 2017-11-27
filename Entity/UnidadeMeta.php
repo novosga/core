@@ -18,30 +18,13 @@ namespace Novosga\Entity;
  */
 class UnidadeMeta extends Metadata
 {
-    /**
-     * @var Unidade
-     */
-    private $unidade;
-
-    public function getEntity()
-    {
-        return $this->getUnidade();
-    }
-
-    public function setEntity($entity)
-    {
-        $this->setUnidade($entity);
-    }
-
     public function getUnidade()
     {
-        return $this->unidade;
+        return $this->getEntity();
     }
 
     public function setUnidade(Unidade $unidade)
     {
-        $this->unidade = $unidade;
-
-        return $this;
+        return $this->setEntity($unidade);
     }
 }

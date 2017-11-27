@@ -21,20 +21,29 @@ abstract class Metadata implements \JsonSerializable
     /**
      * @var string
      */
-    private $name;
+    protected $name;
 
     /**
      * @var mixed
      */
-    private $value;
-
-    public function __construct()
+    protected $value;
+    
+    /**
+     * @var mixed
+     */
+    protected $entity;
+    
+    public function setEntity($entity)
     {
+        $this->entity = $entity;
+        
+        return $this;
     }
-
-    abstract public function setEntity($entity);
-
-    abstract public function getEntity();
+    
+    public function getEntity()
+    {
+        return $this->entity;
+    }
 
     public function getName()
     {

@@ -19,29 +19,15 @@ namespace Novosga\Entity;
 class UsuarioMeta extends Metadata
 {
     /**
-     * @var Usuario
+     * @return Usuario
      */
-    private $usuario;
-
-    public function getEntity()
-    {
-        return $this->getUsuario();
-    }
-
-    public function setEntity($entity)
-    {
-        $this->setUsuario($entity);
-    }
-
     public function getUsuario()
     {
-        return $this->usuario;
+        return $this->getEntity();
     }
 
     public function setUsuario(Usuario $usuario)
     {
-        $this->usuario = $usuario;
-
-        return $this;
+        return $this->setEntity($usuario);
     }
 }

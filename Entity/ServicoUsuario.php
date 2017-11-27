@@ -19,8 +19,6 @@ namespace Novosga\Entity;
  */
 class ServicoUsuario implements \JsonSerializable
 {
-    // (bug ao tentar mapear ServicoUnidade: composite primary key as part of the primary key of another entity)
-
     /**
      * @var Servico
      */
@@ -45,12 +43,6 @@ class ServicoUsuario implements \JsonSerializable
     {
     }
     
-    public function setServicoUnidade(ServicoUnidade $servicoUnidade)
-    {
-        $this->setServico($servicoUnidade->getServico());
-        $this->setUnidade($servicoUnidade->getUnidade());
-    }
-
     public function getServico()
     {
         return $this->servico;

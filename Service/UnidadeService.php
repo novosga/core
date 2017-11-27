@@ -19,18 +19,8 @@ use Novosga\Entity\UnidadeMeta;
  *
  * @author Rogério Lino <rogeriolino@gmail.com>
  */
-class UnidadeService extends MetaModelService
+class UnidadeService extends StorageAwareService
 {
-    protected function getMetaClass()
-    {
-        return UnidadeMeta::class;
-    }
-
-    protected function getMetaFieldname()
-    {
-        return 'unidade';
-    }
-
     /**
      * Cria ou retorna um metadado da unidade caso o $value seja null (ou ocultado).
      *
@@ -42,6 +32,14 @@ class UnidadeService extends MetaModelService
      */
     public function meta(Unidade $unidade, $name, $value = null)
     {
-        return $this->modelMetadata($unidade, $name, $value);
+        $repo = $this->storage->getRepository(UnidadeMeta::class);
+        
+        if ($value === null) {
+            $metadata = $repo->get($unidade, $name);
+        } else {
+            $metadata = $repo->set($unidade, $name, $value);
+        }
+        
+        return $metadata;
     }
 }

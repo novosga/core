@@ -16,22 +16,15 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class AtendimentoHistoricoMeta extends AbstractAtendimentoMeta
+class AtendimentoHistoricoMeta extends Metadata
 {
-    /**
-     * @var AtendimentoHistorico
-     */
-    private $atendimento;
-
     public function getAtendimento()
     {
-        return $this->atendimento;
+        return $this->getEntity();
     }
 
-    public function setAtendimento(AbstractAtendimento $atendimento)
+    public function setAtendimento(AtendimentoHistorico $atendimento)
     {
-        $this->atendimento = $atendimento;
-
-        return $this;
+        return $this->setEntity($atendimento);
     }
 }

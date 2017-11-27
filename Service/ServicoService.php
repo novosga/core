@@ -12,8 +12,6 @@
 namespace Novosga\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Novosga\Entity\Contador;
-use Novosga\Entity\Local;
 use Novosga\Entity\Servico;
 use Novosga\Entity\ServicoMeta;
 use Novosga\Entity\ServicoUnidade;
@@ -25,18 +23,8 @@ use Novosga\Entity\Usuario;
  *
  * @author Rogério Lino <rogeriolino@gmail.com>
  */
-class ServicoService extends MetaModelService
+class ServicoService extends StorageAwareService
 {
-    protected function getMetaClass()
-    {
-        return ServicoMeta::class;
-    }
-
-    protected function getMetaFieldname()
-    {
-        return 'servico';
-    }
-
     /**
      * Cria ou retorna um metadado do serviço caso o $value seja null (ou ocultado).
      *
@@ -48,169 +36,58 @@ class ServicoService extends MetaModelService
      */
     public function meta(Servico $servico, $name, $value = null)
     {
-        return $this->modelMetadata($servico, $name, $value);
-    }
-
-    /**
-     * Retorna todos os serviços disponíveis.
-     *
-     * @return ArrayCollection
-     */
-    public function servicos()
-    {
-        // servicos globais
-        return $this->em->createQuery('
-                SELECT
-                    e.id, e.nome
-                FROM
-                    Novosga\Entity\Servico e
-                ORDER BY
-                    e.nome ASC
-            ')->getResult();
+        $repo = $this->storage->getRepository(ServicoMeta::class);
+        
+        if ($value === null) {
+            $metadata = $repo->get($servico, $name);
+        } else {
+            $metadata = $repo->set($servico, $name, $value);
+        }
+        
+        return $metadata;
     }
 
     /**
      * Retorna a lista de serviços ativos.
      *
-     * @param Unidade|int               $unidade
-     * @param string                    $where
+     * @param Unidade|int   $unidade
+     * @param array         $where
      *
      * @return ArrayCollection
      */
-    public function servicosUnidade($unidade, $where = '')
+    public function servicosUnidade($unidade, array $where = [])
     {
-        $dql = "
-            SELECT e 
-            FROM Novosga\Entity\ServicoUnidade e
-            JOIN e.servico s
-            WHERE
-                e.unidade = :unidade AND
-                s.deletedAt IS NULL
-        ";
-        
-        if (!empty($where)) {
-            $dql .= " AND $where ";
-        }
-        
-        $dql .= ' ORDER BY s.nome';
-
-        return $this->em
-                ->createQuery($dql)
-                ->setParameter('unidade', $unidade)
-                ->getResult();
-    }
-
-    /**
-     * Retorna o relacionamento entre o serviço e a unidade.
-     *
-     * @param Unidade|int $unidade
-     * @param Servico|int $servico
-     *
-     * @return ServicoUnidade
-     */
-    public function servicoUnidade($unidade, $servico)
-    {
-        return $this->em
-                ->createQuery('
-                    SELECT e
-                    FROM Novosga\Entity\ServicoUnidade e
-                    JOIN e.servico s
-                    WHERE
-                        s = :servico AND
-                        e.unidade = :unidade AND
-                        s.deletedAt IS NULL
-                ')
-                ->setParameter('servico', $servico)
-                ->setParameter('unidade', $unidade)
-                ->getOneOrNullResult();
-    }
-
-    /**
-     * Atualiza a unidade com serviços ainda não liberados.
-     *
-     * @param Unidade|interger $unidade
-     * @param Local|int        $local
-     * @param string           $sigla
-     */
-    public function updateUnidade($unidade, $local, $sigla)
-    {
-        if ($unidade instanceof Unidade) {
-            $unidade = $unidade->getId();
-        }
-        if ($local instanceof Local) {
-            $local = $local->getId();
-        }
-        
-        $uniServTableName = $this->em->getClassMetadata(ServicoUnidade::class)->getTableName();
-        $servTableName    = $this->em->getClassMetadata(Servico::class)->getTableName();
-        $counterTableName = $this->em->getClassMetadata(Contador::class)->getTableName();
-
-        // atualizando relacionamento entre unidade e servicos mestre
-        $conn = $this->em->getConnection();
-        $conn->executeUpdate("
-            INSERT INTO {$uniServTableName}
-                (unidade_id, servico_id, local_id, sigla, ativo, peso, numero_inicial, incremento, prioridade)
-            SELECT
-                :unidade, id, :local, :sigla, false, peso, 1, 1, 1
-            FROM
-                {$servTableName}
-            WHERE
-                macro_id IS NULL AND
-                id NOT IN (
-                    SELECT servico_id FROM {$uniServTableName} WHERE unidade_id = :unidade
-                )
-        ", [
+        $params = [
             'unidade' => $unidade,
-            'local'   => $local,
-            'sigla'   => $sigla,
-        ]);
-        
-        $conn->executeUpdate("
-            INSERT INTO {$counterTableName}
-                (unidade_id, servico_id, numero)
-            SELECT
-                unidade_id, servico_id, 1
-            FROM
-                {$uniServTableName} su
-            WHERE
-                su.unidade_id = :unidade AND
-                NOT EXISTS (
-                    SELECT 1 
-                    FROM {$counterTableName} c2
-                    WHERE 
-                        c2.unidade_id = su.unidade_id AND
-                        c2.servico_id = su.servico_id
-                )
-        ", [
-            'unidade' => $unidade
-        ]);
-    }
+        ];
 
-    /**
-     * Retorna os servicos do usuario na unidade.
-     *
-     * @param Unidade|int $unidade
-     * @param Usuario|int $usuario
-     *
-     * @return ArrayCollection
-     */
-    public function servicosUsuario($unidade, $usuario)
-    {
-        return $this->em->createQuery("
-                SELECT
-                    e
-                FROM
-                    Novosga\Entity\ServicoUsuario e
-                    JOIN
-                        e.servico s
-                WHERE
-                    e.usuario = :usuario AND
-                    e.unidade = :unidade AND
-                    s.ativo = TRUE
-            ")
-                ->setParameter('usuario', $usuario)
-                ->setParameter('unidade', $unidade)
-                ->getResult();
+        $qb = $this->storage
+            ->getManager()
+            ->createQueryBuilder()
+            ->select('e')
+            ->from(ServicoUnidade::class, 'e')
+            ->join('e.servico', 's')
+            ->where('e.unidade = :unidade')
+            ->andWhere('s.deletedAt IS NULL')
+            ->orderBy('s.nome', 'ASC');
+        
+        foreach ($where as $k => $v) {
+            if (is_array($v)) {
+                $qb->andWhere("e.{$k} IN (:{$k})");
+            } else if (is_string($v)) {
+                $qb->andWhere("e.{$k} LIKE :{$k}");
+            } else {
+                $qb->andWhere("e.{$k} = :{$k}");
+            }
+            $params[$k] = $v;
+        }
+                
+        $servicos = $qb
+            ->setParameters($params)
+            ->getQuery()
+            ->getResult();
+                
+        return $servicos;
     }
 
     /**
@@ -223,7 +100,9 @@ class ServicoService extends MetaModelService
      */
     public function servicosIndisponiveis($unidade, $usuario)
     {
-        return $this->em->createQuery("
+        return $this->storage
+            ->getManager()
+            ->createQuery("
                 SELECT
                     e
                 FROM
@@ -240,8 +119,8 @@ class ServicoService extends MetaModelService
                         WHERE a.usuario = :usuario AND a.unidade = :unidade
                     )
             ")
-                ->setParameter('usuario', $usuario)
-                ->setParameter('unidade', $unidade)
-                ->getResult();
+            ->setParameter('usuario', $usuario)
+            ->setParameter('unidade', $unidade)
+            ->getResult();
     }
 }

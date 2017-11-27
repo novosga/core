@@ -38,11 +38,6 @@ abstract class AbstractAtendimento implements \JsonSerializable
     protected $servico;
 
     /**
-     * @var ServicoUnidade
-     */
-    private $servicoUnidade;
-
-    /**
      * @var Usuario
      */
     protected $usuario;
@@ -144,20 +139,6 @@ abstract class AbstractAtendimento implements \JsonSerializable
     public function setServico($servico)
     {
         $this->servico = $servico;
-
-        return $this;
-    }
-
-    public function getServicoUnidade()
-    {
-        return $this->servicoUnidade;
-    }
-
-    public function setServicoUnidade(ServicoUnidade $servicoUnidade)
-    {
-        $this->servicoUnidade = $servicoUnidade;
-        $this->setServico($servicoUnidade->getServico());
-        $this->setUnidade($servicoUnidade->getUnidade());
 
         return $this;
     }
@@ -389,8 +370,8 @@ abstract class AbstractAtendimento implements \JsonSerializable
             'id'             => $this->getId(),
             'senha'          => $this->getSenha(),
             'servico'        => [
-                'id'   => $this->getServicoUnidade()->getServico()->getId(),
-                'nome' => $this->getServicoUnidade()->getServico()->getNome(),
+                'id'   => $this->getServico()->getId(),
+                'nome' => $this->getServico()->getNome(),
             ],
             'chegada'        => $this->getDataChegada()->format('Y-m-d H:i:s'),
             'espera'         => $this->getTempoEspera()->format('%H:%I:%S'),

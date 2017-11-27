@@ -18,30 +18,13 @@ namespace Novosga\Entity;
  */
 class ClienteMeta extends Metadata
 {
-    /**
-     * @var Cliente
-     */
-    private $cliente;
-
     public function getCliente()
     {
-        return $this->cliente;
+        return $this->getEntity();
     }
 
     public function setCliente(Cliente $cliente)
     {
-        $this->cliente = $cliente;
-
-        return $this;
-    }
-    
-    public function getEntity()
-    {
-        return $this->getCliente();
-    }
-
-    public function setEntity($entity)
-    {
-        $this->setCliente($entity);
+        return $this->setEntity($cliente);
     }
 }

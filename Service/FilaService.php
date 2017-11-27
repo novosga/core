@@ -12,19 +12,20 @@
 namespace Novosga\Service;
 
 use Doctrine\ORM\QueryBuilder;
-use Doctrine\Common\Persistence\ObjectManager;
+use Novosga\Entity\Atendimento;
 use Novosga\Entity\Servico;
+use Novosga\Entity\ServicoUnidade;
+use Novosga\Entity\ServicoUsuario;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
-use Novosga\Entity\Atendimento;
-use Novosga\Entity\ServicoUsuario;
+use Novosga\Infrastructure\StorageInterface;
 
 /**
  * FilaService
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class FilaService extends ModelService
+class FilaService extends StorageAwareService
 {
     const TIPO_TODOS       = 'todos';
     const TIPO_NORMAL      = 'normal';
@@ -36,9 +37,9 @@ class FilaService extends ModelService
      */
     private $config;
     
-    public function __construct(ObjectManager $em, Configuration $config)
+    public function __construct(StorageInterface $storage, Configuration $config)
     {
-        parent::__construct($em);
+        parent::__construct($storage);
         $this->config = $config;
     }
 
@@ -64,7 +65,7 @@ class FilaService extends ModelService
         
         $builder = $this->builder($usuario)
             ->andWhere('atendimento.status = :status')
-            ->andWhere('servicoUnidade.unidade = :unidade')
+            ->andWhere('atendimento.unidade = :unidade')
             ->andWhere('servico.id IN (:servicos)');
         
         // se nao atende todos, filtra pelo tipo de atendimento
@@ -81,8 +82,8 @@ class FilaService extends ModelService
         }
         
         $params = [
-            'status' => AtendimentoService::SENHA_EMITIDA,
-            'unidade' => $unidade,
+            'status'   => AtendimentoService::SENHA_EMITIDA,
+            'unidade'  => $unidade,
             'servicos' => $ids
         ];
         
@@ -130,8 +131,8 @@ class FilaService extends ModelService
         
         $builder
             ->where('atendimento.status = :status')
-            ->andWhere('servicoUnidade.unidade = :unidade')
-            ->andWhere('servicoUnidade.servico = :servico');
+            ->andWhere('atendimento.unidade = :unidade')
+            ->andWhere('atendimento.servico = :servico');
         
         $this->applyOrders($builder, $unidade);
 
@@ -148,18 +149,25 @@ class FilaService extends ModelService
      */
     private function builder()
     {
-        $qb = $this->em
+        $qb = $this->storage
+            ->getManager()
             ->createQueryBuilder()
             ->select([
                 'atendimento',
                 'prioridade',
-                'servicoUnidade',
-                'servico'
+                'unidade',
+                'servico',
             ])
             ->from(Atendimento::class, 'atendimento')
             ->join('atendimento.prioridade', 'prioridade')
-            ->join('atendimento.servicoUnidade', 'servicoUnidade')
-            ->join('servicoUnidade.servico', 'servico');
+            ->join('atendimento.unidade', 'unidade')
+            ->join('atendimento.servico', 'servico')
+            ->join(
+                ServicoUnidade::class,
+                'servicoUnidade',
+                'WITH',
+                'servicoUnidade.unidade = unidade AND servicoUnidade.servico = servico'
+            );
         
         return $qb;
     }

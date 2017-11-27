@@ -12,30 +12,21 @@
 namespace Novosga\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Novosga\Entity\ServicoUsuario;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
-use Novosga\Entity\ServicoUsuario;
+use Novosga\Entity\UsuarioMeta;
 
 /**
  * UsuarioService.
  *
  * @author Rogério Lino <rogeriolino@gmail.com>
  */
-class UsuarioService extends MetaModelService
+class UsuarioService extends StorageAwareService
 {
     const ATTR_ATENDIMENTO_LOCAL = 'atendimento.local';
-    const ATTR_ATENDIMENTO_TIPO = 'atendimento.tipo';
-    const ATTR_UNIDADE = 'unidade';
-
-    protected function getMetaClass()
-    {
-        return 'Novosga\Entity\UsuarioMeta';
-    }
-
-    protected function getMetaFieldname()
-    {
-        return 'usuario';
-    }
+    const ATTR_ATENDIMENTO_TIPO  = 'atendimento.tipo';
+    const ATTR_UNIDADE           = 'unidade';
 
     /**
      * Cria ou retorna um metadado do usuário caso o $value seja null (ou ocultado).
@@ -44,11 +35,19 @@ class UsuarioService extends MetaModelService
      * @param string  $name
      * @param string  $value
      *
-     * @return \Novosga\Entity\UsuarioMeta
+     * @return UsuarioMeta
      */
     public function meta(Usuario $usuario, $name, $value = null)
     {
-        return $this->modelMetadata($usuario, $name, $value);
+        $repo = $this->storage->getRepository(UsuarioMeta::class);
+        
+        if ($value === null) {
+            $metadata = $repo->get($usuario, $name);
+        } else {
+            $metadata = $repo->set($usuario, $name, $value);
+        }
+        
+        return $metadata;
     }
 
     /**
@@ -61,50 +60,54 @@ class UsuarioService extends MetaModelService
      */
     public function servicos(Usuario $usuario, Unidade $unidade)
     {
-        $servicos = $this->em
-                ->createQueryBuilder()
-                ->select('e')
-                ->from(ServicoUsuario::class, 'e')
-                ->join('e.servico', 's')
-                ->where('e.usuario = :usuario AND e.unidade = :unidade AND s.ativo = TRUE')
-                ->orderBy('s.nome', 'ASC')
-                ->setParameters([
-                    'usuario' => $usuario,
-                    'unidade' => $unidade
-                ])
-                ->getQuery()
-                ->getResult();
+        $servicos = $this->storage
+            ->getManager()
+            ->createQueryBuilder()
+            ->select('e')
+            ->from(ServicoUsuario::class, 'e')
+            ->join('e.servico', 's')
+            ->where('e.usuario = :usuario')
+            ->andWhere('e.unidade = :unidade')
+            ->andWhere('s.ativo = TRUE')
+            ->orderBy('s.nome', 'ASC')
+            ->setParameters([
+                'usuario' => $usuario,
+                'unidade' => $unidade
+            ])
+            ->getQuery()
+            ->getResult();
         
         return $servicos;
     }
 
     public function isLocalLivre($unidade, $usuario, $numero)
     {
-        $count = (int) $this->em
-                ->createQuery('
-                    SELECT
-                        COUNT(1)
-                    FROM
-                        Novosga\Entity\UsuarioMeta e
-                    WHERE
-                        (e.name = :metaLocal AND e.value = :numero AND e.usuario != :usuario)
-                        AND EXISTS (
-                            SELECT e2
-                            FROM Novosga\Entity\UsuarioMeta e2
-                            WHERE
-                                e2.name = :metaUnidade AND
-                                e2.value = :unidade AND
-                                e2.usuario = e.usuario
-                        )
-                ')
-                ->setParameters([
-                    'metaLocal'   => self::ATTR_ATENDIMENTO_LOCAL,
-                    'numero'      => $numero,
-                    'usuario'     => $usuario,
-                    'metaUnidade' => self::ATTR_UNIDADE,
-                    'unidade'     => $unidade,
-                ])
-                ->getSingleScalarResult();
+        $count = (int) $this->storage
+            ->getManager()
+            ->createQuery('
+                SELECT
+                    COUNT(1)
+                FROM
+                    Novosga\Entity\UsuarioMeta e
+                WHERE
+                    (e.name = :metaLocal AND e.value = :numero AND e.usuario != :usuario)
+                    AND EXISTS (
+                        SELECT e2
+                        FROM Novosga\Entity\UsuarioMeta e2
+                        WHERE
+                            e2.name = :metaUnidade AND
+                            e2.value = :unidade AND
+                            e2.usuario = e.usuario
+                    )
+            ')
+            ->setParameters([
+                'metaLocal'   => self::ATTR_ATENDIMENTO_LOCAL,
+                'numero'      => $numero,
+                'usuario'     => $usuario,
+                'metaUnidade' => self::ATTR_UNIDADE,
+                'unidade'     => $unidade,
+            ])
+            ->getSingleScalarResult();
 
         return $count === 0;
     }

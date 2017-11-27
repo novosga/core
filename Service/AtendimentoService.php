@@ -12,18 +12,12 @@
 namespace Novosga\Service;
 
 use DateTime;
-use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\DBAL\LockMode;
 use Exception;
 use Novosga\Entity\Agendamento;
 use Novosga\Entity\Atendimento;
 use Novosga\Entity\AtendimentoCodificado;
-use Novosga\Entity\AtendimentoCodificadoHistorico;
-use Novosga\Entity\AtendimentoHistorico;
-use Novosga\Entity\AtendimentoHistoricoMeta;
 use Novosga\Entity\AtendimentoMeta;
 use Novosga\Entity\Cliente;
-use Novosga\Entity\Contador;
 use Novosga\Entity\Lotacao;
 use Novosga\Entity\PainelSenha;
 use Novosga\Entity\Prioridade;
@@ -31,7 +25,7 @@ use Novosga\Entity\Servico;
 use Novosga\Entity\ServicoUnidade;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
-use PDO;
+use Novosga\Infrastructure\StorageInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -39,7 +33,7 @@ use Psr\Log\LoggerInterface;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class AtendimentoService extends MetaModelService
+class AtendimentoService extends StorageAwareService
 {
     // estados do atendimento
     const SENHA_EMITIDA         = 'emitida';
@@ -60,11 +54,14 @@ class AtendimentoService extends MetaModelService
      */
     private $logger;
     
-    public function __construct(ObjectManager $em, EventDispatcher $dispatcher, LoggerInterface $logger)
-    {
-        parent::__construct($em);
+    public function __construct(
+        StorageInterface $storage,
+        EventDispatcher $dispatcher,
+        LoggerInterface $logger
+    ) {
+        parent::__construct($storage);
         $this->dispatcher = $dispatcher;
-        $this->logger = $logger;
+        $this->logger     = $logger;
     }
     
     public static function situacoes()
@@ -87,16 +84,6 @@ class AtendimentoService extends MetaModelService
         return $arr[$status];
     }
 
-    protected function getMetaClass()
-    {
-        return AtendimentoMeta::class;
-    }
-
-    protected function getMetaFieldname()
-    {
-        return 'atendimento';
-    }
-
     /**
      * Cria ou retorna um metadado do atendimento caso o $value seja null (ou ocultado).
      *
@@ -108,7 +95,15 @@ class AtendimentoService extends MetaModelService
      */
     public function meta(Atendimento $atendimento, $name, $value = null)
     {
-        return $this->modelMetadata($atendimento, $name, $value);
+        $repo = $this->storage->getRepository(AtendimentoMeta::class);
+        
+        if ($value === null) {
+            $metadata = $repo->get($atendimento, $name);
+        } else {
+            $metadata = $repo->set($atendimento, $name, $value);
+        }
+        
+        return $metadata;
     }
 
     /**
@@ -119,26 +114,36 @@ class AtendimentoService extends MetaModelService
      */
     public function chamarSenha(Unidade $unidade, Atendimento $atendimento)
     {
+        $unidade = $atendimento->getUnidade();
+        $servico = $atendimento->getServico();
+        
+        $su = $this->storage
+            ->getRepository(ServicoUnidade::class)
+            ->get($unidade, $servico);
+        
         $senha = new PainelSenha();
         $senha->setUnidade($unidade);
-        $senha->setServico($atendimento->getServicoUnidade()->getServico());
+        $senha->setServico($servico);
         $senha->setNumeroSenha($atendimento->getSenha()->getNumero());
         $senha->setSiglaSenha($atendimento->getSenha()->getSigla());
-        $senha->setMensagem($atendimento->getServicoUnidade()->getMensagem() . '');
+        $senha->setMensagem($su->getMensagem() . '');
         // local
-        $senha->setLocal($atendimento->getServicoUnidade()->getLocal()->getNome());
+        $senha->setLocal($su->getLocal()->getNome());
         $senha->setNumeroLocal($atendimento->getLocal());
         // prioridade
         $senha->setPeso($atendimento->getPrioridade()->getPeso());
         $senha->setPrioridade($atendimento->getPrioridade()->getNome());
         // cliente
-        $senha->setNomeCliente($atendimento->getCliente()->getNome());
-        $senha->setDocumentoCliente($atendimento->getCliente()->getDocumento());
+        if ($atendimento->getCliente()) {
+            $senha->setNomeCliente($atendimento->getCliente()->getNome());
+            $senha->setDocumentoCliente($atendimento->getCliente()->getDocumento());
+        }
 
         $this->dispatcher->createAndDispatch('panel.pre-call', [$atendimento, $senha], true);
 
-        $this->em->persist($senha);
-        $this->em->flush();
+        $om = $this->storage->getManager();
+        $om->persist($senha);
+        $om->flush();
 
         $this->dispatcher->createAndDispatch('panel.call', [$atendimento, $senha], true);
     }
@@ -157,205 +162,36 @@ class AtendimentoService extends MetaModelService
             $unidadeId = $unidade->getId();
         } else {
             $unidadeId = max($unidade, 0);
-            $unidade = ($unidadeId > 0) ? $this->em->find('Novosga\Entity\Unidade', $unidadeId) : null;
+            $unidade   = null;
+            if ($unidadeId > 0) {
+                $unidade = $this->storage->find('Novosga\Entity\Unidade', $unidadeId);
+            }
         }
 
         $this->dispatcher->createAndDispatch('attending.pre-reset', $unidade, true);
 
-        $data = (new DateTime())->format('Y-m-d H:i:s');
-
-        // tables name
-        $historicoTable        = $this->em->getClassMetadata(AtendimentoHistorico::class)->getTableName();
-        $historicoCodifTable   = $this->em->getClassMetadata(AtendimentoCodificadoHistorico::class)->getTableName();
-        $historicoMetaTable    = $this->em->getClassMetadata(AtendimentoHistoricoMeta::class)->getTableName();
-        $atendimentoTable      = $this->em->getClassMetadata(Atendimento::class)->getTableName();
-        $atendimentoCodifTable = $this->em->getClassMetadata(AtendimentoCodificado::class)->getTableName();
-        $atendimentoMetaTable  = $this->em->getClassMetadata(AtendimentoMeta::class)->getTableName();
-        $contadorTable         = $this->em->getClassMetadata(Contador::class)->getTableName();
-        $painelSenhaTable      = $this->em->getClassMetadata(PainelSenha::class)->getTableName();
-        $servicoUnidadeTable   = $this->em->getClassMetadata(ServicoUnidade::class)->getTableName();
-        
-        $conn = $this->em->getConnection();
-        $conn->beginTransaction();
-
-        try {
-            $conn->exec('SET foreign_key_checks = 0');
-            
-            // copia os atendimentos para o historico
-            $sql = "
-                INSERT INTO {$historicoTable}
-                (
-                    id, unidade_id, usuario_id, servico_id, prioridade_id, status,
-                    senha_sigla, senha_numero, cliente_id, num_local, dt_cheg,
-                    dt_cha, dt_ini, dt_fim, usuario_tri_id, atendimento_id
-                )
-                SELECT
-                    a.id, a.unidade_id, a.usuario_id, a.servico_id, a.prioridade_id, a.status,
-                    a.senha_sigla, a.senha_numero, a.cliente_id, a.num_local, a.dt_cheg,
-                    a.dt_cha, a.dt_ini, a.dt_fim, a.usuario_tri_id, a.atendimento_id
-                FROM
-                    {$atendimentoTable} a
-                WHERE
-                    a.dt_cheg <= :data AND (a.unidade_id = :unidade OR :unidade = 0)
-            ";
-
-            // atendimentos pais (nao oriundos de redirecionamento)
-            $query = $conn->prepare("$sql AND a.atendimento_id IS NULL");
-            $query->bindValue('data', $data, PDO::PARAM_STR);
-            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
-            $query->execute();
-
-            // atendimentos filhos (oriundos de redirecionamento)
-            $query = $conn->prepare("{$sql} AND a.atendimento_id IS NOT NULL");
-            $query->bindValue('data', $data, PDO::PARAM_STR);
-            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
-            $query->execute();
-
-            // copia os metadados
-            $sql = "
-                INSERT INTO $historicoMetaTable
-                (
-                    atendimento_id, name, value
-                )
-                SELECT
-                    a.atendimento_id, a.name, a.value
-                FROM
-                    {$atendimentoMetaTable}  a
-                WHERE
-                    a.atendimento_id IN (
-                        SELECT b.id
-                        FROM {$atendimentoTable} b
-                        WHERE
-                            b.dt_cheg <= :data AND
-                            (b.unidade_id = :unidade OR :unidade = 0)
-                    )
-            ";
-            $query = $conn->prepare($sql);
-            $query->bindValue('data', $data, PDO::PARAM_STR);
-            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
-            $query->execute();
-
-            // copia os atendimentos codificados para o historico
-            $query = $conn->prepare("
-                INSERT INTO $historicoCodifTable 
-                (
-                    atendimento_id, servico_id, valor_peso
-                )
-                SELECT
-                    ac.atendimento_id, ac.servico_id, ac.valor_peso
-                FROM
-                    {$atendimentoCodifTable} ac
-                    JOIN {$atendimentoTable} a ON a.id = ac.atendimento_id
-                WHERE
-                    a.dt_cheg <= :data AND 
-                    (a.unidade_id = :unidade OR :unidade = 0)
-            ");
-            $query->bindValue('data', $data, PDO::PARAM_STR);
-            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
-            $query->execute();
-
-            // limpa atendimentos codificados
-            $query = $conn->prepare("
-                DELETE FROM {$atendimentoCodifTable}
-                WHERE atendimento_id IN (
-                    SELECT id
-                    FROM {$atendimentoTable}
-                    WHERE
-                        dt_cheg <= :data AND
-                        (unidade_id = :unidade OR :unidade = 0)
-                )
-            ");
-            $query->bindValue('data', $data, PDO::PARAM_STR);
-            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
-            $query->execute();
-
-            // limpa metadata
-            $query = $conn->prepare("
-                DELETE FROM {$atendimentoMetaTable}
-                WHERE atendimento_id IN (
-                    SELECT id
-                    FROM {$atendimentoTable}
-                    WHERE
-                        dt_cheg <= :data AND
-                        (unidade_id = :unidade OR :unidade = 0)
-                )
-            ");
-            $query->bindValue('data', $data, PDO::PARAM_STR);
-            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
-            $query->execute();
-
-            // limpa o auto-relacionamento para poder excluir os atendimento sem dar erro de constraint (#136)
-            $query = $conn->prepare("
-                DELETE FROM {$atendimentoTable}
-                WHERE
-                    atendimento_id IS NOT NULL AND
-                    dt_cheg <= :data AND
-                    (unidade_id = :unidade OR :unidade = 0)
-            ");
-            $query->bindValue('data', $data, PDO::PARAM_STR);
-            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
-            $query->execute();
-
-            // limpa atendimentos da unidade
-            $query = $conn->prepare("
-                DELETE FROM {$atendimentoTable}
-                WHERE 
-                    dt_cheg <= :data AND
-                    (unidade_id = :unidade OR :unidade = 0)
-            ");
-            $query->bindValue('data', $data, PDO::PARAM_STR);
-            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
-            $query->execute();
-
-            // limpa a tabela de senhas a serem exibidas no painel
-            $query = $conn->prepare("
-                DELETE FROM {$painelSenhaTable}
-                WHERE (unidade_id = :unidade OR :unidade = 0)
-            ");
-            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
-            $query->execute();
-
-            // reinicia o contador das senhas
-            $query = $conn->prepare("
-                UPDATE {$contadorTable}
-                SET numero = (
-                    SELECT su.numero_inicial
-                    FROM {$servicoUnidadeTable} su
-                    WHERE
-                        su.unidade_id = {$contadorTable}.unidade_id AND
-                        su.servico_id = {$contadorTable}.servico_id
-                )
-                WHERE (unidade_id = :unidade OR :unidade = 0)
-            ");
-            $query->bindValue('unidade', $unidadeId, PDO::PARAM_INT);
-            $query->execute();
-
-            $conn->commit();
-        } catch (Exception $e) {
-            try {
-                $conn->rollBack();
-            } catch (Exception $e2) {
-            }
-            throw $e;
-        }
+        $this->storage->acumularAtendimentos($unidade);
 
         $this->dispatcher->createAndDispatch('attending.reset', $unidade, true);
     }
 
     public function buscaAtendimento(Unidade $unidade, $id)
     {
-        $query = $this->em->createQuery("
-            SELECT e
-            FROM Novosga\Entity\Atendimento e
-            JOIN e.servicoUnidade su
-            WHERE
-                e.id = :id AND
-                su.unidade = :unidade
-        ");
-        $query->setParameter('id', (int) $id);
-        $query->setParameter('unidade', $unidade->getId());
+        $atendimento = $this->storage
+            ->getManager()
+            ->createQueryBuilder()
+            ->select('e')
+            ->from(Atendimento::class, 'e')
+            ->where('e.id = :id')
+            ->andWhere('e.unidade = :unidade')
+            ->setParameters([
+                'id'      => (int) $id,
+                'unidade' => $unidade->getId()
+            ])
+            ->getQuery()
+            ->getOneOrNullResult();
 
-        return $query->getOneOrNullResult();
+        return $atendimento;
     }
 
     public function buscaAtendimentos(Unidade $unidade, $senha)
@@ -373,53 +209,45 @@ class AtendimentoService extends MetaModelService
         
         $numero = (int) substr($senha, $i - 1);
         
-        $rs = $this->em
-                ->createQueryBuilder()
-                ->select([
-                    'e', 'su', 's', 'ut', 'u'
-                ])
-                ->from(Atendimento::class, 'e')
-                ->join('e.servicoUnidade', 'su')
-                ->join('e.servico', 's')
-                ->join('e.usuarioTriagem', 'ut')
-                ->leftJoin('e.usuario', 'u')
-                ->where(':numero = 0 OR e.senha.numero = :numero')
-                ->andWhere(':sigla IS NULL OR e.senha.sigla = :sigla')
-                ->andWhere('su.unidade = :unidade')
-                ->orderBy('e.id', 'ASC')
-                ->setParameters([
-                    'numero' => $numero,
-                    'sigla' => empty($sigla) ? null : $sigla,
-                    'unidade' => $unidade->getId()
-                ])
-                ->getQuery()
-                ->getResult();
+        $rs = $this->storage
+            ->getManager()
+            ->createQueryBuilder()
+            ->select([
+                'e', 'su', 's', 'ut', 'u'
+            ])
+            ->from(Atendimento::class, 'e')
+            ->join('e.servico', 's')
+            ->join('e.usuarioTriagem', 'ut')
+            ->leftJoin('e.usuario', 'u')
+            ->where(':numero = 0 OR e.senha.numero = :numero')
+            ->andWhere(':sigla IS NULL OR e.senha.sigla = :sigla')
+            ->andWhere('e.unidade = :unidade')
+            ->orderBy('e.id', 'ASC')
+            ->setParameters([
+                'numero'  => $numero,
+                'sigla'   => empty($sigla) ? null : $sigla,
+                'unidade' => $unidade->getId()
+            ])
+            ->getQuery()
+            ->getResult();
         
         return $rs;
     }
 
-    public function chamar(Atendimento $atendimento, Usuario $usuario, $local)
+    public function chamar(Atendimento $atendimento, Usuario $usuario, int $local)
     {
         $this->dispatcher->createAndDispatch('attending.pre-call', [$atendimento, $usuario, $local], true);
-
-        $this->em->getConnection()->beginTransaction();
+        
+        $atendimento->setUsuario($usuario);
+        $atendimento->setLocal($local);
+        $atendimento->setStatus(self::CHAMADO_PELA_MESA);
+        $atendimento->setDataChamada(new DateTime());
 
         try {
-            $this->em->lock($atendimento, LockMode::PESSIMISTIC_WRITE);
-
-            $atendimento->setUsuario($usuario);
-            $atendimento->setLocal($local);
-            $atendimento->setStatus(self::CHAMADO_PELA_MESA);
-            $atendimento->setDataChamada(new DateTime());
-
-            $this->em->merge($atendimento);
-            $this->em->getConnection()->commit();
-            $this->em->flush();
+            $this->storage->chamar($atendimento);
 
             $this->dispatcher->createAndDispatch('attending.call', [$atendimento, $usuario], true);
         } catch (Exception $e) {
-            $this->em->getConnection()->rollback();
-
             return false;
         }
 
@@ -441,7 +269,8 @@ class AtendimentoService extends MetaModelService
             self::ATENDIMENTO_INICIADO,
         ];
         try {
-            $qb = $this->em
+            $qb = $this->storage
+                ->getManager()
                 ->createQueryBuilder()
                 ->select('e')
                 ->from(Atendimento::class, 'e')
@@ -468,18 +297,21 @@ class AtendimentoService extends MetaModelService
              * libera os atendimentos e retorna null para o atendente chamar de novo.
              * BUG #213
              */
-            $this->em
-                ->createQuery('
-                    UPDATE Novosga\Entity\Atendimento e
-                    SET 
-                        e.status = 1,
-                        e.usuario = NULL
-                    WHERE
-                        e.usuario = :usuario AND
-                        e.status IN (:status)
-                ')
-                ->setParameter('usuario', $usuario)
-                ->setParameter('status', $status)
+            $this->storage
+                ->getManager()
+                ->createQueryBuilder()
+                ->update(Atendimento::class, 'e')
+                ->set('e.status', ':status')
+                ->set('e.usuario', ':null')
+                ->where('e.usuario = :usuario')
+                ->andWhere('e.status IN (:status)')
+                ->setParameters([
+                    'status'  => 1,
+                    'null'    => null,
+                    'usuario' => $usuario,
+                    'status'  => $status
+                ])
+                ->getQuery()
                 ->execute();
 
             return;
@@ -502,38 +334,39 @@ class AtendimentoService extends MetaModelService
      */
     public function distribuiSenha($unidade, $usuario, $servico, $prioridade, Cliente $cliente = null, Agendamento $agendamento = null)
     {
+        $om = $this->storage->getManager();
+        
         // verificando a unidade
         if (!($unidade instanceof Unidade)) {
-            $unidade = $this->em->find(Unidade::class, $unidade);
+            $unidade = $om->find(Unidade::class, $unidade);
         }
         if (!$unidade) {
             throw new Exception(_('Nenhum unidade escolhida'));
         }
         // verificando o usuario na sessao
         if (!($usuario instanceof Usuario)) {
-            $usuario = $this->em->find(Usuario::class, $usuario);
+            $usuario = $om->find(Usuario::class, $usuario);
         }
         if (!$usuario) {
             throw new Exception(_('Nenhum usuário na sessão'));
         }
         // verificando o servico
         if (!($servico instanceof Servico)) {
-            $servico = $this->em->find(Servico::class, $servico);
+            $servico = $om->find(Servico::class, $servico);
         }
         if (!$servico) {
             throw new Exception(_('Serviço inválido'));
         }
         // verificando a prioridade
         if (!($prioridade instanceof Prioridade)) {
-            $prioridade = $this->em->find(Prioridade::class, $prioridade);
+            $prioridade = $om->find(Prioridade::class, $prioridade);
         }
         if (!$prioridade || !$prioridade->isAtivo()) {
             throw new Exception(_('Prioridade inválida'));
         }
         
         if (!$usuario->isAdmin()) {
-            $lotacao = $this
-                ->em
+            $lotacao = $om
                 ->getRepository(Lotacao::class)
                 ->findOneBy([
                     'usuario' => $usuario,
@@ -548,7 +381,8 @@ class AtendimentoService extends MetaModelService
         $su = $this->checkServicoUnidade($unidade, $servico);
         
         $atendimento = new Atendimento();
-        $atendimento->setServicoUnidade($su);
+        $atendimento->setServico($servico);
+        $atendimento->setUnidade($unidade);
         $atendimento->setPrioridade($prioridade);
         $atendimento->setUsuarioTriagem($usuario);
         $atendimento->setStatus(self::SENHA_EMITIDA);
@@ -570,61 +404,8 @@ class AtendimentoService extends MetaModelService
 
         $this->dispatcher->createAndDispatch('attending.pre-create', [$atendimento], true);
         
-        $conn = $this->em->getConnection();
-        $contadorTable = $this->em->getClassMetadata(Contador::class)->getTableName();
-        
         try {
-            $stmt = $conn->prepare("
-                SELECT numero 
-                FROM {$contadorTable} 
-                WHERE
-                    unidade_id = :unidade AND
-                    servico_id = :servico
-                FOR UPDATE
-            ");
-            $stmt->bindValue('unidade', $unidade->getId());
-            $stmt->bindValue('servico', $servico->getId());
-            $stmt->execute();
-            $numeroAtual = (int) $stmt->fetchColumn();
-            $numeroSenha = $numeroAtual;
-            
-            if (!$numeroAtual) {
-                throw new Exception();
-            }
-            
-            $numeroSenha += $su->getIncremento();
-            if ($su->getNumeroFinal() > 0 && $numeroSenha > $su->getNumeroFinal()) {
-                $numeroSenha = $su->getNumeroInicial();
-            }
-
-            $stmt = $conn->prepare("
-                UPDATE {$contadorTable} 
-                SET numero = :numero
-                WHERE
-                    unidade_id = :unidade AND
-                    servico_id = :servico AND
-                    numero = :numeroAtual
-            ");
-            $stmt->bindValue('numero', $numeroSenha);
-            $stmt->bindValue('unidade', $unidade->getId());
-            $stmt->bindValue('servico', $servico->getId());
-            $stmt->bindValue('numeroAtual', $numeroAtual);
-            $stmt->execute();
-            $success = $stmt->rowCount() === 1;
-            
-            if (!$success) {
-                throw new Exception();
-            }
-            
-            $atendimento->setDataChegada(new DateTime());
-            $atendimento->getSenha()->setNumero($numeroSenha);
-            
-            if ($agendamento) {
-                $agendamento->setDataConfirmacao(new DateTime());
-            }
-
-            $this->em->persist($atendimento);
-            $this->em->flush();
+            $this->storage->distribui($atendimento, $agendamento);
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
         }
@@ -648,29 +429,27 @@ class AtendimentoService extends MetaModelService
      */
     public function redirecionar(Atendimento $atendimento, Usuario $usuario, $unidade, $servico)
     {
-        // copiando a senha do atendimento atual
-        $service = new ServicoService($this->em);
-        $su = $service->servicoUnidade($unidade, $servico);
-
-        $this->dispatcher->createAndDispatch('attending.pre-redirect', [$atendimento, $su, $usuario], true);
-
-        $novo = new Atendimento();
-        $novo->setLocal(null);
-        $novo->setServicoUnidade($su);
-        $novo->setPai($atendimento);
-        $novo->setDataChegada(new DateTime());
-        $novo->setStatus(self::SENHA_EMITIDA);
-        $novo->getSenha()->setSigla($atendimento->getSenha()->getSigla());
-        $novo->getSenha()->setNumero($atendimento->getSenha()->getNumero());
-        $novo->setUsuario($usuario);
-        $novo->setUsuarioTriagem($usuario);
-        $novo->setPrioridade($atendimento->getPrioridade());
-        $novo->setCliente($atendimento->getCliente());
+        if (!($unidade instanceof Unidade)) {
+            $unidade = $this->storage
+                ->getRepository(Unidade::class)
+                ->find($unidade);
+        }
         
-        $this->em->persist($novo);
-        $this->em->flush();
+        if (!($servico instanceof Servico)) {
+            $servico = $this->storage
+                ->getRepository(Servico::class)
+                ->find($servico);
+        }
+        
+        $this->dispatcher->createAndDispatch('attending.pre-redirect', [$atendimento, $unidade, $servico, $usuario], true);
 
-        $this->dispatcher->createAndDispatch('attending.redirect', $atendimento, true);
+        $novo = $this->copyToRedirect($atendimento, $unidade, $servico, $usuario);
+        
+        $om = $this->storage->getManager();
+        $om->persist($novo);
+        $om->flush();
+
+        $this->dispatcher->createAndDispatch('attending.redirect', [$atendimento, $novo], true);
 
         return $novo;
     }
@@ -687,28 +466,29 @@ class AtendimentoService extends MetaModelService
      */
     public function transferir(Atendimento $atendimento, Unidade $unidade, $novoServico, $novaPrioridade)
     {
-        $this->dispatcher->createAndDispatch('attending.pre-transfer', $atendimento, $unidade, $novoServico, $novaPrioridade, true);
+        $this->dispatcher->createAndDispatch('attending.pre-transfer', [ $atendimento, $unidade, $novoServico, $novaPrioridade ], true);
 
         // transfere apenas se a data fim for nula (nao finalizados)
-        $success = $this->em->createQuery('
-            UPDATE
-                Novosga\Entity\Atendimento e
-            SET
-                e.servico = :servico,
-                e.prioridade = :prioridade
-            WHERE
-                e.id = :id AND
-                e.unidade = :unidade AND
-                e.dataFim IS NULL
-            ')
-            ->setParameter('servico', $novoServico)
-            ->setParameter('prioridade', $novaPrioridade)
-            ->setParameter('id', $atendimento)
-            ->setParameter('unidade', $unidade)
+        $success = $this->storage
+            ->getManager()
+            ->createQueryBuilder()
+            ->update(Atendimento::class, 'e')
+            ->set('e.servico', ':servico')
+            ->set('e.prioridade', ':prioridade')
+            ->where('e.id = :id')
+            ->andWhere('e.unidade = :unidade')
+            ->andWhere('e.dataFim IS NULL')
+            ->setParameters([
+                'servico'    => $novoServico,
+                'prioridade' => $novaPrioridade,
+                'id'         => $atendimento,
+                'unidade'    => $unidade
+            ])
+            ->getQuery()
             ->execute() > 0;
 
         if ($success) {
-            $this->em->refresh($atendimento);
+            $this->storage->getManager()->refresh($atendimento);
             $this->dispatcher->createAndDispatch('attending.transfer', [$atendimento], true);
         }
 
@@ -728,25 +508,26 @@ class AtendimentoService extends MetaModelService
         $this->dispatcher->createAndDispatch('attending.pre-cancel', $atendimento, true);
 
         // cancela apenas se a data fim for nula
-        $success = $this->em->createQuery('
-            UPDATE
-                Novosga\Entity\Atendimento e
-            SET
-                e.status = :status,
-                e.dataFim = :data
-            WHERE
-                e.id = :id AND
-                e.unidade = :unidade AND
-                e.dataFim IS NULL
-            ')
-            ->setParameter('status', self::SENHA_CANCELADA)
-            ->setParameter('data', new DateTime())
-            ->setParameter('id', $atendimento)
-            ->setParameter('unidade', $unidade)
+        $success = $this->storage
+            ->getManager()
+            ->createQueryBuilder()
+            ->update(Atendimento::class, 'e')
+            ->set('e.status', ':status')
+            ->set('e.dataFim', ':data')
+            ->where('e.id = :id')
+            ->andWhere('e.unidade = :unidade')
+            ->andWhere('e.dataFim IS NULL')
+            ->setParameters([
+                'status'  => self::SENHA_CANCELADA,
+                'data'    => new DateTime(),
+                'id'      => $atendimento,
+                'unidade' => $unidade
+            ])
+            ->getQuery()
             ->execute() > 0;
 
         if ($success) {
-            $this->em->refresh($atendimento);
+            $this->storage->getManager()->refresh($atendimento);
             $this->dispatcher->createAndDispatch('attending.cancel', $atendimento, true);
         }
 
@@ -767,37 +548,48 @@ class AtendimentoService extends MetaModelService
         $this->dispatcher->createAndDispatch('attending.pre-reactivate', $atendimento, true);
 
         // reativa apenas se estiver finalizada (data fim diferente de nulo)
-        $success = $this->em->createQuery('
-            UPDATE
-                Novosga\Entity\Atendimento e
-            SET
-                e.status = :status,
-                e.dataFim = NULL
-            WHERE
-                e.id = :id AND
-                e.unidade = :unidade AND
-                e.status IN (:statuses)
-            ')
-            ->setParameter('status', self::SENHA_EMITIDA)
-            ->setParameter('statuses', [self::SENHA_CANCELADA, self::NAO_COMPARECEU])
-            ->setParameter('id', $atendimento)
-            ->setParameter('unidade', $unidade)
+        $success = $this->storage
+            ->getManager()
+            ->createQueryBuilder()
+            ->update(Atendimento::class, 'e')
+            ->set('e.status', ':status')
+            ->set('e.dataFim', ':data')
+            ->where('e.id = :id')
+            ->andWhere('e.id = :id')
+            ->andWhere('e.unidade = :unidade')
+            ->andWhere('e.status IN (:statuses)')
+            ->setParameters([
+                'status'   => self::SENHA_EMITIDA,
+                'statuses' => [self::SENHA_CANCELADA, self::NAO_COMPARECEU],
+                'id'       => $atendimento,
+                'unidade'  => $unidade
+            ])
+            ->getQuery()
             ->execute() > 0;
 
         if ($success) {
-            $this->em->refresh($atendimento);
+            $this->storage->getManager()->refresh($atendimento);
             $this->dispatcher->createAndDispatch('attending.reactivate', $atendimento, true);
         }
 
         return $success;
     }
     
+    /**
+     * 
+     * @param Atendimento $atendimento
+     * @param Unidade     $unidade
+     * @param Usuario     $usuario
+     * @param Servico[]   $servicosRealizados
+     * @param Servico     $servicoRedirecionado
+     * @throws Exception
+     */
     public function encerrar(
         Atendimento $atendimento,
         Unidade $unidade,
         Usuario $usuario,
-        array $servicos,
-        $servicoRedirecionado = null
+        array $servicosRealizados,
+        Servico $servicoRedirecionado = null
     ) {
         if ($atendimento->getStatus() !== AtendimentoService::ATENDIMENTO_INICIADO) {
             throw new Exception(
@@ -808,104 +600,37 @@ class AtendimentoService extends MetaModelService
             );
         }
         
-        $this->em->beginTransaction();
+        $executados = [];
+        $servicoRepository  = $this->storage->getRepository(Servico::class);
         
-        try {
-            foreach ($servicos as $s) {
-                if ($s instanceof Servico) {
-                    $servico = $s;
-                } else {
-                    $servico = $this->em->find('Novosga\Entity\Servico', $s);
-                }
-
-                if (!$servico) {
-                    throw new Exception(_('Serviço inválido'));
-                }
-
-                $codificado = new AtendimentoCodificado();
-                $codificado->setAtendimento($atendimento);
-                $codificado->setServico($servico);
-                $codificado->setPeso(1);
-                $this->em->persist($codificado);
+        foreach ($servicosRealizados as $s) {
+            if ($s instanceof Servico) {
+                $servico = $s;
+            } else {
+                $servico = $servicoRepository->find($s);
             }
-            // verifica se esta encerrando e redirecionando
-            if ($servicoRedirecionado) {
-                $redirecionado = $this->redirecionar($atendimento, $usuario, $unidade, $servicoRedirecionado);
-                if (!$redirecionado->getId()) {
-                    throw new Exception(
-                        sprintf(
-                            _('Erro ao redirecionar atendimento %s para o serviço %s'),
-                            $atendimento->getId(),
-                            $servico
-                        )
-                    );
-                }
+
+            if (!$servico) {
+                throw new Exception(_('Serviço inválido'));
             }
             
-            $atendimento->setDataFim(new DateTime);
-            $atendimento->setStatus(AtendimentoService::ATENDIMENTO_ENCERRADO);
-            $this->em->merge($atendimento);
-
-            $this->em->commit();
-            $this->em->flush();
-        } catch (Exception $e) {
-            try {
-                $this->em->rollback();
-            } catch (Exception $ex) {
-            }
-            throw new Exception(sprintf(_('Erro ao encerrar o atendimento %s'), $atendimento->getId()));
+            $executado = new AtendimentoCodificado();
+            $executado->setAtendimento($atendimento);
+            $executado->setServico($servico);
+            $executado->setPeso(1);
+            $executados[] = $executado;
         }
-    }
-
-    /**
-     * Retorna a ultima senha da unidad.
-     *
-     * @param Unidade|int $unidade
-     *
-     * @return Atendimento
-     */
-    public function ultimaSenhaUnidade($unidade)
-    {
-        return $this->em
-            ->createQueryBuilder()
-            ->select('e')
-            ->from(Atendimento::class, 'e')
-            ->join('e.servicoUnidade', 'su')
-            ->where('su.unidade = :unidade')
-            ->orderBy('e.id', 'DESC')
-            ->setParameter('unidade', $unidade)
-            ->getQuery()
-            ->setMaxResults(1)
-            ->getOneOrNullResult();
-    }
-
-    /**
-     * Retorna a ultima senha do servico.
-     *
-     * @param Unidade|int $unidade
-     * @param Servico|int $servico
-     *
-     * @return Atendimento
-     */
-    public function ultimaSenhaServico($unidade, $servico)
-    {
-        $atendimento = $this->em
-            ->createQueryBuilder()
-            ->select('e')
-            ->from(Atendimento::class, 'e')
-            ->join('e.servicoUnidade', 'su')
-            ->where('su.servico = :servico')
-            ->andWhere('su.unidade = :unidade')
-            ->orderBy('e.senha.numero', 'DESC')
-            ->setParameters([
-                'servico' => $servico,
-                'unidade' => $unidade
-            ])
-            ->getQuery()
-            ->setMaxResults(1)
-            ->getOneOrNullResult();
         
-        return $atendimento;
+        $novoAtendimento = null;
+        
+        // verifica se esta encerrando e redirecionando
+        if ($servicoRedirecionado) {
+            $novoAtendimento = $this->copyToRedirect($atendimento, $unidade, $servicoRedirecionado, $usuario);
+        }
+        
+        $atendimento->setDataFim(new DateTime);
+        $atendimento->setStatus(AtendimentoService::ATENDIMENTO_ENCERRADO);
+        $this->storage->encerrar($atendimento, $executados, $novoAtendimento);
     }
     
     public function alteraStatusAtendimentoUsuario(Usuario $usuario, $novoStatus)
@@ -948,9 +673,11 @@ class AtendimentoService extends MetaModelService
 
         $data = (new DateTime())->format('Y-m-d H:i:s');
 
-        $qb = $this->em->createQueryBuilder()
-                ->update(Atendimento::class, 'e')
-                ->set('e.status', ':novoStatus');
+        $qb = $this->storage
+            ->getManager()
+            ->createQueryBuilder()
+            ->update(Atendimento::class, 'e')
+            ->set('e.status', ':novoStatus');
         
         if ($campoData !== null) {
             $qb->set("e.{$campoData}", ':data');
@@ -993,8 +720,9 @@ class AtendimentoService extends MetaModelService
     public function checkServicoUnidade(Unidade $unidade, Servico $servico): ServicoUnidade
     {
         // verificando se o servico esta disponivel na unidade
-        $service = new ServicoService($this->em);
-        $su = $service->servicoUnidade($unidade, $servico);
+        $su = $this->storage
+            ->getRepository(ServicoUnidade::class)
+            ->get($unidade, $servico);
         
         if (!$su) {
             throw new Exception(_('Serviço não disponível para a unidade atual'));
@@ -1017,7 +745,7 @@ class AtendimentoService extends MetaModelService
         // verificando se o cliente ja existe
         if ($cliente) {
             $clienteExistente = null;
-            $clienteRepository = $this->em->getRepository(Cliente::class);
+            $clienteRepository = $this->storage->getRepository(Cliente::class);
             
             if ($cliente->getId()) {
                 $clienteExistente = $clienteRepository->find($cliente->getId());
@@ -1042,5 +770,45 @@ class AtendimentoService extends MetaModelService
         }
         
         return $cliente;
+    }
+    
+    /**
+     * Apaga os dados de atendimento da unidade ou global
+     * @param Unidade $unidade
+     */
+    public function limparDados(Unidade $unidade = null)
+    {
+        $this->storage->apagarDadosAtendimento($unidade);
+    }
+    
+    /**
+     * 
+     * @param Atendimento $atendimento
+     * @param Unidade     $unidade
+     * @param Servico     $servico
+     * @param Usuario     $usuario
+     * @return Atendimento
+     */
+    private function copyToRedirect(Atendimento $atendimento, Unidade $unidade, Servico $servico, Usuario $usuario): Atendimento
+    {
+        // copiando a senha do atendimento atual
+        $novo = new Atendimento();
+        $novo->setLocal(null);
+        $novo->setServico($servico);
+        $novo->setUnidade($unidade);
+        $novo->setPai($atendimento);
+        $novo->setDataChegada(new DateTime());
+        $novo->setStatus(self::SENHA_EMITIDA);
+        $novo->getSenha()->setSigla($atendimento->getSenha()->getSigla());
+        $novo->getSenha()->setNumero($atendimento->getSenha()->getNumero());
+        $novo->setUsuario($usuario);
+        $novo->setUsuarioTriagem($usuario);
+        $novo->setPrioridade($atendimento->getPrioridade());
+        
+        if ($atendimento->getCliente()) {
+            $novo->setCliente($atendimento->getCliente());
+        }
+        
+        return $novo;
     }
 }

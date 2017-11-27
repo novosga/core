@@ -11,22 +11,22 @@
 
 namespace Novosga\Service;
 
-use Doctrine\Common\Persistence\ObjectManager;
+use Novosga\Infrastructure\StorageInterface;
 
 /**
  * ModelService.
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-abstract class ModelService
+abstract class StorageAwareService
 {
     /**
-     * @var ObjectManager
+     * @var StorageInterface
      */
-    protected $em;
+    protected $storage;
 
-    public function __construct(ObjectManager $em)
+    public function __construct(StorageInterface $storage)
     {
-        $this->em = $em;
+        $this->storage = $storage;
     }
 }
