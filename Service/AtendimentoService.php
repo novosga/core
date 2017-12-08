@@ -27,6 +27,7 @@ use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
 use Novosga\Infrastructure\StorageInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Translation\TranslatorInterface;
 
 /**
  * AtendimentoService.
@@ -54,26 +55,33 @@ class AtendimentoService extends StorageAwareService
      */
     private $logger;
     
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+    
     public function __construct(
         StorageInterface $storage,
         EventDispatcher $dispatcher,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        TranslatorInterface $translator
     ) {
         parent::__construct($storage);
         $this->dispatcher = $dispatcher;
         $this->logger     = $logger;
+        $this->translator = $translator;
     }
     
     public static function situacoes()
     {
         return [
-            self::SENHA_EMITIDA          => _('Senha emitida'),
-            self::CHAMADO_PELA_MESA      => _('Chamado pela mesa'),
-            self::ATENDIMENTO_INICIADO   => _('Atendimento iniciado'),
-            self::ATENDIMENTO_ENCERRADO  => _('Atendimento encerrado'),
-            self::NAO_COMPARECEU         => _('Não compareceu'),
-            self::SENHA_CANCELADA        => _('Senha cancelada'),
-            self::ERRO_TRIAGEM           => _('Erro triagem'),
+            self::SENHA_EMITIDA          => $this->translator->trans('ticket.status.generated'),
+            self::CHAMADO_PELA_MESA      => $this->translator->trans('ticket.status.called'),
+            self::ATENDIMENTO_INICIADO   => $this->translator->trans('ticket.status.started'),
+            self::ATENDIMENTO_ENCERRADO  => $this->translator->trans('ticket.status.finished'),
+            self::NAO_COMPARECEU         => $this->translator->trans('ticket.status.no_show'),
+            self::SENHA_CANCELADA        => $this->translator->trans('ticket.status.cancelled'),
+            self::ERRO_TRIAGEM           => $this->translator->trans('ticket.status.error'),
         ];
     }
 
@@ -341,28 +349,32 @@ class AtendimentoService extends StorageAwareService
             $unidade = $om->find(Unidade::class, $unidade);
         }
         if (!$unidade) {
-            throw new Exception(_('Nenhum unidade escolhida'));
+            $error = $this->translator->trans('error.invalid_unity');
+            throw new Exception($error);
         }
         // verificando o usuario na sessao
         if (!($usuario instanceof Usuario)) {
             $usuario = $om->find(Usuario::class, $usuario);
         }
         if (!$usuario) {
-            throw new Exception(_('Nenhum usuário na sessão'));
+            $error = $this->translator->trans('error.invalid_user');
+            throw new Exception($error);
         }
         // verificando o servico
         if (!($servico instanceof Servico)) {
             $servico = $om->find(Servico::class, $servico);
         }
         if (!$servico) {
-            throw new Exception(_('Serviço inválido'));
+            $error = $this->translator->trans('error.invalid_service');
+            throw new Exception($error);
         }
         // verificando a prioridade
         if (!($prioridade instanceof Prioridade)) {
             $prioridade = $om->find(Prioridade::class, $prioridade);
         }
         if (!$prioridade || !$prioridade->isAtivo()) {
-            throw new Exception(_('Prioridade inválida'));
+            $error = $this->translator->trans('error.invalid_priority');
+            throw new Exception($error);
         }
         
         if (!$usuario->isAdmin()) {
@@ -374,7 +386,8 @@ class AtendimentoService extends StorageAwareService
                 ]);
 
             if (!$lotacao) {
-                throw new Exception(_('O usuário que está tentando distribuir senha não tem lotação na unidade escolhida.'));
+                $error = $this->translator->trans('error.user_unity_ticket_permission');
+                throw new Exception($error);
             }
         }
         
@@ -411,7 +424,8 @@ class AtendimentoService extends StorageAwareService
         }
         
         if (!$atendimento->getId()) {
-            throw new Exception(_('Erro ao tentar gerar nova senha'));
+            $error = $this->translator->trans('error.new_ticket');
+            throw new Exception($error);
         }
         
         return $atendimento;
@@ -611,7 +625,8 @@ class AtendimentoService extends StorageAwareService
             }
 
             if (!$servico) {
-                throw new Exception(_('Serviço inválido'));
+                $error = $this->translator->trans('error.invalid_service');
+                throw new Exception($error);
             }
             
             $executado = new AtendimentoCodificado();
@@ -638,7 +653,8 @@ class AtendimentoService extends StorageAwareService
         $atual = $this->atendimentoAndamento($usuario->getId());
             
         if (!$atual) {
-            throw new Exception(_('Nenhum atendimento disponível'));
+            $error = $this->translator->trans('error.no_servicing_available');
+            throw new Exception($error);
         }
             
         $campoData = null;
@@ -703,13 +719,8 @@ class AtendimentoService extends StorageAwareService
                 ->execute() > 0;
 
         if (!$success) {
-            throw new Exception(
-                sprintf(
-                    _('Erro ao mudar status do atendimento #%s para %s'),
-                    $atual->getId(),
-                    $novoStatus
-                )
-            );
+            $error = $this->translator->trans('error.change_status');
+            throw new Exception($error);
         }
 
         $atual->setStatus($novoStatus);
@@ -725,11 +736,13 @@ class AtendimentoService extends StorageAwareService
             ->get($unidade, $servico);
         
         if (!$su) {
-            throw new Exception(_('Serviço não disponível para a unidade atual'));
+            $error = $this->translator->trans('error.service_unity_invalid');
+            throw new Exception($error);
         }
         
         if (!$su->isAtivo()) {
-            throw new Exception(_('Serviço escolhido na está ativo na unidade desejada'));
+            $error = $this->translator->trans('error.service_unity_inactive');
+            throw new Exception($error);
         }
         
         return $su;

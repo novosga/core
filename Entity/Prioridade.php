@@ -96,11 +96,7 @@ class Prioridade implements \JsonSerializable
 
     public function setPeso($peso)
     {
-        if (is_int($peso) && $peso >= 0) {
-            $this->peso = $peso;
-        } else {
-            throw new Exception(_('O peso da prioridade deve ser um inteiro positivo'));
-        }
+        $this->peso = $peso;
     }
 
     public function getPeso()
