@@ -72,7 +72,7 @@ class AtendimentoService extends StorageAwareService
         $this->translator = $translator;
     }
     
-    public static function situacoes()
+    public function situacoes()
     {
         return [
             self::SENHA_EMITIDA          => $this->translator->trans('ticket.status.generated'),
@@ -85,9 +85,9 @@ class AtendimentoService extends StorageAwareService
         ];
     }
 
-    public static function nomeSituacao($status)
+    public function nomeSituacao($status)
     {
-        $arr = self::situacoes();
+        $arr = $this->situacoes();
 
         return $arr[$status];
     }

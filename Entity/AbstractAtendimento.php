@@ -255,17 +255,7 @@ abstract class AbstractAtendimento implements \JsonSerializable
     {
         return $this->status;
     }
-
-    /**
-     * Retorna o nome do status do atendimento.
-     *
-     * @return type
-     */
-    public function getNomeStatus()
-    {
-        return AtendimentoService::nomeSituacao($this->getStatus());
-    }
-
+    
     public function setStatus($status)
     {
         $this->status = $status;
@@ -398,7 +388,6 @@ abstract class AbstractAtendimento implements \JsonSerializable
                 $arr['fim'] = $this->getDataFim()->format('Y-m-d H:i:s');
             }
             $arr['status'] = $this->getStatus();
-            $arr['nomeStatus'] = $this->getNomeStatus();
             $arr['cliente'] = $this->getCliente();
         }
 
