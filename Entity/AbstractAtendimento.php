@@ -13,7 +13,6 @@ namespace Novosga\Entity;
 
 use Novosga\Entity\Cliente;
 use Novosga\Entity\Senha;
-use Novosga\Service\AtendimentoService;
 
 /**
  * AbstractAtendimento.
@@ -354,44 +353,25 @@ abstract class AbstractAtendimento implements \JsonSerializable
         return $this;
     }
 
-    public function jsonSerialize($minimal = false)
+    public function jsonSerialize()
     {
-        $arr = [
-            'id'             => $this->getId(),
-            'senha'          => $this->getSenha(),
-            'servico'        => [
+        return [
+            'id'       => $this->getId(),
+            'senha'    => $this->getSenha(),
+            'servico'  => [
                 'id'   => $this->getServico()->getId(),
                 'nome' => $this->getServico()->getNome(),
             ],
-            'chegada'        => $this->getDataChegada()->format('Y-m-d H:i:s'),
-            'espera'         => $this->getTempoEspera()->format('%H:%I:%S'),
-            'prioridade'     => $this->getPrioridade(),
+            'dataChegada'     => $this->getDataChegada()->format('Y-m-d\TH:i:s'),
+            'dataChamada'     => $this->getDataChamada() ? $this->getDataChamada()->format('Y-m-d\TH:i:s') : null,
+            'dataInicio'      => $this->getDataInicio() ? $this->getDataInicio()->format('Y-m-d\TH:i:s') : null,
+            'dataFim'         => $this->getDataFim() ? $this->getDataFim()->format('Y-m-d\TH:i:s') : null,
+            'dataAgendamento' => $this->getDataAgendamento() ? $this->getDataAgendamento()->format('Y-m-d\TH:i:s') : null,
+            'tempoEspera'     => $this->getTempoEspera()->format('%H:%I:%S'),
+            'prioridade'      => $this->getPrioridade(),
+            'status'          => $this->getStatus(),
+            'cliente'         => $this->getCliente(),
         ];
-        if (!$minimal) {
-            $arr['numero'] = $this->getSenha()->getNumero();
-            if ($this->getUsuario()) {
-                $arr['usuario'] = $this->getUsuario()->getLogin();
-            }
-            if ($this->getUsuarioTriagem()) {
-                $arr['triagem'] = $this->getUsuarioTriagem()->getLogin();
-            }
-            if ($this->getDataInicio()) {
-                $arr['inicio'] = $this->getDataInicio()->format('Y-m-d H:i:s');
-            }
-            if ($this->getDataChamada()) {
-                $arr['chamada'] = $this->getDataChamada()->format('Y-m-d H:i:s');
-            }
-            if ($this->getDataAgendamento()) {
-                $arr['agendamento'] = $this->getDataAgendamento()->format('Y-m-d H:i:s');
-            }
-            if ($this->getDataFim()) {
-                $arr['fim'] = $this->getDataFim()->format('Y-m-d H:i:s');
-            }
-            $arr['status'] = $this->getStatus();
-            $arr['cliente'] = $this->getCliente();
-        }
-
-        return $arr;
     }
 
     public function __toString()
