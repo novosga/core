@@ -221,7 +221,7 @@ class AtendimentoService extends StorageAwareService
             ->getManager()
             ->createQueryBuilder()
             ->select([
-                'e', 'su', 's', 'ut', 'u'
+                'e', 's', 'ut', 'u'
             ])
             ->from(Atendimento::class, 'e')
             ->join('e.servico', 's')
