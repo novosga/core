@@ -22,7 +22,7 @@ class Departamento implements \JsonSerializable
      * @var mixed
      */
     protected $id;
-    
+
     /**
      * @var string
      */
@@ -43,11 +43,21 @@ class Departamento implements \JsonSerializable
      */
     private $ativo;
 
+    /**
+     * @var \DateTime
+     */
+    private $createdAt;
+
+    /**
+     * @var \DateTime
+     */
+    private $updatedAt;
+
     public function __construct()
     {
         $this->ativo = true;
     }
-    
+
     public function getId()
     {
         return $this->id;
@@ -97,6 +107,28 @@ class Departamento implements \JsonSerializable
     public function setAtivo(bool $ativo)
     {
         $this->ativo = $ativo;
+    }
+
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt()
+    {
+        return $this->updatedAt;
+    }
+
+    public function setCreatedAt(\DateTime $createdAt)
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function setUpdatedAt(\DateTime $updatedAt)
+    {
+        $this->updatedAt = $updatedAt;
+        return $this;
     }
 
     public function __toString()

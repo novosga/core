@@ -30,6 +30,11 @@ class ServicoUnidade implements \JsonSerializable
     private $unidade;
 
     /**
+     * @var Departamento
+     */
+    private $departamento;
+
+    /**
      * @var Local
      */
     private $local;
@@ -53,7 +58,7 @@ class ServicoUnidade implements \JsonSerializable
      * @var bool
      */
     private $prioridade;
-    
+
     /**
      * @var int
      */
@@ -73,7 +78,7 @@ class ServicoUnidade implements \JsonSerializable
      * @var string
      */
     private $mensagem;
-    
+
     public function __construct()
     {
         $this->prioridade = true;
@@ -105,6 +110,16 @@ class ServicoUnidade implements \JsonSerializable
     public function setUnidade(Unidade $unidade)
     {
         $this->unidade = $unidade;
+    }
+
+    public function setDepartamento(Departamento $departamento = null)
+    {
+        $this->departamento = $departamento;
+    }
+
+    public function getDepartamento()
+    {
+        return $this->departamento;
     }
 
     /**
@@ -149,7 +164,7 @@ class ServicoUnidade implements \JsonSerializable
     {
         return $this->sigla;
     }
-    
+
     public function getPrioridade()
     {
         return $this->prioridade;
@@ -193,7 +208,7 @@ class ServicoUnidade implements \JsonSerializable
         $this->numeroFinal = $numeroFinal;
         return $this;
     }
-    
+
     public function getMensagem()
     {
         return $this->mensagem;
@@ -204,7 +219,7 @@ class ServicoUnidade implements \JsonSerializable
         $this->mensagem = $mensagem;
         return $this;
     }
-    
+
     public function __toString()
     {
         return $this->sigla.' - '.$this->getServico()->getNome();
@@ -217,6 +232,7 @@ class ServicoUnidade implements \JsonSerializable
             'peso'          => $this->getPeso(),
             'local'         => $this->getLocal(),
             'servico'       => $this->getServico(),
+            'departamento'  => $this->getDepartamento(),
             'ativo'         => $this->isAtivo(),
             'prioridade'    => $this->getPrioridade(),
             'mensagem'      => $this->getMensagem(),
