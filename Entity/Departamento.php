@@ -36,11 +36,6 @@ class Departamento implements \JsonSerializable
     /**
      * @var int
      */
-    private $peso;
-
-    /**
-     * @var int
-     */
     private $ativo;
 
     /**
@@ -89,16 +84,6 @@ class Departamento implements \JsonSerializable
         return $this->descricao;
     }
 
-    public function setPeso($peso)
-    {
-        $this->peso = $peso;
-    }
-
-    public function getPeso()
-    {
-        return $this->peso;
-    }
-
     public function isAtivo(): bool
     {
         return $this->ativo;
@@ -142,7 +127,6 @@ class Departamento implements \JsonSerializable
             'id'        => $this->getId(),
             'nome'      => $this->getNome(),
             'descricao' => $this->getDescricao(),
-            'peso'      => $this->getPeso(),
             'ativo'     => $this->isAtivo(),
         ];
     }
