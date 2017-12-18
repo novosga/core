@@ -19,6 +19,11 @@ namespace Novosga\Entity;
 class Lotacao implements \JsonSerializable
 {
     /**
+     * @var int
+     */
+    private $id;
+    
+    /**
      * @var Usuario
      */
     private $usuario;
@@ -35,6 +40,11 @@ class Lotacao implements \JsonSerializable
 
     public function __construct()
     {
+    }
+    
+    public function getId()
+    {
+        return $this->id;
     }
 
     /**
@@ -104,8 +114,9 @@ class Lotacao implements \JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'perfil'   => $this->getPerfil(),
-            'unidade'   => $this->getUnidade(),
+            'id'      => $this->getId(),
+            'perfil'  => $this->getPerfil(),
+            'unidade' => $this->getUnidade(),
             'usuario' => $this->getUsuario(),
         ];
     }
