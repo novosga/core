@@ -11,7 +11,10 @@
 
 namespace Novosga\Repository;
 
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Persistence\ObjectRepository;
+use Novosga\Entity\Unidade;
+use Novosga\Entity\Usuario;
 
 /**
  * UsuarioRepositoryInterface
@@ -20,4 +23,10 @@ use Doctrine\Common\Persistence\ObjectRepository;
  */
 interface UsuarioRepositoryInterface extends ObjectRepository
 {
+    /**
+     * Retorna os usuários que tem lotação na unidade
+     * @param Unidade $unidade
+     * @return Usuario[]
+     */
+    public function findByUnidade(Unidade $unidade, Criteria $criteria = null);
 }
