@@ -172,7 +172,10 @@ class AtendimentoService extends StorageAwareService
             $unidadeId = max($unidade, 0);
             $unidade   = null;
             if ($unidadeId > 0) {
-                $unidade = $this->storage->find('Novosga\Entity\Unidade', $unidadeId);
+                $unidade = $this
+                    ->storage
+                    ->getRepository(Unidade::class)
+                    ->find($unidadeId);
             }
         }
 
