@@ -26,5 +26,7 @@ interface ModuleInterface
 
     public function getDisplayName();
 
+    public function getName();
+
     public function getHomeRoute();
 }
