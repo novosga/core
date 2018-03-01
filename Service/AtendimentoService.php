@@ -122,7 +122,6 @@ class AtendimentoService extends StorageAwareService
      */
     public function chamarSenha(Unidade $unidade, Atendimento $atendimento)
     {
-        $unidade = $atendimento->getUnidade();
         $servico = $atendimento->getServico();
         
         $su = $this->storage
@@ -148,7 +147,7 @@ class AtendimentoService extends StorageAwareService
         }
 
         $this->dispatcher->createAndDispatch('panel.pre-call', [$atendimento, $senha], true);
-
+        
         $om = $this->storage->getManager();
         $om->persist($senha);
         $om->flush();
@@ -253,6 +252,9 @@ class AtendimentoService extends StorageAwareService
         $atendimento->setLocal($local);
         $atendimento->setStatus(self::CHAMADO_PELA_MESA);
         $atendimento->setDataChamada(new DateTime());
+        
+        $tempoEspera = $atendimento->getDataChamada()->diff($atendimento->getDataChegada());
+        $atendimento->setTempoEspera($tempoEspera);
 
         try {
             $this->storage->chamar($atendimento);
@@ -435,7 +437,52 @@ class AtendimentoService extends StorageAwareService
     }
 
     /**
-     * Redireciona um atendimento para outro servico.
+     * @param Atendimento $atendimento
+     * @param Usuario $usuario
+     * @throws Exception
+     */
+    public function iniciarAtendimento(Atendimento $atendimento, Usuario $usuario)
+    {
+        $status = $atendimento->getStatus();
+        
+        if (!in_array($status, [ self::CHAMADO_PELA_MESA ])) {
+            throw new Exception('Não pode iniciar esse atendimento.');
+        }
+        
+        $atendimento->setStatus(self::ATENDIMENTO_INICIADO);
+        $atendimento->setDataInicio(new DateTime());
+        $atendimento->setUsuario($usuario);
+        
+        $om = $this->storage->getManager();
+        $om->merge($atendimento);
+        
+        $om->flush();
+    }
+
+    /**
+     * @param Atendimento $atendimento
+     * @param Usuario $usuario
+     * @throws Exception
+     */
+    public function naoCompareceu(Atendimento $atendimento, Usuario $usuario)
+    {
+        $status = $atendimento->getStatus();
+        
+        if (!in_array($status, [ self::CHAMADO_PELA_MESA ])) {
+            throw new Exception('Não pode iniciar esse atendimento.');
+        }
+        
+        $atendimento->setStatus(self::NAO_COMPARECEU);
+        $atendimento->setUsuario($usuario);
+        
+        $om = $this->storage->getManager();
+        $om->merge($atendimento);
+        
+        $om->flush();
+    }
+
+    /**
+     * Redireciona um atendimento para outro serviço.
      *
      * @param Atendimento $atendimento
      * @param Usuario     $usuario
@@ -446,6 +493,12 @@ class AtendimentoService extends StorageAwareService
      */
     public function redirecionar(Atendimento $atendimento, Usuario $usuario, $unidade, $servico)
     {
+        $status = $atendimento->getStatus();
+        
+        if (!in_array($status, [ self::ATENDIMENTO_INICIADO, self::ATENDIMENTO_ENCERRADO ])) {
+            throw new Exception('Não pode redirecionar esse atendimento.');
+        }
+        
         if (!($unidade instanceof Unidade)) {
             $unidade = $this->storage
                 ->getRepository(Unidade::class)
@@ -459,11 +512,23 @@ class AtendimentoService extends StorageAwareService
         }
         
         $this->dispatcher->createAndDispatch('attending.pre-redirect', [$atendimento, $unidade, $servico, $usuario], true);
+        
+        $atendimento->setStatus(self::ERRO_TRIAGEM);
+        $atendimento->setDataFim(new DateTime());
+        
+        $tempoPermanencia = $atendimento->getDataFim()->diff($atendimento->getDataChegada());
+        $tempoAtendimento = new \DateInterval('P0M');
+        
+        $atendimento->setTempoPermanencia($tempoPermanencia);
+        $atendimento->setTempoAtendimento($tempoAtendimento);
+        
+        $om->merge($atendimento);
 
         $novo = $this->copyToRedirect($atendimento, $unidade, $servico, $usuario);
         
         $om = $this->storage->getManager();
         $om->persist($novo);
+        
         $om->flush();
 
         $this->dispatcher->createAndDispatch('attending.redirect', [$atendimento, $novo], true);
@@ -523,6 +588,10 @@ class AtendimentoService extends StorageAwareService
     public function cancelar(Atendimento $atendimento, Unidade $unidade)
     {
         $this->dispatcher->createAndDispatch('attending.pre-cancel', $atendimento, true);
+        
+        $atendimento->setDataFim(new DateTime());
+        $tempoPermanencia = $atendimento->getDataFim()->diff($atendimento->getDataChegada());
+        $tempoAtendimento = $atendimento->getDataFim()->diff($atendimento->getDataInicio());
 
         // cancela apenas se a data fim for nula
         $success = $this->storage
@@ -531,14 +600,18 @@ class AtendimentoService extends StorageAwareService
             ->update(Atendimento::class, 'e')
             ->set('e.status', ':status')
             ->set('e.dataFim', ':data')
+            ->set('e.tempoPermanencia', ':tempoPermanencia')
+            ->set('e.tempoAtendimento', ':tempoAtendimento')
             ->where('e.id = :id')
             ->andWhere('e.unidade = :unidade')
             ->andWhere('e.dataFim IS NULL')
             ->setParameters([
                 'status'  => self::SENHA_CANCELADA,
-                'data'    => new DateTime(),
-                'id'      => $atendimento,
-                'unidade' => $unidade
+                'data'    => $atendimento->getDataFim(),
+                'id'      => $atendimento->getId(),
+                'unidade' => $unidade,
+                'tempoPermanencia' => $tempoPermanencia,
+                'tempoAtendimento' => $tempoAtendimento,
             ])
             ->getQuery()
             ->execute() > 0;
@@ -648,6 +721,13 @@ class AtendimentoService extends StorageAwareService
         
         $atendimento->setDataFim(new DateTime);
         $atendimento->setStatus(AtendimentoService::ATENDIMENTO_ENCERRADO);
+        
+        $tempoPermanencia = $atendimento->getDataFim()->diff($atendimento->getDataChegada());
+        $tempoAtendimento = $atendimento->getDataFim()->diff($atendimento->getDataInicio());
+        
+        $atendimento->setTempoPermanencia($tempoPermanencia);
+        $atendimento->setTempoAtendimento($tempoAtendimento);
+        
         $this->storage->encerrar($atendimento, $executados, $novoAtendimento);
     }
     
