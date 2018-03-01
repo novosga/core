@@ -472,8 +472,15 @@ class AtendimentoService extends StorageAwareService
             throw new Exception('Não pode iniciar esse atendimento.');
         }
         
+        $atendimento->setDataFim(new DateTime());
         $atendimento->setStatus(self::NAO_COMPARECEU);
         $atendimento->setUsuario($usuario);
+        
+        $tempoPermanencia = $atendimento->getDataFim()->diff($atendimento->getDataChegada());
+        $tempoAtendimento = new \DateInterval('P0M');
+        
+        $atendimento->setTempoPermanencia($tempoPermanencia);
+        $atendimento->setTempoAtendimento($tempoAtendimento);
         
         $om = $this->storage->getManager();
         $om->merge($atendimento);
@@ -522,11 +529,10 @@ class AtendimentoService extends StorageAwareService
         $atendimento->setTempoPermanencia($tempoPermanencia);
         $atendimento->setTempoAtendimento($tempoAtendimento);
         
-        $om->merge($atendimento);
-
         $novo = $this->copyToRedirect($atendimento, $unidade, $servico, $usuario);
         
         $om = $this->storage->getManager();
+        $om->merge($atendimento);
         $om->persist($novo);
         
         $om->flush();
