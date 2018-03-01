@@ -371,6 +371,8 @@ abstract class AbstractAtendimento implements \JsonSerializable
             'prioridade'      => $this->getPrioridade(),
             'status'          => $this->getStatus(),
             'cliente'         => $this->getCliente(),
+            'triagem'         => $this->getUsuarioTriagem()->getUsername(),
+            'usuario'         => $this->getUsuario()->getUsername(),
         ];
     }
 
