@@ -319,7 +319,7 @@ abstract class AbstractAtendimento implements \JsonSerializable
     public function getTempoEspera()
     {
         if ($this->tempoEspera) {
-            return new \DateInterval("PT{$this->tempoEspera}S");
+            return $this->secondsToDateInterval($this->tempoEspera);
         }
         
         $now = new \DateTime();
@@ -347,7 +347,7 @@ abstract class AbstractAtendimento implements \JsonSerializable
     public function getTempoPermanencia()
     {
         if ($this->tempoPermanencia) {
-            return new \DateInterval("PT{$this->tempoPermanencia}S");
+            return $this->secondsToDateInterval($this->tempoPermanencia);
         }
         
         $interval = new \DateInterval('P0M');
@@ -377,7 +377,7 @@ abstract class AbstractAtendimento implements \JsonSerializable
     public function getTempoAtendimento()
     {
         if ($this->tempoAtendimento) {
-            return new \DateInterval("PT{$this->tempoAtendimento}S");
+            return $this->secondsToDateInterval($this->tempoAtendimento);
         }
         
         $interval = new \DateInterval('P0M');
@@ -407,7 +407,7 @@ abstract class AbstractAtendimento implements \JsonSerializable
     public function getTempoDeslocamento()
     {
         if ($this->tempoDeslocamento) {
-            return new \DateInterval("PT{$this->tempoDeslocamento}S");
+            return $this->secondsToDateInterval($this->tempoDeslocamento);
         }
         
         $interval = new \DateInterval('P0M');
@@ -473,10 +473,18 @@ abstract class AbstractAtendimento implements \JsonSerializable
         return $this->getSenha()->toString();
     }
     
-    private function dateIntervalToSeconds(\DateInterval $d)
+    private function dateIntervalToSeconds(\DateInterval $d): int
     {
         $seconds = $d->s + ($d->i * 60) + ($d->h * 3600) + ($d->d * 86400) + ($d->m * 2592000);
         
         return $seconds;
+    }
+    
+    private function secondsToDateInterval(int $s)
+    {
+        $dt1 = new \DateTime("@0");
+        $dt2 = new \DateTime("@{$s}");
+        
+        return $dt1->diff($dt2);
     }
 }
