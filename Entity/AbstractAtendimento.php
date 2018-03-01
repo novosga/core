@@ -95,6 +95,11 @@ abstract class AbstractAtendimento implements \JsonSerializable
      * @var int
      */
     private $tempoAtendimento;
+    
+    /**
+     * @var int
+     */
+    private $tempoDeslocamento;
 
     /**
      * @var int
@@ -307,7 +312,7 @@ abstract class AbstractAtendimento implements \JsonSerializable
 
     /**
      * Retorna o tempo de espera do cliente até ser atendido.
-     * A diferença entre a data de chegada até a data atual.
+     * A diferença entre a data de chegada até a data de chamada (ou atual).
      *
      * @return \DateInterval
      */
@@ -378,6 +383,36 @@ abstract class AbstractAtendimento implements \JsonSerializable
         $interval = new \DateInterval('P0M');
         if ($this->getDataFim()) {
             $interval = $this->getDataFim()->diff($this->getDataInicio());
+        }
+
+        return $interval;
+    }
+    
+    /**
+     * @param \DateInterval $tempoEspera
+     * @return $this
+     */
+    public function setTempoDeslocamento(\DateInterval $tempoDeslocamento)
+    {
+        $this->tempoDeslocamento = $this->dateIntervalToSeconds($tempoDeslocamento);
+        return $this;
+    }
+
+    /**
+     * Retorna o tempo de deslocamento do cliente.
+     * A diferença entre a data de chamada até a data de início.
+     *
+     * @return \DateInterval
+     */
+    public function getTempoDeslocamento()
+    {
+        if ($this->tempoDeslocamento) {
+            return new \DateInterval("PT{$this->tempoDeslocamento}S");
+        }
+        
+        $interval = new \DateInterval('P0M');
+        if ($this->getDataChamada()) {
+            $interval = $this->getDataInicio()->diff($this->getDataChamada());
         }
 
         return $interval;

@@ -453,6 +453,10 @@ class AtendimentoService extends StorageAwareService
         $atendimento->setDataInicio(new DateTime());
         $atendimento->setUsuario($usuario);
         
+        $tempoDeslocamento = $atendimento->getDataInicio()->diff($atendimento->getDataChamada());
+        
+        $atendimento->setTempoDeslocamento($tempoDeslocamento);
+        
         $om = $this->storage->getManager();
         $om->merge($atendimento);
         
@@ -476,11 +480,13 @@ class AtendimentoService extends StorageAwareService
         $atendimento->setStatus(self::NAO_COMPARECEU);
         $atendimento->setUsuario($usuario);
         
-        $tempoPermanencia = $atendimento->getDataFim()->diff($atendimento->getDataChegada());
-        $tempoAtendimento = new \DateInterval('P0M');
+        $tempoPermanencia  = $atendimento->getDataFim()->diff($atendimento->getDataChegada());
+        $tempoAtendimento  = new \DateInterval('P0M');
+        $tempoDeslocamento = new \DateInterval('P0M');
         
         $atendimento->setTempoPermanencia($tempoPermanencia);
         $atendimento->setTempoAtendimento($tempoAtendimento);
+        $atendimento->setTempoDeslocamento($tempoDeslocamento);
         
         $om = $this->storage->getManager();
         $om->merge($atendimento);
