@@ -80,6 +80,21 @@ abstract class AbstractAtendimento implements \JsonSerializable
      * @var \DateTime
      */
     private $dataFim;
+    
+    /**
+     * @var int
+     */
+    private $tempoEspera;
+    
+    /**
+     * @var int
+     */
+    private $tempoPermanencia;
+    
+    /**
+     * @var int
+     */
+    private $tempoAtendimento;
 
     /**
      * @var int
@@ -279,6 +294,16 @@ abstract class AbstractAtendimento implements \JsonSerializable
 
         return $this;
     }
+    
+    /**
+     * @param \DateInterval $tempoEspera
+     * @return $this
+     */
+    public function setTempoEspera(\DateInterval $tempoEspera)
+    {
+        $this->tempoEspera = $this->dateIntervalToSeconds($tempoEspera);
+        return $this;
+    }
 
     /**
      * Retorna o tempo de espera do cliente até ser atendido.
@@ -288,12 +313,26 @@ abstract class AbstractAtendimento implements \JsonSerializable
      */
     public function getTempoEspera()
     {
+        if ($this->tempoEspera) {
+            return new \DateInterval("PT{$this->tempoEspera}S");
+        }
+        
         $now = new \DateTime();
         $interval = $now->diff($this->getDataChegada());
 
         return $interval;
     }
-
+    
+    /**
+     * @param \DateInterval $tempoPermanencia
+     * @return $this
+     */
+    public function setTempoPermanencia(\DateInterval $tempoPermanencia)
+    {
+        $this->tempoPermanencia = $this->dateIntervalToSeconds($tempoPermanencia);
+        return $this;
+    }
+    
     /**
      * Retorna o tempo de permanência do cliente na unidade.
      * A diferença entre a data de chegada até a data de fim de atendimento.
@@ -302,12 +341,26 @@ abstract class AbstractAtendimento implements \JsonSerializable
      */
     public function getTempoPermanencia()
     {
+        if ($this->tempoPermanencia) {
+            return new \DateInterval("PT{$this->tempoPermanencia}S");
+        }
+        
         $interval = new \DateInterval('P0M');
         if ($this->getDataFim()) {
             $interval = $this->getDataFim()->diff($this->getDataChegada());
         }
 
         return $interval;
+    }
+    
+    /**
+     * @param \DateInterval $tempoAtendimento
+     * @return $this
+     */
+    public function setTempoAtendimento(\DateInterval $tempoAtendimento)
+    {
+        $this->tempoAtendimento = $this->dateIntervalToSeconds($tempoAtendimento);
+        return $this;
     }
 
     /**
@@ -318,6 +371,10 @@ abstract class AbstractAtendimento implements \JsonSerializable
      */
     public function getTempoAtendimento()
     {
+        if ($this->tempoAtendimento) {
+            return new \DateInterval("PT{$this->tempoAtendimento}S");
+        }
+        
         $interval = new \DateInterval('P0M');
         if ($this->getDataFim()) {
             $interval = $this->getDataFim()->diff($this->getDataInicio());
@@ -371,13 +428,20 @@ abstract class AbstractAtendimento implements \JsonSerializable
             'prioridade'      => $this->getPrioridade(),
             'status'          => $this->getStatus(),
             'cliente'         => $this->getCliente(),
-            'triagem'         => $this->getUsuarioTriagem()->getUsername(),
-            'usuario'         => $this->getUsuario()->getUsername(),
+            'triagem'         => $this->getUsuarioTriagem() ? $this->getUsuarioTriagem()->getUsername() : null,
+            'usuario'         => $this->getUsuario() ? $this->getUsuario()->getUsername() : null,
         ];
     }
 
     public function __toString()
     {
         return $this->getSenha()->toString();
+    }
+    
+    private function dateIntervalToSeconds(\DateInterval $d)
+    {
+        $seconds = $d->s + ($d->i * 60) + ($d->h * 3600) + ($d->d * 86400) + ($d->m * 2592000);
+        
+        return $seconds;
     }
 }
