@@ -524,7 +524,7 @@ class AtendimentoService extends StorageAwareService
                 ->find($servico);
         }
         
-        if (!($usuario instanceof Usuario)) {
+        if ($usuario !== null && !($usuario instanceof Usuario)) {
             $usuario = $this->storage
                 ->getRepository(Usuario::class)
                 ->find($usuario);
