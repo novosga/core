@@ -600,46 +600,39 @@ class AtendimentoService extends StorageAwareService
      *
      * @param Atendimento $atendimento
      * @param Unidade     $unidade
-     *
-     * @return bool
      */
-    public function cancelar(Atendimento $atendimento, Unidade $unidade)
+    public function cancelar(Atendimento $atendimento)
     {
+        if ($atendimento->getDataFim() !== null) {
+            throw new Exception('Erro ao tentar cancelar um serviço já encerrado.');
+        }
+        
         $this->dispatcher->createAndDispatch('attending.pre-cancel', $atendimento, true);
         
-        $atendimento->setDataFim(new DateTime());
-        $tempoPermanencia = $atendimento->getDataFim()->diff($atendimento->getDataChegada());
-        $tempoAtendimento = $atendimento->getDataFim()->diff($atendimento->getDataInicio());
-
-        // cancela apenas se a data fim for nula
-        $success = $this->storage
-            ->getManager()
-            ->createQueryBuilder()
-            ->update(Atendimento::class, 'e')
-            ->set('e.status', ':status')
-            ->set('e.dataFim', ':data')
-            ->set('e.tempoPermanencia', ':tempoPermanencia')
-            ->set('e.tempoAtendimento', ':tempoAtendimento')
-            ->where('e.id = :id')
-            ->andWhere('e.unidade = :unidade')
-            ->andWhere('e.dataFim IS NULL')
-            ->setParameters([
-                'status'  => self::SENHA_CANCELADA,
-                'data'    => $atendimento->getDataFim(),
-                'id'      => $atendimento->getId(),
-                'unidade' => $unidade,
-                'tempoPermanencia' => $tempoPermanencia,
-                'tempoAtendimento' => $tempoAtendimento,
-            ])
-            ->getQuery()
-            ->execute() > 0;
-
-        if ($success) {
-            $this->storage->getManager()->refresh($atendimento);
-            $this->dispatcher->createAndDispatch('attending.cancel', $atendimento, true);
+        $now = new DateTime();
+        $atendimento->setDataFim($now);
+        
+        if ($atendimento->getDataChegada()) {
+            $tempoPermanencia = $atendimento->getDataFim()->diff($atendimento->getDataChegada());
+        } else {
+            $tempoPermanencia = $atendimento->getDataFim()->diff($now);
         }
+        
+        if ($atendimento->getDataInicio()) {
+            $tempoAtendimento = $atendimento->getDataFim()->diff($atendimento->getDataInicio());
+        } else {
+            $tempoAtendimento = null;
+        }
+        
+        $atendimento->setTempoPermanencia($tempoPermanencia);
+        $atendimento->setTempoAtendimento($tempoAtendimento);
+        $atendimento->setStatus(self::SENHA_CANCELADA);
+        
+        $em = $this->storage->getManager();
+        $em->merge($atendimento);
+        $em->flush();
 
-        return $success;
+        $this->dispatcher->createAndDispatch('attending.cancel', $atendimento, true);
     }
 
     /**

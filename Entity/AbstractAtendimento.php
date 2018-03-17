@@ -367,9 +367,14 @@ abstract class AbstractAtendimento implements \JsonSerializable
      * @param \DateInterval $tempoAtendimento
      * @return $this
      */
-    public function setTempoAtendimento(\DateInterval $tempoAtendimento)
+    public function setTempoAtendimento(\DateInterval $tempoAtendimento = null)
     {
-        $this->tempoAtendimento = $this->dateIntervalToSeconds($tempoAtendimento);
+        if ($tempoAtendimento) {
+            $this->tempoAtendimento = $this->dateIntervalToSeconds($tempoAtendimento);
+        } else {
+            $this->tempoAtendimento = 0;
+        }
+        
         return $this;
     }
 
