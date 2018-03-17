@@ -8,16 +8,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-/**
- * TODO: delete!
- */
 
 namespace Novosga\Entity;
 
-use Doctrine\ORM\EntityManager;
-
 /**
  * Configuracao
+ * Aplication level configuration
  */
 class Configuracao implements \JsonSerializable
 {
@@ -28,133 +24,93 @@ class Configuracao implements \JsonSerializable
     /**
      * @var string
      */
-    private $chave;
+    private $namespace;
 
     /**
      * @var string
      */
-    private $valor;
+    private $name;
+
+    /**
+     * @var string
+     */
+    private $value;
 
     /**
      * @var int
      */
-    private $tipo;
+    private $type;
 
     // transient
     private $parsedValue;
 
-    public function __construct($chave = '', $valor = '')
+    public function __construct(string $namespace = '', string $name = '', $value = null)
     {
-        $this->setChave($chave);
-        $this->setValor($valor);
+        $this->setName($name);
+        $this->setValue($value);
+    }
+    
+    public function getNamespace()
+    {
+        return $this->namespace;
+    }
+    
+    public function setNamespace($namespace)
+    {
+        $this->namespace = $namespace;
+        return $this;
+    }
+        
+    public function getName()
+    {
+        return $this->name;
     }
 
-    public function getChave()
+    public function setName($name)
     {
-        return $this->chave;
+        $this->name = $name;
+        return $this;
     }
 
-    public function setChave($chave)
-    {
-        $this->chave = $chave;
-    }
-
-    public function getValor()
+    public function getValue()
     {
         if (!$this->parsedValue) {
-            $this->parsedValue = ($this->tipo == self::COMPLEX) ? unserialize($this->valor) : $this->valor;
+            $this->parsedValue = ($this->type === self::COMPLEX) ? unserialize($this->value) : $this->value;
         }
 
         return $this->parsedValue;
     }
 
-    public function setValor($valor)
+    public function setValue($value)
     {
-        $this->parsedValue = $valor;
-        $this->tipo = self::tipo($valor);
-        $this->valor = ($this->tipo == self::COMPLEX) ? serialize($valor) : $valor;
+        $this->parsedValue = $value;
+        $this->type        = $this->guessType($value);
+        $this->value       = ($this->type === self::COMPLEX) ? serialize($value) : $value;
+        return $this;
     }
 
     public function __toString()
     {
-        return $this->getChave().'='.$this->getValor();
+        return "{$this->getNamespace()}.{$this->getName()}";
     }
 
-    private static function tipo($valor)
+    private function guessType($value): int
     {
-        if (is_numeric($valor)) {
+        if (is_numeric($value)) {
             return self::NUMERIC;
-        } elseif (is_string($valor)) {
+        } elseif (is_string($value)) {
             return self::STRING;
         } else {
             return self::COMPLEX;
         }
     }
 
-    /**
-     * Retorna a configuração a partir da chave informada.
-     *
-     * @param type $key
-     *
-     * @return Novosga\Entity\Configuracao
-     */
-    public static function get(EntityManager $em, $key)
-    {
-        try {
-            return $em
-                ->createQuery("SELECT e FROM Novosga\Entity\Configuracao e WHERE e.chave = :key")
-                ->setParameter('key', $key)
-                ->getOneOrNullResult();
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-
-    /**
-     * Cria ou atualiza uma configuração.
-     *
-     * @param string $key
-     *
-     * @return Novosga\Entity\Configuracao
-     */
-    public static function set(EntityManager $em, $key, $value)
-    {
-        try {
-            $config = $em
-                ->createQuery("SELECT e FROM Novosga\Entity\Configuracao e WHERE e.chave = :key")
-                ->setParameter('key', $key)
-                ->getSingleResult();
-            
-            $config->setValor($value);
-            $em->merge($config);
-            $em->flush();
-        } catch (\Doctrine\ORM\NoResultException $e) {
-            $config = new self($key, $value);
-            $em->persist($config);
-            $em->flush();
-        }
-    }
-
-    /**
-     * Apaga uma configuração.
-     *
-     * @param string $key
-     *
-     * @return bool
-     */
-    public static function del(EntityManager $em, $key)
-    {
-        return $em
-            ->createQuery("DELETE FROM Novosga\Entity\Configuracao e WHERE e.chave = :key")
-            ->setParameter('key', $key)
-            ->execute();
-    }
-
     public function jsonSerialize()
     {
         return [
-            'chave' => $this->getChave(),
-            'valor' => $this->getValor(),
+            'namespace' => $this->getNamespace(),
+            'name'      => $this->getName(),
+            'value'     => $this->getValue(),
         ];
     }
 }
