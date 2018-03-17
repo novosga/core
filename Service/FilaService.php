@@ -47,24 +47,40 @@ class FilaService extends StorageAwareService
      * Retorna a fila de atendimentos do usuario.
      *
      * @param Unidade          $unidade
+     * @param Usuario          $usuario
      * @param ServicoUsuario[] $servicosUsuario
      * @param string           $tipoFila
      * @param int              $maxResults
      *
      * @return array
      */
-    public function filaAtendimento(Unidade $unidade, $servicosUsuario, $tipoFila = self::TIPO_TODOS, $maxResults = 0)
-    {
-        $usuario = null;
-        
-        $ids = [0];
+    public function filaAtendimento(
+        Unidade $unidade,
+        Usuario $usuario,
+        array $servicosUsuario,
+        $tipoFila = self::TIPO_TODOS,
+        $maxResults = 0
+    ) {
+        $ids = [];
         foreach ($servicosUsuario as $servico) {
-            $usuario = $servico->getUsuario();
-            $ids[]   = $servico->getServico()->getId();
+            if ($servico->getUsuario()->getId() === $usuario->getId()) {
+                $ids[]   = $servico->getServico()->getId();
+            }
+        }
+        
+        if (empty($ids)) {
+            return [];
         }
         
         $builder = $this
             ->builder()
+            ->join(
+                ServicoUsuario::class,
+                'servicoUsuario',
+                'WITH',
+                'servicoUsuario.servico = servico AND servicoUsuario.usuario = :usuario'
+            )
+            ->andWhere('(atendimento.usuario IS NULL OR atendimento.usuario = :usuario)')
             ->andWhere('atendimento.status = :status')
             ->andWhere('atendimento.unidade = :unidade')
             ->andWhere('servico.id IN (:servicos)');
@@ -85,20 +101,9 @@ class FilaService extends StorageAwareService
         $params = [
             'status'   => AtendimentoService::SENHA_EMITIDA,
             'unidade'  => $unidade,
+            'usuario'  => $usuario,
             'servicos' => $ids
         ];
-        
-        if ($usuario) {
-            $builder
-                ->join(
-                    ServicoUsuario::class,
-                    'servicoUsuario',
-                    'WITH',
-                    'servicoUsuario.servico = servico AND servicoUsuario.usuario = :usuario'
-                )
-                ->andWhere('(atendimento.usuario IS NULL OR atendimento.usuario = :usuario)');
-            $params['usuario'] = $usuario;
-        }
         
         $this->applyOrders($builder, $unidade, $usuario);
 
@@ -189,13 +194,15 @@ class FilaService extends StorageAwareService
             $ordering = $ordering($unidade, $usuario);
         }
         
-        foreach ($ordering as $item) {
-            if (!isset($item['exp'])) {
-                break;
+        if (is_array($ordering)) {
+            foreach ($ordering as $item) {
+                if (!isset($item['exp'])) {
+                    break;
+                }
+                $exp   = $item['exp'];
+                $order = isset($item['order']) ? $item['order'] : 'ASC';
+                $builder->addOrderBy($exp, $order);
             }
-            $exp   = $item['exp'];
-            $order = isset($item['order']) ? $item['order'] : 'ASC';
-            $builder->addOrderBy($exp, $order);
         }
     }
 }
