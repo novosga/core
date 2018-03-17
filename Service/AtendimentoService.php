@@ -219,7 +219,8 @@ class AtendimentoService extends StorageAwareService
         
         $numero = (int) substr($senha, $i - 1);
         
-        $rs = $this->storage
+        $qb = $this
+            ->storage
             ->getManager()
             ->createQueryBuilder()
             ->select([
@@ -230,14 +231,20 @@ class AtendimentoService extends StorageAwareService
             ->join('e.usuarioTriagem', 'ut')
             ->leftJoin('e.usuario', 'u')
             ->where(':numero = 0 OR e.senha.numero = :numero')
-            ->andWhere(':sigla IS NULL OR e.senha.sigla = :sigla')
             ->andWhere('e.unidade = :unidade')
             ->orderBy('e.id', 'ASC')
             ->setParameters([
                 'numero'  => $numero,
-                'sigla'   => empty($sigla) ? null : $sigla,
-                'unidade' => $unidade->getId()
-            ])
+                'unidade' => $unidade->getId(),
+            ]);
+        
+        if (!empty($sigla)) {
+            $qb
+                ->andWhere('e.senha.sigla = :sigla')
+                ->setParameter('sigla', $sigla);
+        }
+        
+        $rs = $qb
             ->getQuery()
             ->getResult();
         
