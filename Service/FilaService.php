@@ -53,7 +53,7 @@ class FilaService extends StorageAwareService
      *
      * @return array
      */
-    public function filaAtendimento(Unidade $unidade, $servicosUsuario, $tipoFila = 1, $maxResults = 0)
+    public function filaAtendimento(Unidade $unidade, $servicosUsuario, $tipoFila = self::TIPO_TODOS, $maxResults = 0)
     {
         $usuario = null;
         
@@ -63,7 +63,8 @@ class FilaService extends StorageAwareService
             $ids[]   = $servico->getServico()->getId();
         }
         
-        $builder = $this->builder($usuario)
+        $builder = $this
+            ->builder()
             ->andWhere('atendimento.status = :status')
             ->andWhere('atendimento.unidade = :unidade')
             ->andWhere('servico.id IN (:servicos)');
@@ -88,20 +89,22 @@ class FilaService extends StorageAwareService
         ];
         
         if ($usuario) {
-            $builder->join(
-                ServicoUsuario::class,
-                'servicoUsuario',
-                'WITH',
-                'servicoUsuario.servico = servico AND servicoUsuario.usuario = :usuario'
-            );
+            $builder
+                ->join(
+                    ServicoUsuario::class,
+                    'servicoUsuario',
+                    'WITH',
+                    'servicoUsuario.servico = servico AND servicoUsuario.usuario = :usuario'
+                )
+                ->andWhere('(atendimento.usuario IS NULL OR atendimento.usuario = :usuario)');
             $params['usuario'] = $usuario;
         }
         
         $this->applyOrders($builder, $unidade, $usuario);
 
         $query = $builder
-                    ->setParameters($params)
-                    ->getQuery();
+            ->setParameters($params)
+            ->getQuery();
 
         if ($maxResults > 0) {
             $query->setMaxResults($maxResults);
@@ -149,7 +152,8 @@ class FilaService extends StorageAwareService
      */
     private function builder()
     {
-        $qb = $this->storage
+        $qb = $this
+            ->storage
             ->getManager()
             ->createQueryBuilder()
             ->select([

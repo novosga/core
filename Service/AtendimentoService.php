@@ -498,13 +498,13 @@ class AtendimentoService extends StorageAwareService
      * Redireciona um atendimento para outro serviço.
      *
      * @param Atendimento $atendimento
-     * @param Usuario     $usuario
      * @param int|Unidade $unidade
      * @param int|Servico $servico
+     * @param int|Usuario $usuario Novo usuário a atender o serviço redirecionado (opcional)
      *
      * @return Atendimento
      */
-    public function redirecionar(Atendimento $atendimento, Usuario $usuario, $unidade, $servico)
+    public function redirecionar(Atendimento $atendimento, $unidade, $servico, $usuario = null)
     {
         $status = $atendimento->getStatus();
         
@@ -522,6 +522,12 @@ class AtendimentoService extends StorageAwareService
             $servico = $this->storage
                 ->getRepository(Servico::class)
                 ->find($servico);
+        }
+        
+        if (!($usuario instanceof Usuario)) {
+            $usuario = $this->storage
+                ->getRepository(Usuario::class)
+                ->find($usuario);
         }
         
         $this->dispatcher->createAndDispatch('attending.pre-redirect', [$atendimento, $unidade, $servico, $usuario], true);
@@ -681,17 +687,17 @@ class AtendimentoService extends StorageAwareService
      * 
      * @param Atendimento $atendimento
      * @param Unidade     $unidade
-     * @param Usuario     $usuario
      * @param Servico[]   $servicosRealizados
      * @param Servico     $servicoRedirecionado
+     * @param Usuario     $novoUsuario
      * @throws Exception
      */
     public function encerrar(
         Atendimento $atendimento,
         Unidade $unidade,
-        Usuario $usuario,
         array $servicosRealizados,
-        Servico $servicoRedirecionado = null
+        Servico $servicoRedirecionado = null,
+        Usuario $novoUsuario = null
     ) {
         if ($atendimento->getStatus() !== AtendimentoService::ATENDIMENTO_INICIADO) {
             throw new Exception(
@@ -728,7 +734,7 @@ class AtendimentoService extends StorageAwareService
         
         // verifica se esta encerrando e redirecionando
         if ($servicoRedirecionado) {
-            $novoAtendimento = $this->copyToRedirect($atendimento, $unidade, $servicoRedirecionado, $usuario);
+            $novoAtendimento = $this->copyToRedirect($atendimento, $unidade, $servicoRedirecionado, $novoUsuario);
         }
         
         $atendimento->setDataFim(new DateTime);
@@ -894,10 +900,10 @@ class AtendimentoService extends StorageAwareService
      * @param Atendimento $atendimento
      * @param Unidade     $unidade
      * @param Servico     $servico
-     * @param Usuario     $usuario
+     * @param Usuario     $usuario Define o novo atendente (opcional)
      * @return Atendimento
      */
-    private function copyToRedirect(Atendimento $atendimento, Unidade $unidade, Servico $servico, Usuario $usuario): Atendimento
+    private function copyToRedirect(Atendimento $atendimento, Unidade $unidade, Servico $servico, Usuario $usuario = null): Atendimento
     {
         // copiando a senha do atendimento atual
         $novo = new Atendimento();
@@ -910,7 +916,7 @@ class AtendimentoService extends StorageAwareService
         $novo->getSenha()->setSigla($atendimento->getSenha()->getSigla());
         $novo->getSenha()->setNumero($atendimento->getSenha()->getNumero());
         $novo->setUsuario($usuario);
-        $novo->setUsuarioTriagem($usuario);
+        $novo->setUsuarioTriagem($atendimento->getUsuario());
         $novo->setPrioridade($atendimento->getPrioridade());
         
         if ($atendimento->getCliente()) {

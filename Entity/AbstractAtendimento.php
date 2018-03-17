@@ -120,6 +120,11 @@ abstract class AbstractAtendimento implements \JsonSerializable
      * @var Atendimento
      */
     protected $pai;
+
+    /**
+     * @var string
+     */
+    protected $observacao;
     
     
     public function __construct()
@@ -444,7 +449,18 @@ abstract class AbstractAtendimento implements \JsonSerializable
         $this->prioridade = $prioridade;
         return $this;
     }
+    
+    public function getObservacao()
+    {
+        return $this->observacao;
+    }
 
+    public function setObservacao($observacao)
+    {
+        $this->observacao = $observacao;
+        return $this;
+    }
+    
     public function jsonSerialize()
     {
         return [
@@ -454,6 +470,7 @@ abstract class AbstractAtendimento implements \JsonSerializable
                 'id'   => $this->getServico()->getId(),
                 'nome' => $this->getServico()->getNome(),
             ],
+            'observacao'      => $this->getObservacao(),
             'dataChegada'     => $this->getDataChegada()->format('Y-m-d\TH:i:s'),
             'dataChamada'     => $this->getDataChamada() ? $this->getDataChamada()->format('Y-m-d\TH:i:s') : null,
             'dataInicio'      => $this->getDataInicio() ? $this->getDataInicio()->format('Y-m-d\TH:i:s') : null,

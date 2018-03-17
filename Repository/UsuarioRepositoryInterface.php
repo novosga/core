@@ -15,6 +15,7 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Persistence\ObjectRepository;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
+use Novosga\Entity\ServicoUnidade;
 
 /**
  * UsuarioRepositoryInterface
@@ -29,4 +30,11 @@ interface UsuarioRepositoryInterface extends ObjectRepository
      * @return Usuario[]
      */
     public function findByUnidade(Unidade $unidade, Criteria $criteria = null);
+    
+    /**
+     * Retorna os usuários que atendem o serviço da unidade
+     * @param ServicoUnidade $unidade
+     * @return Usuario[]
+     */
+    public function findByServicoUnidade(ServicoUnidade $servicoUnidade, Criteria $criteria = null);
 }
