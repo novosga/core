@@ -191,7 +191,13 @@ class FilaService extends StorageAwareService
         $ordering = $this->config->get('queue.ordering');
         
         if (is_callable($ordering)) {
-            $ordering = $ordering($unidade, $usuario);
+            $param = new \Novosga\Configuration\OrderingParameter();
+            $param->setUnidade($unidade);
+            $param->setUsuario($usuario);
+            $param->setQueryBuilder($builder);
+            $param->setStorage($this->storage);
+            
+            $ordering = $ordering($param);
         }
         
         if (is_array($ordering)) {

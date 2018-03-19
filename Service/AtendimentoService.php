@@ -18,6 +18,7 @@ use Novosga\Entity\Atendimento;
 use Novosga\Entity\AtendimentoCodificado;
 use Novosga\Entity\AtendimentoMeta;
 use Novosga\Entity\Cliente;
+use Novosga\Event\EventDispatcherInterface;
 use Novosga\Entity\Lotacao;
 use Novosga\Entity\PainelSenha;
 use Novosga\Entity\Prioridade;
@@ -46,7 +47,7 @@ class AtendimentoService extends StorageAwareService
     const ERRO_TRIAGEM          = 'erro_triagem';
     
     /**
-     * @var EventDispatcher
+     * @var EventDispatcherInterface
      */
     private $dispatcher;
     
@@ -62,7 +63,7 @@ class AtendimentoService extends StorageAwareService
     
     public function __construct(
         StorageInterface $storage,
-        EventDispatcher $dispatcher,
+        EventDispatcherInterface $dispatcher,
         LoggerInterface $logger,
         TranslatorInterface $translator
     ) {
