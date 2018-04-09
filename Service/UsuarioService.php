@@ -26,7 +26,7 @@ class UsuarioService extends StorageAwareService
 {
     const ATTR_ATENDIMENTO_LOCAL = 'atendimento.local';
     const ATTR_ATENDIMENTO_TIPO  = 'atendimento.tipo';
-    const ATTR_UNIDADE           = 'unidade';
+    const ATTR_SESSION_UNIDADE   = 'session.unidade';
 
     /**
      * Cria ou retorna um metadado do usuário caso o $value seja null (ou ocultado).
@@ -104,7 +104,7 @@ class UsuarioService extends StorageAwareService
                 'metaLocal'   => self::ATTR_ATENDIMENTO_LOCAL,
                 'numero'      => $numero,
                 'usuario'     => $usuario,
-                'metaUnidade' => self::ATTR_UNIDADE,
+                'metaUnidade' => self::ATTR_SESSION_UNIDADE,
                 'unidade'     => $unidade,
             ])
             ->getSingleScalarResult();
