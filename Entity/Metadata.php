@@ -21,6 +21,11 @@ abstract class Metadata implements \JsonSerializable
     /**
      * @var string
      */
+    protected $namespace;
+    
+    /**
+     * @var string
+     */
     protected $name;
 
     /**
@@ -33,6 +38,18 @@ abstract class Metadata implements \JsonSerializable
      */
     protected $entity;
     
+    public function getNamespace()
+    {
+        return $this->namespace;
+    }
+
+    public function setNamespace(string $namespace)
+    {
+        $this->namespace = $namespace;
+
+        return $this;
+    }
+        
     public function setEntity($entity)
     {
         $this->entity = $entity;
@@ -55,7 +72,7 @@ abstract class Metadata implements \JsonSerializable
         return $this->value;
     }
 
-    public function setName($name)
+    public function setName(string $name)
     {
         $this->name = $name;
 
@@ -72,8 +89,9 @@ abstract class Metadata implements \JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'name'  => $this->getName(),
-            'value' => $this->getValue(),
+            'namespace' => $this->getName(),
+            'name'      => $this->getNamespace(),
+            'value'     => $this->getValue(),
         ];
     }
 }

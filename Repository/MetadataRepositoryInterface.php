@@ -23,16 +23,18 @@ interface MetadataRepositoryInterface extends ObjectRepository
 {
     /**
      * @param mixed $entity
+     * @param string $namespace
      * @param string $name
      * @return Metadata|null
      */
-    public function get($entity, string $name);
+    public function get($entity, string $namespace, string $name);
     
     /**
      * @param mixed $entity
+     * @param string $namespace
      * @param string $name
      * @param mixed $value
      * @return Metadata
      */
-    public function set($entity, string $name, $value);
+    public function set($entity, string $namespace, string $name, $value);
 }

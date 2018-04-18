@@ -24,6 +24,7 @@ use Novosga\Entity\UsuarioMeta;
  */
 class UsuarioService extends StorageAwareService
 {
+    const ATTR_NAMESPACE         = 'global';
     const ATTR_ATENDIMENTO_LOCAL = 'atendimento.local';
     const ATTR_ATENDIMENTO_TIPO  = 'atendimento.tipo';
     const ATTR_SESSION_UNIDADE   = 'session.unidade';
@@ -42,9 +43,9 @@ class UsuarioService extends StorageAwareService
         $repo = $this->storage->getRepository(UsuarioMeta::class);
         
         if ($value === null) {
-            $metadata = $repo->get($usuario, $name);
+            $metadata = $repo->get($usuario, self::ATTR_NAMESPACE, $name);
         } else {
-            $metadata = $repo->set($usuario, $name, $value);
+            $metadata = $repo->set($usuario, self::ATTR_NAMESPACE, $name, $value);
         }
         
         return $metadata;
