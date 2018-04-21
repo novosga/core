@@ -26,12 +26,12 @@ class Unidade implements \JsonSerializable
     /**
      * @var string
      */
-    private $codigo;
+    private $nome;
 
     /**
      * @var string
      */
-    private $nome;
+    private $descricao;
 
     /**
      * @var bool
@@ -74,17 +74,18 @@ class Unidade implements \JsonSerializable
         $this->id = $id;
         return $this;
     }
-
-    public function setCodigo($codigo)
+    
+    public function getDescricao()
     {
-        $this->codigo = $codigo;
+        return $this->descricao;
     }
 
-    public function getCodigo()
+    public function setDescricao($descricao)
     {
-        return $this->codigo;
+        $this->descricao = $descricao;
+        return $this;
     }
-
+    
     public function setNome($nome)
     {
         $this->nome = $nome;
@@ -152,8 +153,8 @@ class Unidade implements \JsonSerializable
     {
         return [
             'id'        => $this->getId(),
-            'codigo'    => $this->getCodigo(),
             'nome'      => $this->getNome(),
+            'descricao' => $this->getDescricao(),
             'ativo'     => $this->isAtivo(),
             'impressao' => $this->getImpressao(),
             'createdAt' => $this->getCreatedAt() ? $this->getCreatedAt()->format('Y-m-d\TH:i:s') : null,
