@@ -16,7 +16,7 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class ClienteMeta extends Metadata
+class ClienteMeta extends EntityMetadata
 {
     public function getCliente()
     {

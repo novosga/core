@@ -11,7 +11,7 @@
 
 namespace Novosga\Repository;
 
-use Novosga\Entity\Configuracao;
+use Novosga\Entity\Metadata;
 use Doctrine\Common\Persistence\ObjectRepository;
 
 /**
@@ -19,20 +19,22 @@ use Doctrine\Common\Persistence\ObjectRepository;
  *
  * @author Rogério Lino <rogeriolino@gmail.com>
  */
-interface ConfiguracaoRepositoryInterface extends ObjectRepository
+interface EntityMetadataRepositoryInterface extends ObjectRepository
 {
     /**
+     * @param mixed $entity
      * @param string $namespace
      * @param string $name
-     * @return Configuracao|null
+     * @return Metadata|null
      */
-    public function get(string $namespace, string $name);
+    public function get($entity, string $namespace, string $name);
     
     /**
+     * @param mixed $entity
      * @param string $namespace
      * @param string $name
      * @param mixed $value
-     * @return Configuracao
+     * @return Metadata
      */
-    public function set(string $namespace, string $name, $value): Configuracao;
+    public function set($entity, string $namespace, string $name, $value);
 }

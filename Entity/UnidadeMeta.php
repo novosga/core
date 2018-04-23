@@ -16,7 +16,7 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class UnidadeMeta extends Metadata
+class UnidadeMeta extends EntityMetadata
 {
     public function getUnidade()
     {

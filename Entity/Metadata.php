@@ -12,86 +12,10 @@
 namespace Novosga\Entity;
 
 /**
- * Abstract metadata.
+ * System metadata.
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-abstract class Metadata implements \JsonSerializable
+class Metadata extends AbstractMetadata
 {
-    /**
-     * @var string
-     */
-    protected $namespace;
-    
-    /**
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * @var mixed
-     */
-    protected $value;
-    
-    /**
-     * @var mixed
-     */
-    protected $entity;
-    
-    public function getNamespace()
-    {
-        return $this->namespace;
-    }
-
-    public function setNamespace(string $namespace)
-    {
-        $this->namespace = $namespace;
-
-        return $this;
-    }
-        
-    public function setEntity($entity)
-    {
-        $this->entity = $entity;
-        
-        return $this;
-    }
-    
-    public function getEntity()
-    {
-        return $this->entity;
-    }
-
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    public function getValue()
-    {
-        return $this->value;
-    }
-
-    public function setName(string $name)
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function setValue($value)
-    {
-        $this->value = $value;
-
-        return $this;
-    }
-
-    public function jsonSerialize()
-    {
-        return [
-            'namespace' => $this->getName(),
-            'name'      => $this->getNamespace(),
-            'value'     => $this->getValue(),
-        ];
-    }
 }

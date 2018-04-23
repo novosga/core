@@ -22,19 +22,17 @@ use Doctrine\Common\Persistence\ObjectRepository;
 interface MetadataRepositoryInterface extends ObjectRepository
 {
     /**
-     * @param mixed $entity
      * @param string $namespace
      * @param string $name
      * @return Metadata|null
      */
-    public function get($entity, string $namespace, string $name);
+    public function get(string $namespace, string $name);
     
     /**
-     * @param mixed $entity
      * @param string $namespace
      * @param string $name
      * @param mixed $value
      * @return Metadata
      */
-    public function set($entity, string $namespace, string $name, $value);
+    public function set(string $namespace, string $name, $value);
 }

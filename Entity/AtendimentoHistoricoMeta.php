@@ -16,7 +16,7 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class AtendimentoHistoricoMeta extends Metadata
+class AtendimentoHistoricoMeta extends EntityMetadata
 {
     public function getAtendimento()
     {

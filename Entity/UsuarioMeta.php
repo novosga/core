@@ -16,7 +16,7 @@ namespace Novosga\Entity;
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class UsuarioMeta extends Metadata
+class UsuarioMeta extends EntityMetadata
 {
     /**
      * @return Usuario

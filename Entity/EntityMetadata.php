@@ -12,19 +12,26 @@
 namespace Novosga\Entity;
 
 /**
- * Servico metadata.
+ * Abstract metadata.
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class ServicoMeta extends EntityMetadata
+abstract class EntityMetadata extends AbstractMetadata
 {
-    public function getServico()
+    /**
+     * @var mixed
+     */
+    protected $entity;
+    
+    public function setEntity($entity)
     {
-        return $this->getEntity();
+        $this->entity = $entity;
+        
+        return $this;
     }
-
-    public function setServico(Servico $servico)
+    
+    public function getEntity()
     {
-        return $this->setEntity($servico);
+        return $this->entity;
     }
 }
