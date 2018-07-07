@@ -102,9 +102,14 @@ abstract class AbstractAtendimento implements \JsonSerializable
     private $tempoDeslocamento;
 
     /**
-     * @var int
+     * @var string
      */
     protected $status;
+    
+    /**
+     * @var string
+     */
+    protected $resolucao;
 
     /**
      * @var Cliente
@@ -287,6 +292,18 @@ abstract class AbstractAtendimento implements \JsonSerializable
         return $this;
     }
     
+    public function getResolucao()
+    {
+        return $this->resolucao;
+    }
+
+    public function setResolucao($resolucao)
+    {
+        $this->resolucao = $resolucao;
+        
+        return $this;
+    }
+        
     public function setCliente(Cliente $cliente)
     {
         $this->cliente = $cliente;
@@ -484,6 +501,7 @@ abstract class AbstractAtendimento implements \JsonSerializable
             'tempoEspera'     => $this->getTempoEspera()->format('%H:%I:%S'),
             'prioridade'      => $this->getPrioridade(),
             'status'          => $this->getStatus(),
+            'resolucao'       => $this->getResolucao(),
             'cliente'         => $this->getCliente(),
             'triagem'         => $this->getUsuarioTriagem() ? $this->getUsuarioTriagem()->getUsername() : null,
             'usuario'         => $this->getUsuario() ? $this->getUsuario()->getUsername() : null,

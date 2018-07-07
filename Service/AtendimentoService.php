@@ -46,6 +46,10 @@ class AtendimentoService extends StorageAwareService
     const SENHA_CANCELADA       = 'cancelada';
     const ERRO_TRIAGEM          = 'erro_triagem';
     
+    // resolucoes
+    const RESOLVIDO  = 'resolvido';
+    const PENDENTE   = 'pendente';
+    
     /**
      * @var EventDispatcherInterface
      */
@@ -83,6 +87,14 @@ class AtendimentoService extends StorageAwareService
             self::NAO_COMPARECEU         => $this->translator->trans('ticket.status.no_show'),
             self::SENHA_CANCELADA        => $this->translator->trans('ticket.status.cancelled'),
             self::ERRO_TRIAGEM           => $this->translator->trans('ticket.status.error'),
+        ];
+    }
+    
+    public function resolucoes()
+    {
+        return [
+            self::RESOLVIDO  => $this->translator->trans('ticket.resolution.solved'),
+            self::PENDENTE   => $this->translator->trans('ticket.resolution.pending'),
         ];
     }
 
