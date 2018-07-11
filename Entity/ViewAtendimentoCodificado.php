@@ -12,31 +12,26 @@
 namespace Novosga\Entity;
 
 /**
- * View Atendimento
+ * view Atendimento Codificado
  * União dos atendimentos atuais e do histórico
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-class ViewAtendimento extends AbstractAtendimento
+class ViewAtendimentoCodificado extends AbstractAtendimentoCodificado
 {
     /**
-     * @var AtendimentoCodificadoHistorico[]
+     * @var ViewAtendimento
      */
-    private $codificados;
+    private $atendimento;
 
-    public function __construct()
+    public function getAtendimento()
     {
-        $this->codificados = new ArrayCollection();
+        return $this->atendimento;
     }
 
-    public function getCodificados()
+    public function setAtendimento(AbstractAtendimento $atendimento)
     {
-        return $this->codificados;
-    }
-
-    public function setCodificados(Collection $codificados)
-    {
-        $this->codificados = $codificados;
+        $this->atendimento = $atendimento;
 
         return $this;
     }
