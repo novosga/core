@@ -11,6 +11,9 @@
 
 namespace Novosga\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
 /**
  * View Atendimento
  * União dos atendimentos atuais e do histórico
