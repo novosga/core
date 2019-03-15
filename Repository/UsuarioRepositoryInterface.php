@@ -27,13 +27,15 @@ interface UsuarioRepositoryInterface extends ObjectRepository
     /**
      * Retorna os usuários que tem lotação na unidade
      * @param Unidade $unidade
+     * @param Criteria $criteria
      * @return Usuario[]
      */
     public function findByUnidade(Unidade $unidade, Criteria $criteria = null);
     
     /**
      * Retorna os usuários que atendem o serviço da unidade
-     * @param ServicoUnidade $unidade
+     * @param ServicoUnidade $servicoUnidade
+     * @param Criteria $criteria
      * @return Usuario[]
      */
     public function findByServicoUnidade(ServicoUnidade $servicoUnidade, Criteria $criteria = null);

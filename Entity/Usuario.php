@@ -13,7 +13,6 @@ namespace Novosga\Entity;
 
 use DateTime;
 use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
-use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -25,7 +24,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class Usuario implements
     \Serializable,
     \JsonSerializable,
-    AdvancedUserInterface,
+    UserInterface,
     EquatableInterface,
     EncoderAwareInterface
 {
@@ -342,21 +341,6 @@ class Usuario implements
     {
         $this->deletedAt = $deletedAt;
         return $this;
-    }
-
-    public function isAccountNonExpired()
-    {
-        return true;
-    }
-
-    public function isAccountNonLocked()
-    {
-        return true;
-    }
-
-    public function isCredentialsNonExpired()
-    {
-        return true;
     }
 
     public function isEnabled()
