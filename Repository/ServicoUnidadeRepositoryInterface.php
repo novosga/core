@@ -12,6 +12,7 @@
 namespace Novosga\Repository;
 
 use Novosga\Entity\Unidade;
+use Novosga\Entity\Servico;
 use Novosga\Entity\ServicoUnidade;
 use Doctrine\Common\Persistence\ObjectRepository;
 
