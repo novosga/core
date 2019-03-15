@@ -675,15 +675,17 @@ class AtendimentoService extends StorageAwareService
             ->update(Atendimento::class, 'e')
             ->set('e.status', ':status')
             ->set('e.dataFim', ':data')
+            ->set('e.usuario', ':usuario')
             ->where('e.id = :id')
-            ->andWhere('e.id = :id')
             ->andWhere('e.unidade = :unidade')
             ->andWhere('e.status IN (:statuses)')
             ->setParameters([
                 'status'   => self::SENHA_EMITIDA,
-                'statuses' => [self::SENHA_CANCELADA, self::NAO_COMPARECEU],
+                'data'     => null,
+                'usuario'  => null,
                 'id'       => $atendimento,
-                'unidade'  => $unidade
+                'unidade'  => $unidade,
+                'statuses' => [self::SENHA_CANCELADA, self::NAO_COMPARECEU],
             ])
             ->getQuery()
             ->execute() > 0;
