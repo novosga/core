@@ -59,11 +59,11 @@ interface StorageInterface
      * Move os dados de atendimento para o histórico
      * @param Unidade $unidade
      */
-    public function acumularAtendimentos(Unidade $unidade = null);
+    public function acumularAtendimentos(?Unidade $unidade, array $ctx = []);
     
     /**
      * Apaga todos os dados de atendimentos
      * @param Unidade $unidade
      */
-    public function apagarDadosAtendimento(Unidade $unidade = null);
+    public function apagarDadosAtendimento(?Unidade $unidade, array $ctx = []);
 }

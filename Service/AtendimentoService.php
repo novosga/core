@@ -172,28 +172,16 @@ class AtendimentoService extends StorageAwareService
      * Move os registros da tabela atendimento para a tabela de historico de atendimentos.
      * Se a unidade não for informada, será acumulado serviços de todas as unidades.
      *
-     * @param Unidade|int $unidade
+     * @param Unidade $unidade
+     * @param array   $ctx
      *
      * @throws Exception
      */
-    public function acumularAtendimentos($unidade = 0)
+    public function acumularAtendimentos(?Unidade $unidade, $ctx = [])
     {
-        if ($unidade instanceof Unidade) {
-            $unidadeId = $unidade->getId();
-        } else {
-            $unidadeId = max($unidade, 0);
-            $unidade   = null;
-            if ($unidadeId > 0) {
-                $unidade = $this
-                    ->storage
-                    ->getRepository(Unidade::class)
-                    ->find($unidadeId);
-            }
-        }
-
         $this->dispatcher->createAndDispatch('attending.pre-reset', $unidade, true);
 
-        $this->storage->acumularAtendimentos($unidade);
+        $this->storage->acumularAtendimentos($unidade, $ctx);
 
         $this->dispatcher->createAndDispatch('attending.reset', $unidade, true);
     }
