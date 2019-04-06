@@ -24,10 +24,11 @@ use Novosga\Entity\UsuarioMeta;
  */
 class UsuarioService extends StorageAwareService
 {
-    const ATTR_NAMESPACE         = 'global';
-    const ATTR_ATENDIMENTO_LOCAL = 'atendimento.local';
-    const ATTR_ATENDIMENTO_TIPO  = 'atendimento.tipo';
-    const ATTR_SESSION_UNIDADE   = 'session.unidade';
+    const ATTR_NAMESPACE             = 'global';
+    const ATTR_ATENDIMENTO_LOCAL     = 'atendimento.local';
+    const ATTR_ATENDIMENTO_NUM_LOCAL = 'atendimento.num_local';
+    const ATTR_ATENDIMENTO_TIPO      = 'atendimento.tipo';
+    const ATTR_SESSION_UNIDADE       = 'session.unidade';
 
     /**
      * Cria ou retorna um metadado do usuário caso o $value seja null (ou ocultado).
