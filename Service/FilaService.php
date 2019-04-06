@@ -102,7 +102,7 @@ class FilaService extends StorageAwareService
             'status'   => AtendimentoService::SENHA_EMITIDA,
             'unidade'  => $unidade,
             'usuario'  => $usuario,
-            'servicos' => $ids
+            'servicos' => $ids,
         ];
         
         $this->applyOrders($builder, $unidade, $usuario);
@@ -123,7 +123,6 @@ class FilaService extends StorageAwareService
      *
      * @param Unidade $unidade
      * @param Servico $servico
-     * @param Usuario $usuario
      *
      * @return array
      */
@@ -134,13 +133,43 @@ class FilaService extends StorageAwareService
         $params = [
             'status'  => AtendimentoService::SENHA_EMITIDA,
             'unidade' => $unidade,
-            'servico' => $servico
+            'servico' => $servico,
         ];
         
         $builder
             ->where('atendimento.status = :status')
             ->andWhere('atendimento.unidade = :unidade')
             ->andWhere('atendimento.servico = :servico');
+        
+        $this->applyOrders($builder, $unidade);
+
+        $rs = $builder
+            ->setParameters($params)
+            ->getQuery()
+            ->getResult();
+
+        return $rs;
+    }
+
+    /**
+     * Retorna a fila de espera do serviço na unidade.
+     *
+     * @param Unidade $unidade
+     *
+     * @return array
+     */
+    public function filaUnidade(Unidade $unidade)
+    {
+        $builder = $this->builder();
+        
+        $params = [
+            'status'  => AtendimentoService::SENHA_EMITIDA,
+            'unidade' => $unidade,
+        ];
+        
+        $builder
+            ->where('atendimento.status = :status')
+            ->andWhere('atendimento.unidade = :unidade');
         
         $this->applyOrders($builder, $unidade);
 
