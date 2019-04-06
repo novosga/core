@@ -40,9 +40,11 @@ class Senha implements \JsonSerializable
      *
      * @param char $sigla
      */
-    public function setSigla($sigla)
+    public function setSigla($sigla): self
     {
         $this->sigla = $sigla;
+
+        return $this;
     }
 
     /**
@@ -60,9 +62,11 @@ class Senha implements \JsonSerializable
      *
      * @param int $numero
      */
-    public function setNumero($numero)
+    public function setNumero($numero): self
     {
         $this->numero = $numero;
+
+        return $this;
     }
 
     /**
@@ -98,9 +102,9 @@ class Senha implements \JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'sigla'          => $this->getSigla(),
-            'numero'         => $this->getNumero(),
-            'format'         => $this->__toString(),
+            'sigla'  => $this->getSigla(),
+            'numero' => $this->getNumero(),
+            'format' => $this->__toString(),
         ];
     }
 }
