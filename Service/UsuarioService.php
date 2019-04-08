@@ -15,6 +15,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Novosga\Entity\ServicoUsuario;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
+use Novosga\Entity\Servico;
 use Novosga\Entity\UsuarioMeta;
 
 /**
@@ -50,6 +51,38 @@ class UsuarioService extends StorageAwareService
         }
         
         return $metadata;
+    }
+
+    /**
+     * Retorna a lista de serviços que o usuário atende na determinada unidade.
+     *
+     * @param Usuario $usuario
+     * @param Unidade $unidade
+     *
+     * @return ArrayCollection
+     */
+    public function servico(Usuario $usuario, Servico $servico, Unidade $unidade)
+    {
+        $servico = $this->storage
+            ->getManager()
+            ->createQueryBuilder()
+            ->select('e')
+            ->from(ServicoUsuario::class, 'e')
+            ->join('e.servico', 's')
+            ->where('e.usuario = :usuario')
+            ->andWhere('e.servico = :servico')
+            ->andWhere('e.unidade = :unidade')
+            ->andWhere('s.ativo = TRUE')
+            ->orderBy('s.nome', 'ASC')
+            ->setParameters([
+                'usuario' => $usuario,
+                'servico' => $servico,
+                'unidade' => $unidade
+            ])
+            ->getQuery()
+            ->getOneOrNullResult();
+        
+        return $servico;
     }
 
     /**
