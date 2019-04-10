@@ -29,7 +29,7 @@ abstract class AbstractAtendimentoCodificado
      */
     protected $peso;
 
-    abstract public function getAtendimento();
+    abstract public function getAtendimento(): AbstractAtendimento;
 
     abstract public function setAtendimento(AbstractAtendimento $atendimento): self;
 

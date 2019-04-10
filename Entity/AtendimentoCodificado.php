@@ -24,12 +24,12 @@ class AtendimentoCodificado extends AbstractAtendimentoCodificado
      */
     private $atendimento;
 
-    public function getAtendimento()
+    public function getAtendimento(): AbstractAtendimento
     {
         return $this->atendimento;
     }
 
-    public function setAtendimento(AbstractAtendimento $atendimento): self
+    public function setAtendimento(AbstractAtendimento $atendimento): AbstractAtendimentoCodificado
     {
         $this->atendimento = $atendimento;
 
