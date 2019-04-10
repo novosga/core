@@ -48,9 +48,11 @@ class ServicoUsuario implements \JsonSerializable
         return $this->servico;
     }
 
-    public function setServico($servico)
+    public function setServico($servico): self
     {
         $this->servico = $servico;
+
+        return $this;
     }
 
     public function getUnidade()
@@ -58,9 +60,11 @@ class ServicoUsuario implements \JsonSerializable
         return $this->unidade;
     }
 
-    public function setUnidade($unidade)
+    public function setUnidade($unidade): self
     {
         $this->unidade = $unidade;
+
+        return $this;
     }
 
     /**
@@ -71,9 +75,11 @@ class ServicoUsuario implements \JsonSerializable
         return $this->usuario;
     }
 
-    public function setUsuario($usuario)
+    public function setUsuario($usuario): self
     {
         $this->usuario = $usuario;
+
+        return $this;
     }
     
     public function getPeso()
@@ -81,9 +87,10 @@ class ServicoUsuario implements \JsonSerializable
         return $this->peso;
     }
 
-    public function setPeso($peso)
+    public function setPeso($peso): self
     {
         $this->peso = $peso;
+        
         return $this;
     }
     

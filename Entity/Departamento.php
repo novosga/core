@@ -58,15 +58,18 @@ class Departamento implements \JsonSerializable
         return $this->id;
     }
 
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
-    public function setNome($nome)
+    public function setNome($nome): self
     {
         $this->nome = $nome;
+
+        return $this;
     }
 
     public function getNome()
@@ -74,9 +77,11 @@ class Departamento implements \JsonSerializable
         return $this->nome;
     }
 
-    public function setDescricao($desc)
+    public function setDescricao($descricao): self
     {
-        $this->descricao = $desc;
+        $this->descricao = $descricao;
+
+        return $this;
     }
 
     public function getDescricao()
@@ -89,9 +94,11 @@ class Departamento implements \JsonSerializable
         return $this->ativo;
     }
 
-    public function setAtivo(bool $ativo)
+    public function setAtivo(bool $ativo): self
     {
         $this->ativo = $ativo;
+
+        return $this;
     }
 
     public function getCreatedAt()
@@ -104,15 +111,17 @@ class Departamento implements \JsonSerializable
         return $this->updatedAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt)
+    public function setCreatedAt(\DateTime $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function setUpdatedAt(\DateTime $updatedAt)
+    public function setUpdatedAt(\DateTime $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+        
         return $this;
     }
 

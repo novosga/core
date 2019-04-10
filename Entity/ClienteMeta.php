@@ -23,7 +23,7 @@ class ClienteMeta extends EntityMetadata
         return $this->getEntity();
     }
 
-    public function setCliente(Cliente $cliente)
+    public function setCliente(Cliente $cliente): self
     {
         return $this->setEntity($cliente);
     }

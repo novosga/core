@@ -51,7 +51,7 @@ class Contador implements \JsonSerializable
      *
      * @return self
      */
-    public function setUnidade(Unidade $unidade)
+    public function setUnidade(Unidade $unidade): self
     {
         $this->unidade = $unidade;
 
@@ -75,7 +75,7 @@ class Contador implements \JsonSerializable
      *
      * @return self
      */
-    public function setServico(Servico $servico)
+    public function setServico(Servico $servico): self
     {
         $this->servico = $servico;
 
@@ -99,7 +99,7 @@ class Contador implements \JsonSerializable
      *
      * @return self
      */
-    public function setNumero($numero)
+    public function setNumero($numero): self
     {
         $this->numero = $numero;
 
@@ -109,7 +109,7 @@ class Contador implements \JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'numero' => $this->getNumero(),
+            'numero'  => $this->getNumero(),
             'servico' => $this->getServico()
         ];
     }

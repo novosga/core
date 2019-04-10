@@ -23,7 +23,7 @@ abstract class EntityMetadata extends AbstractMetadata
      */
     protected $entity;
     
-    public function setEntity($entity)
+    public function setEntity($entity): self
     {
         $this->entity = $entity;
         

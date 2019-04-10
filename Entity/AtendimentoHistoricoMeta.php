@@ -23,7 +23,7 @@ class AtendimentoHistoricoMeta extends EntityMetadata
         return $this->getEntity();
     }
 
-    public function setAtendimento(AtendimentoHistorico $atendimento)
+    public function setAtendimento(AtendimentoHistorico $atendimento): self
     {
         return $this->setEntity($atendimento);
     }

@@ -43,15 +43,17 @@ class Local implements \JsonSerializable
         return $this->id;
     }
 
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
     
-    public function setNome($nome)
+    public function setNome($nome): self
     {
         $this->nome = $nome;
+
         return $this;
     }
 
@@ -70,15 +72,17 @@ class Local implements \JsonSerializable
         return $this->updatedAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt)
+    public function setCreatedAt(\DateTime $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function setUpdatedAt(\DateTime $updatedAt)
+    public function setUpdatedAt(\DateTime $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
     
@@ -90,8 +94,8 @@ class Local implements \JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'id'   => $this->getId(),
-            'nome' => $this->getNome(),
+            'id'        => $this->getId(),
+            'nome'      => $this->getNome(),
             'createdAt' => $this->getCreatedAt() ? $this->getCreatedAt()->format('Y-m-d\TH:i:s') : null,
             'updatedAt' => $this->getUpdatedAt() ? $this->getUpdatedAt()->format('Y-m-d\TH:i:s') : null,
         ];

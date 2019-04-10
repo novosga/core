@@ -68,15 +68,18 @@ class Prioridade implements \JsonSerializable
         return $this->id;
     }
 
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
-    public function setNome($nome)
+    public function setNome($nome): self
     {
         $this->nome = $nome;
+
+        return $this;
     }
 
     public function getNome()
@@ -84,9 +87,11 @@ class Prioridade implements \JsonSerializable
         return $this->nome;
     }
 
-    public function setDescricao($desc)
+    public function setDescricao($descricao): self
     {
-        $this->descricao = $desc;
+        $this->descricao = $descricao;
+
+        return $this;
     }
 
     public function getDescricao()
@@ -94,9 +99,11 @@ class Prioridade implements \JsonSerializable
         return $this->descricao;
     }
 
-    public function setPeso($peso)
+    public function setPeso($peso): self
     {
         $this->peso = $peso;
+
+        return $this;
     }
 
     public function getPeso()
@@ -109,9 +116,11 @@ class Prioridade implements \JsonSerializable
         return $this->ativo;
     }
 
-    public function setAtivo(bool $ativo)
+    public function setAtivo(bool $ativo): self
     {
         $this->ativo = $ativo;
+
+        return $this;
     }
     
     public function getCreatedAt()
@@ -129,21 +138,24 @@ class Prioridade implements \JsonSerializable
         return $this->deletedAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt)
+    public function setCreatedAt(\DateTime $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function setUpdatedAt(\DateTime $updatedAt)
+    public function setUpdatedAt(\DateTime $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
-    public function setDeletedAt(\DateTime $deletedAt)
+    public function setDeletedAt(\DateTime $deletedAt): self
     {
         $this->deletedAt = $deletedAt;
+
         return $this;
     }
 

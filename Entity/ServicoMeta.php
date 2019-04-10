@@ -23,7 +23,7 @@ class ServicoMeta extends EntityMetadata
         return $this->getEntity();
     }
 
-    public function setServico(Servico $servico)
+    public function setServico(Servico $servico): self
     {
         return $this->setEntity($servico);
     }

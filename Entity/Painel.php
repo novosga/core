@@ -43,9 +43,11 @@ class Painel implements \JsonSerializable
         return $this->host;
     }
 
-    public function setHost($host)
+    public function setHost($host): self
     {
         $this->host = $host;
+
+        return $this;
     }
 
     public function getUnidade()
@@ -53,9 +55,11 @@ class Painel implements \JsonSerializable
         return $this->unidade;
     }
 
-    public function setUnidade($unidade)
+    public function setUnidade($unidade): self
     {
         $this->unidade = $unidade;
+
+        return $this;
     }
 
     public function getServicos()
@@ -63,9 +67,11 @@ class Painel implements \JsonSerializable
         return $this->servicos;
     }
 
-    public function setServicos($servicos)
+    public function setServicos($servicos): self
     {
         $this->servicos = $servicos;
+        
+        return $this;
     }
 
     public function getIp()

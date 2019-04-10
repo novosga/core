@@ -59,9 +59,10 @@ class Perfil implements \JsonSerializable
         return $this->id;
     }
 
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
     
@@ -70,9 +71,11 @@ class Perfil implements \JsonSerializable
      *
      * @param string $nome
      */
-    public function setNome($nome)
+    public function setNome($nome): self
     {
         $this->nome = $nome;
+
+        return $this;
     }
 
     /**
@@ -90,9 +93,11 @@ class Perfil implements \JsonSerializable
      *
      * @param string $descricao
      */
-    public function setDescricao($descricao)
+    public function setDescricao($descricao): self
     {
         $this->descricao = $descricao;
+
+        return $this;
     }
 
     /**
@@ -110,9 +115,10 @@ class Perfil implements \JsonSerializable
         return $this->modulos;
     }
 
-    public function setModulos($modulos)
+    public function setModulos($modulos): self
     {
         $this->modulos = $modulos;
+
         return $this;
     }
     
@@ -126,15 +132,17 @@ class Perfil implements \JsonSerializable
         return $this->updatedAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt)
+    public function setCreatedAt(\DateTime $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function setUpdatedAt(\DateTime $updatedAt)
+    public function setUpdatedAt(\DateTime $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+        
         return $this;
     }
 

@@ -94,39 +94,45 @@ class Agendamento implements \JsonSerializable
         return $this->dataConfirmacao;
     }
 
-    public function setData(DateTime $data = null)
+    public function setData(?DateTime $data): self
     {
         $this->data = $data;
+
         return $this;
     }
 
-    public function setHora(DateTime $hora = null)
+    public function setHora(?DateTime $hora): self
     {
         $this->hora = $hora;
+
         return $this;
     }
 
-    public function setCliente(Cliente $cliente = null)
+    public function setCliente(?Cliente $cliente): self
     {
         $this->cliente = $cliente;
+
         return $this;
     }
 
-    public function setUnidade(Unidade $unidade = null)
+    public function setUnidade(?Unidade $unidade): self
     {
         $this->unidade = $unidade;
+
         return $this;
     }
 
-    public function setServico(Servico $servico = null)
+    public function setServico(?Servico $servico): self
     {
         $this->servico = $servico;
+
         return $this;
     }
     
-    public function setDataConfirmacao(DateTime $dataConfirmacao)
+    public function setDataConfirmacao(?DateTime $dataConfirmacao): self
     {
         $this->dataConfirmacao = $dataConfirmacao;
+
         return $this;
     }
         

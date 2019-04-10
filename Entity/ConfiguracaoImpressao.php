@@ -105,51 +105,59 @@ class ConfiguracaoImpressao implements \JsonSerializable
         return $this->exibirPrioridade;
     }
 
-    public function setUnidade(Unidade $unidade)
+    public function setUnidade(Unidade $unidade): self
     {
         $this->unidade = $unidade;
+
         return $this;
     }
 
-    public function setCabecalho($cabecalho)
+    public function setCabecalho($cabecalho): self
     {
         $this->cabecalho = $cabecalho;
+
         return $this;
     }
 
-    public function setRodape($rodape)
+    public function setRodape($rodape): self
     {
         $this->rodape = $rodape;
+
         return $this;
     }
 
-    public function setExibirNomeServico($exibirNomeServico)
+    public function setExibirNomeServico($exibirNomeServico): self
     {
         $this->exibirNomeServico = $exibirNomeServico;
+
         return $this;
     }
 
-    public function setExibirNomeUnidade($exibirNomeUnidade)
+    public function setExibirNomeUnidade($exibirNomeUnidade): self
     {
         $this->exibirNomeUnidade = $exibirNomeUnidade;
+
         return $this;
     }
 
-    public function setExibirMensagemServico($exibirMensagemServico)
+    public function setExibirMensagemServico($exibirMensagemServico): self
     {
         $this->exibirMensagemServico = $exibirMensagemServico;
+
         return $this;
     }
 
-    public function setExibirData($exibirData)
+    public function setExibirData($exibirData): self
     {
         $this->exibirData = $exibirData;
+
         return $this;
     }
 
-    public function setExibirPrioridade($exibirPrioridade)
+    public function setExibirPrioridade($exibirPrioridade): self
     {
         $this->exibirPrioridade = $exibirPrioridade;
+        
         return $this;
     }
 

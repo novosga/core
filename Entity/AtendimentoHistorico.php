@@ -37,7 +37,7 @@ class AtendimentoHistorico extends AbstractAtendimento
         return $this->codificados;
     }
 
-    public function setCodificados(Collection $codificados)
+    public function setCodificados(Collection $codificados): self
     {
         $this->codificados = $codificados;
 

@@ -83,9 +83,11 @@ class PainelSenha implements \JsonSerializable
         return $this->servico;
     }
 
-    public function setServico($servico)
+    public function setServico($servico): self
     {
         $this->servico = $servico;
+
+        return $this;
     }
 
     public function getUnidade()
@@ -93,9 +95,11 @@ class PainelSenha implements \JsonSerializable
         return $this->unidade;
     }
 
-    public function setUnidade($unidade)
+    public function setUnidade($unidade): self
     {
         $this->unidade = $unidade;
+
+        return $this;
     }
 
     public function getNumeroSenha()
@@ -103,9 +107,11 @@ class PainelSenha implements \JsonSerializable
         return $this->numeroSenha;
     }
 
-    public function setNumeroSenha($numeroSenha)
+    public function setNumeroSenha($numeroSenha): self
     {
         $this->numeroSenha = $numeroSenha;
+
+        return $this;
     }
 
     public function getSiglaSenha()
@@ -113,9 +119,11 @@ class PainelSenha implements \JsonSerializable
         return $this->siglaSenha;
     }
 
-    public function setSiglaSenha($siglaSenha)
+    public function setSiglaSenha($siglaSenha): self
     {
         $this->siglaSenha = $siglaSenha;
+
+        return $this;
     }
 
     public function getMensagem()
@@ -123,9 +131,11 @@ class PainelSenha implements \JsonSerializable
         return $this->mensagem;
     }
 
-    public function setMensagem($mensagem)
+    public function setMensagem($mensagem): self
     {
         $this->mensagem = $mensagem;
+
+        return $this;
     }
 
     public function getLocal()
@@ -133,9 +143,11 @@ class PainelSenha implements \JsonSerializable
         return $this->local;
     }
 
-    public function setLocal($local)
+    public function setLocal($local): self
     {
         $this->local = $local;
+
+        return $this;
     }
 
     public function getNumeroLocal()
@@ -143,9 +155,11 @@ class PainelSenha implements \JsonSerializable
         return $this->numeroLocal;
     }
 
-    public function setNumeroLocal($numeroLocal)
+    public function setNumeroLocal($numeroLocal): self
     {
         $this->numeroLocal = $numeroLocal;
+
+        return $this;
     }
 
     public function getPeso()
@@ -153,9 +167,11 @@ class PainelSenha implements \JsonSerializable
         return $this->peso;
     }
 
-    public function setPeso($peso)
+    public function setPeso($peso): self
     {
         $this->peso = $peso;
+
+        return $this;
     }
 
     public function getPrioridade()
@@ -173,19 +189,25 @@ class PainelSenha implements \JsonSerializable
         return $this->documentoCliente;
     }
 
-    public function setPrioridade($prioridade)
+    public function setPrioridade($prioridade): self
     {
         $this->prioridade = $prioridade;
+
+        return $this;
     }
 
-    public function setNomeCliente($nomeCliente)
+    public function setNomeCliente($nomeCliente): self
     {
         $this->nomeCliente = $nomeCliente;
+
+        return $this;
     }
 
-    public function setDocumentoCliente($documentoCliente)
+    public function setDocumentoCliente($documentoCliente): self
     {
         $this->documentoCliente = $documentoCliente;
+
+        return $this;
     }
 
     public function jsonSerialize()

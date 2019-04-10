@@ -23,7 +23,7 @@ class UnidadeMeta extends EntityMetadata
         return $this->getEntity();
     }
 
-    public function setUnidade(Unidade $unidade)
+    public function setUnidade(Unidade $unidade): self
     {
         return $this->setEntity($unidade);
     }

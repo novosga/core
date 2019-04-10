@@ -94,9 +94,11 @@ class ServicoUnidade implements \JsonSerializable
         return $this->servico;
     }
 
-    public function setServico(Servico $servico)
+    public function setServico(Servico $servico): self
     {
         $this->servico = $servico;
+
+        return $this;
     }
 
     /**
@@ -107,14 +109,18 @@ class ServicoUnidade implements \JsonSerializable
         return $this->unidade;
     }
 
-    public function setUnidade(Unidade $unidade)
+    public function setUnidade(Unidade $unidade): self
     {
         $this->unidade = $unidade;
+
+        return $this;
     }
 
-    public function setDepartamento(Departamento $departamento = null)
+    public function setDepartamento(?Departamento $departamento): self
     {
         $this->departamento = $departamento;
+
+        return $this;
     }
 
     public function getDepartamento()
@@ -130,14 +136,18 @@ class ServicoUnidade implements \JsonSerializable
         return $this->local;
     }
 
-    public function setLocal(Local $local)
+    public function setLocal(Local $local): self
     {
         $this->local = $local;
+
+        return $this;
     }
 
-    public function setAtivo(bool $ativo)
+    public function setAtivo(bool $ativo): self
     {
         $this->ativo = !!$ativo;
+
+        return $this;
     }
 
     public function isAtivo(): bool
@@ -150,14 +160,18 @@ class ServicoUnidade implements \JsonSerializable
         return $this->peso;
     }
 
-    public function setPeso($peso)
+    public function setPeso($peso): self
     {
         $this->peso = $peso;
+
+        return $this;
     }
 
-    public function setSigla($sigla)
+    public function setSigla($sigla): self
     {
         $this->sigla = $sigla;
+
+        return $this;
     }
 
     public function getSigla()
@@ -185,27 +199,31 @@ class ServicoUnidade implements \JsonSerializable
         return $this->numeroFinal;
     }
 
-    public function setPrioridade($prioridade)
+    public function setPrioridade($prioridade): self
     {
         $this->prioridade = $prioridade;
+
         return $this;
     }
 
-    public function setIncremento($incremento)
+    public function setIncremento($incremento): self
     {
         $this->incremento = $incremento;
+
         return $this;
     }
 
-    public function setNumeroInicial($numeroInicial)
+    public function setNumeroInicial($numeroInicial): self
     {
         $this->numeroInicial = $numeroInicial;
+
         return $this;
     }
 
-    public function setNumeroFinal($numeroFinal)
+    public function setNumeroFinal($numeroFinal): self
     {
         $this->numeroFinal = $numeroFinal;
+
         return $this;
     }
 
@@ -214,9 +232,10 @@ class ServicoUnidade implements \JsonSerializable
         return $this->mensagem;
     }
 
-    public function setMensagem($mensagem)
+    public function setMensagem($mensagem): self
     {
         $this->mensagem = $mensagem;
+
         return $this;
     }
 

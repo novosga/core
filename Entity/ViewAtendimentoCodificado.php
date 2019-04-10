@@ -29,7 +29,7 @@ class ViewAtendimentoCodificado extends AbstractAtendimentoCodificado
         return $this->atendimento;
     }
 
-    public function setAtendimento(AbstractAtendimento $atendimento)
+    public function setAtendimento(AbstractAtendimento $atendimento): self
     {
         $this->atendimento = $atendimento;
 

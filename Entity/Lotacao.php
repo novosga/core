@@ -54,9 +54,11 @@ class Lotacao implements \JsonSerializable
      *
      * @return none
      */
-    public function setUsuario(Usuario $usuario)
+    public function setUsuario(Usuario $usuario): self
     {
         $this->usuario = $usuario;
+
+        return $this;
     }
 
     /**
@@ -74,9 +76,11 @@ class Lotacao implements \JsonSerializable
      *
      * @param $unidade
      */
-    public function setUnidade(Unidade $unidade)
+    public function setUnidade(Unidade $unidade): self
     {
         $this->unidade = $unidade;
+
+        return $this;
     }
 
     /**
@@ -96,9 +100,11 @@ class Lotacao implements \JsonSerializable
      *
      * @return none
      */
-    public function setPerfil(Perfil $perfil)
+    public function setPerfil(Perfil $perfil): self
     {
         $this->perfil = $perfil;
+
+        return $this;
     }
 
     /**

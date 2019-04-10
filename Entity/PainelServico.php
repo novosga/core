@@ -38,9 +38,11 @@ class PainelServico implements \JsonSerializable
         return $this->painel;
     }
 
-    public function setPainel($painel)
+    public function setPainel($painel): self
     {
         $this->painel = $painel;
+
+        return $this;
     }
 
     public function getServico()
@@ -48,9 +50,11 @@ class PainelServico implements \JsonSerializable
         return $this->servico;
     }
 
-    public function setServico($servico)
+    public function setServico($servico): self
     {
         $this->servico = $servico;
+
+        return $this;
     }
 
     public function getUnidade()
@@ -58,9 +62,11 @@ class PainelServico implements \JsonSerializable
         return $this->unidade;
     }
 
-    public function setUnidade($unidade)
+    public function setUnidade($unidade): self
     {
         $this->unidade = $unidade;
+
+        return $this;
     }
 
     public function jsonSerialize()

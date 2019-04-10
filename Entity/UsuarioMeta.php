@@ -26,7 +26,7 @@ class UsuarioMeta extends EntityMetadata
         return $this->getEntity();
     }
 
-    public function setUsuario(Usuario $usuario)
+    public function setUsuario(Usuario $usuario): self
     {
         return $this->setEntity($usuario);
     }

@@ -85,15 +85,18 @@ class Servico implements \JsonSerializable
         return $this->id;
     }
 
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+        
         return $this;
     }
 
-    public function setNome($nome)
+    public function setNome($nome): self
     {
         $this->nome = $nome;
+
+        return $this;
     }
 
     public function getNome()
@@ -101,9 +104,11 @@ class Servico implements \JsonSerializable
         return $this->nome;
     }
 
-    public function setDescricao($descricao)
+    public function setDescricao($descricao): self
     {
         $this->descricao = $descricao;
+
+        return $this;
     }
 
     public function getDescricao()
@@ -111,9 +116,11 @@ class Servico implements \JsonSerializable
         return $this->descricao;
     }
 
-    public function setMestre(Servico $servico = null)
+    public function setMestre(?Servico $servico): self
     {
         $this->mestre = $servico;
+
+        return $this;
     }
 
     public function getMestre()
@@ -126,9 +133,11 @@ class Servico implements \JsonSerializable
         return ($this->getId() && !$this->getMestre());
     }
 
-    public function setAtivo(bool $ativo)
+    public function setAtivo(bool $ativo): self
     {
         $this->ativo = $ativo;
+
+        return $this;
     }
 
     public function isAtivo(): bool
@@ -141,9 +150,11 @@ class Servico implements \JsonSerializable
         return $this->peso;
     }
 
-    public function setPeso($peso)
+    public function setPeso($peso): self
     {
         $this->peso = $peso;
+
+        return $this;
     }
 
     public function getSubServicos()
@@ -151,9 +162,11 @@ class Servico implements \JsonSerializable
         return $this->subServicos;
     }
 
-    public function setSubServicos($subServicos)
+    public function setSubServicos($subServicos): self
     {
         $this->subServicos = $subServicos;
+
+        return $this;
     }
 
     public function getServicosUnidade()
@@ -161,9 +174,11 @@ class Servico implements \JsonSerializable
         return $this->servicosUnidade;
     }
 
-    public function setServicosUnidade(array $servicosUnidade)
+    public function setServicosUnidade(array $servicosUnidade): self
     {
         $this->servicosUnidade = $servicosUnidade;
+
+        return $this;
     }
     
     public function getCreatedAt()
@@ -181,21 +196,24 @@ class Servico implements \JsonSerializable
         return $this->deletedAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt)
+    public function setCreatedAt(\DateTime $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function setUpdatedAt(\DateTime $updatedAt)
+    public function setUpdatedAt(\DateTime $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
-    public function setDeletedAt(\DateTime $deletedAt)
+    public function setDeletedAt(\DateTime $deletedAt): self
     {
         $this->deletedAt = $deletedAt;
+        
         return $this;
     }
     

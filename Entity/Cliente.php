@@ -72,33 +72,38 @@ class Cliente implements \JsonSerializable
         return $this->telefone;
     }
 
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
-    public function setNome($nome)
+    public function setNome($nome): self
     {
         $this->nome = $nome;
+
         return $this;
     }
 
-    public function setDocumento($documento)
+    public function setDocumento($documento): self
     {
         $this->documento = $documento;
+
         return $this;
     }
 
-    public function setEmail($email)
+    public function setEmail($email): self
     {
         $this->email = $email;
+        
         return $this;
     }
 
-    public function setTelefone($telefone)
+    public function setTelefone($telefone): self
     {
         $this->telefone = $telefone;
+
         return $this;
     }
     

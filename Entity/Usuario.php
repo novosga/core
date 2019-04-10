@@ -134,15 +134,17 @@ class Usuario implements
         return $this->id;
     }
 
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
-    public function setLogin($login)
+    public function setLogin($login): self
     {
         $this->login = $login;
+
         return $this;
     }
 
@@ -151,9 +153,10 @@ class Usuario implements
         return $this->login;
     }
 
-    public function setNome($nome)
+    public function setNome($nome): self
     {
         $this->nome = $nome;
+
         return $this;
     }
 
@@ -162,9 +165,10 @@ class Usuario implements
         return $this->nome;
     }
 
-    public function setSobrenome($sobrenome)
+    public function setSobrenome($sobrenome): self
     {
         $this->sobrenome = $sobrenome;
+
         return $this;
     }
 
@@ -188,9 +192,10 @@ class Usuario implements
         return $this->email;
     }
 
-    public function setEmail($email)
+    public function setEmail($email): self
     {
         $this->email = $email;
+        
         return $this;
     }
 
@@ -199,15 +204,17 @@ class Usuario implements
         return $this->senha;
     }
 
-    public function setSenha($senha)
+    public function setSenha($senha): self
     {
         $this->senha = $senha;
+
         return $this;
     }
 
-    public function setAtivo(bool $ativo)
+    public function setAtivo(bool $ativo): self
     {
         $this->ativo = $ativo;
+
         return $this;
     }
 
@@ -216,9 +223,10 @@ class Usuario implements
         return $this->lotacao;
     }
 
-    public function setLotacao(Lotacao $lotacao = null)
+    public function setLotacao(?Lotacao $lotacao): self
     {
         $this->lotacao = $lotacao;
+
         return $this;
     }
 
@@ -227,27 +235,33 @@ class Usuario implements
         return $this->lotacoes;
     }
 
-    public function setSalt($salt)
+    public function setSalt($salt): self
     {
         $this->salt = $salt;
+
         return $this;
     }
 
-    public function setLotacoes($lotacoes)
+    public function setLotacoes($lotacoes): self
     {
         $this->lotacoes = $lotacoes;
+
         return $this;
     }
 
-    public function addLotacoe(Lotacao $lotacao)
+    public function addLotacoe(Lotacao $lotacao): self
     {
         $lotacao->setUsuario($this);
         $this->getLotacoes()->add($lotacao);
+
+        return $this;
     }
 
-    public function removeLotacoe(Lotacao $lotacao)
+    public function removeLotacoe(Lotacao $lotacao): self
     {
         $this->getLotacoes()->removeElement($lotacao);
+
+        return $this;
     }
 
     public function isAtivo(): bool
@@ -260,9 +274,10 @@ class Usuario implements
         return $this->ultimoAcesso;
     }
 
-    public function setUltimoAcesso($ultimoAcesso)
+    public function setUltimoAcesso($ultimoAcesso): self
     {
         $this->ultimoAcesso = $ultimoAcesso;
+
         return $this;
     }
 
@@ -271,9 +286,10 @@ class Usuario implements
         return $this->ip;
     }
 
-    public function setIp($ip)
+    public function setIp($ip): self
     {
         $this->ip = $ip;
+
         return $this;
     }
 
@@ -282,9 +298,10 @@ class Usuario implements
         return $this->sessionId;
     }
 
-    public function setSessionId($sessionId)
+    public function setSessionId($sessionId): self
     {
         $this->sessionId = $sessionId;
+
         return $this;
     }
 
@@ -293,9 +310,10 @@ class Usuario implements
         return $this->algorithm;
     }
 
-    public function setAlgorithm($algorithm)
+    public function setAlgorithm($algorithm): self
     {
         $this->algorithm = $algorithm;
+
         return $this;
     }
 
@@ -304,9 +322,10 @@ class Usuario implements
         return $this->admin;
     }
 
-    public function setAdmin($admin)
+    public function setAdmin($admin): self
     {
         $this->admin = $admin;
+
         return $this;
     }
 
@@ -325,21 +344,24 @@ class Usuario implements
         return $this->deletedAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt)
+    public function setCreatedAt(\DateTime $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function setUpdatedAt(\DateTime $updatedAt)
+    public function setUpdatedAt(\DateTime $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
-    public function setDeletedAt(\DateTime $deletedAt)
+    public function setDeletedAt(\DateTime $deletedAt): self
     {
         $this->deletedAt = $deletedAt;
+
         return $this;
     }
 
@@ -362,9 +384,10 @@ class Usuario implements
         return $this->roles;
     }
 
-    public function addRole($role)
+    public function addRole($role): self
     {
         $this->roles[] = $role;
+
         return $this;
     }
 

@@ -38,7 +38,7 @@ abstract class AbstractMetadata implements \JsonSerializable
         return $this->namespace;
     }
 
-    public function setNamespace(string $namespace)
+    public function setNamespace(string $namespace): self
     {
         $this->namespace = $namespace;
 
@@ -55,14 +55,14 @@ abstract class AbstractMetadata implements \JsonSerializable
         return $this->value;
     }
 
-    public function setName(string $name)
+    public function setName(string $name): self
     {
         $this->name = $name;
 
         return $this;
     }
 
-    public function setValue($value)
+    public function setValue($value): self
     {
         $this->value = $value;
 
