@@ -267,7 +267,7 @@ class ServicoUnidade implements \JsonSerializable
         return $this->mensagem;
     }
 
-    public function setMensagem(string $mensagem): self
+    public function setMensagem(?string $mensagem): self
     {
         $this->mensagem = $mensagem;
 
