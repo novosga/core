@@ -408,6 +408,14 @@ class AtendimentoService extends StorageAwareService
         }
         
         $su = $this->checkServicoUnidade($unidade, $servico);
+
+        if (
+            ($su->getTipo() === 2 && $prioridade->getPeso() > 0) ||
+            ($su->getTipo() === 3 && $prioridade->getPeso() === 0)
+         ) {
+            $error = $this->translator->trans('error.invalid_attendance_priority');
+            throw new Exception($error);
+        }
         
         $atendimento = new Atendimento();
         $atendimento

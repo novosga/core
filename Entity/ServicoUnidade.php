@@ -20,6 +20,21 @@ namespace Novosga\Entity;
 class ServicoUnidade implements \JsonSerializable
 {
     /**
+     * O atendimento do serviço pode ser tanto normal quanto prioridade
+     */
+    const ATENDIMENTO_TODOS      = 1;
+
+    /**
+     * O atendimento do serviço só poder ser normal
+     */
+    const ATENDIMENTO_NORMAL     = 2;
+
+    /**
+     * O atendimento do serviço só poder ser prioridade
+     */
+    const ATENDIMENTO_PRIORIDADE = 3;
+
+    /**
      * @var Servico
      */
     private $servico;
@@ -57,7 +72,7 @@ class ServicoUnidade implements \JsonSerializable
     /**
      * @var bool
      */
-    private $prioridade;
+    private $tipo;
 
     /**
      * @var int
@@ -75,21 +90,29 @@ class ServicoUnidade implements \JsonSerializable
     private $numeroFinal;
 
     /**
+     * @var int
+     */
+    private $maximo;
+
+    /**
      * @var string
      */
     private $mensagem;
 
     public function __construct()
     {
-        $this->prioridade = true;
+        $this->tipo          = self::ATENDIMENTO_TODOS;
         $this->numeroInicial = 1;
-        $this->incremento = 1;
+        $this->incremento    = 1;
+        $this->peso          = 1;
+        $this->sigla         = '';
+        $this->mensagem      = '';
     }
 
     /**
      * @return Servico
      */
-    public function getServico()
+    public function getServico(): ?Servico
     {
         return $this->servico;
     }
@@ -104,7 +127,7 @@ class ServicoUnidade implements \JsonSerializable
     /**
      * @return Unidade
      */
-    public function getUnidade()
+    public function getUnidade(): ?Unidade
     {
         return $this->unidade;
     }
@@ -123,7 +146,7 @@ class ServicoUnidade implements \JsonSerializable
         return $this;
     }
 
-    public function getDepartamento()
+    public function getDepartamento(): ?Departamento
     {
         return $this->departamento;
     }
@@ -131,7 +154,7 @@ class ServicoUnidade implements \JsonSerializable
     /**
      * @return Local
      */
-    public function getLocal()
+    public function getLocal(): ?Local
     {
         return $this->local;
     }
@@ -155,84 +178,96 @@ class ServicoUnidade implements \JsonSerializable
         return $this->ativo;
     }
 
-    public function getPeso()
+    public function getPeso(): int
     {
         return $this->peso;
     }
 
-    public function setPeso($peso): self
+    public function setPeso(int $peso): self
     {
         $this->peso = $peso;
 
         return $this;
     }
 
-    public function setSigla($sigla): self
+    public function setSigla(string $sigla): self
     {
         $this->sigla = $sigla;
 
         return $this;
     }
 
-    public function getSigla()
+    public function getSigla(): string
     {
         return $this->sigla;
     }
 
-    public function getPrioridade()
+    public function getTipo(): int
     {
-        return $this->prioridade;
+        return $this->tipo;
     }
 
-    public function getIncremento()
+    public function getIncremento(): int
     {
         return $this->incremento;
     }
 
-    public function getNumeroInicial()
+    public function getNumeroInicial(): int
     {
         return $this->numeroInicial;
     }
 
-    public function getNumeroFinal()
+    public function getNumeroFinal(): ?int
     {
         return $this->numeroFinal;
     }
 
-    public function setPrioridade($prioridade): self
+    public function getMaximo(): ?int
     {
-        $this->prioridade = $prioridade;
+        return $this->maximo;
+    }
+
+    public function setTipo(int $tipo): self
+    {
+        $this->tipo = $tipo;
 
         return $this;
     }
 
-    public function setIncremento($incremento): self
+    public function setIncremento(int $incremento): self
     {
         $this->incremento = $incremento;
 
         return $this;
     }
 
-    public function setNumeroInicial($numeroInicial): self
+    public function setNumeroInicial(int $numeroInicial): self
     {
         $this->numeroInicial = $numeroInicial;
 
         return $this;
     }
 
-    public function setNumeroFinal($numeroFinal): self
+    public function setNumeroFinal(?int $numeroFinal): self
     {
         $this->numeroFinal = $numeroFinal;
 
         return $this;
     }
 
-    public function getMensagem()
+    public function setMaximo(?int $maximo): self
+    {
+        $this->maximo = $maximo;
+
+        return $this;
+    }
+
+    public function getMensagem(): ?string
     {
         return $this->mensagem;
     }
 
-    public function setMensagem($mensagem): self
+    public function setMensagem(string $mensagem): self
     {
         $this->mensagem = $mensagem;
 
@@ -253,11 +288,12 @@ class ServicoUnidade implements \JsonSerializable
             'servico'       => $this->getServico(),
             'departamento'  => $this->getDepartamento(),
             'ativo'         => $this->isAtivo(),
-            'prioridade'    => $this->getPrioridade(),
+            'tipo'          => $this->getTipo(),
             'mensagem'      => $this->getMensagem(),
             'numeroInicial' => $this->getNumeroInicial(),
             'numeroFinal'   => $this->getNumeroFinal(),
-            'incremento'    => $this->getIncremento()
+            'incremento'    => $this->getIncremento(),
+            'maximo'        => $this->getMaximo(),
         ];
     }
 }
