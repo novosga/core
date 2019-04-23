@@ -416,6 +416,22 @@ class AtendimentoService extends StorageAwareService
             $error = $this->translator->trans('error.invalid_attendance_priority');
             throw new Exception($error);
         }
+
+        if ($su->getMaximo() > 0) {
+            $count = $this
+                ->storage
+                ->getManager()
+                ->getRepository(Atendimento::class)
+                ->count([
+                    'servico' => $servico,
+                    'unidade' => $unidade,
+                ]);
+
+            if ($count >= $su->getMaximo()) {
+                $error = $this->translator->trans('error.maximum_attendance_reached');
+                throw new Exception($error);
+            }
+        }
         
         $atendimento = new Atendimento();
         $atendimento
