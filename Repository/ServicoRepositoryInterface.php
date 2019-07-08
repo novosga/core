@@ -12,7 +12,7 @@
 namespace Novosga\Repository;
 
 use Doctrine\Common\Persistence\ObjectRepository;
-use Novosga\Entity\Servico;
+use Novosga\Entity\ServicoInterface;
 
 /**
  * ServicoRepositoryInterface
@@ -23,8 +23,8 @@ interface ServicoRepositoryInterface extends ObjectRepository
 {
     /**
      * Retorna os subserviços ativos do serviço informado
-     * @param Servico $servico
-     * @return Servico[]
+     * @param ServicoInterface $servico
+     * @return ServicoInterface[]
      */
-    public function getSubservicos(Servico $servico);
+    public function getSubservicos(ServicoInterface $servico);
 }
