@@ -13,9 +13,9 @@ namespace Novosga\Infrastructure;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\Common\Persistence\ObjectRepository;
-use Novosga\Entity\Agendamento;
-use Novosga\Entity\Atendimento;
-use Novosga\Entity\Unidade;
+use Novosga\Entity\AgendamentoInterface;
+use Novosga\Entity\AtendimentoInterface;
+use Novosga\Entity\UnidadeInterface;
 
 /**
  * StorageInterface
@@ -37,33 +37,33 @@ interface StorageInterface
     
     /**
      * Gera uma nova senha de atendimento
-     * @param Atendimento $atendimento
-     * @param Agendamento $agendamento
+     * @param AtendimentoInterface $atendimento
+     * @param AgendamentoInterface $agendamento
      */
-    public function distribui(Atendimento $atendimento, Agendamento $agendamento = null);
+    public function distribui(AtendimentoInterface $atendimento, AgendamentoInterface $agendamento = null);
     
     /**
-     * @param Atendimento $atendimento
+     * @param AtendimentoInterface $atendimento
      */
-    public function chamar(Atendimento $atendimento);
+    public function chamar(AtendimentoInterface $atendimento);
     
     /**
      * 
-     * @param Atendimento $atendimento
+     * @param AtendimentoInterface $atendimento
      * @param array       $codificados
-     * @param Atendimento $novoAtendimento
+     * @param AtendimentoInterface $novoAtendimento
      */
-    public function encerrar(Atendimento $atendimento, array $codificados, Atendimento $novoAtendimento = null);
+    public function encerrar(AtendimentoInterface $atendimento, array $codificados, AtendimentoInterface $novoAtendimento = null);
     
     /**
      * Move os dados de atendimento para o histórico
-     * @param Unidade $unidade
+     * @param UnidadeInterface $unidade
      */
-    public function acumularAtendimentos(?Unidade $unidade, array $ctx = []);
+    public function acumularAtendimentos(?UnidadeInterface $unidade, array $ctx = []);
     
     /**
      * Apaga todos os dados de atendimentos
-     * @param Unidade $unidade
+     * @param UnidadeInterface $unidade
      */
-    public function apagarDadosAtendimento(?Unidade $unidade, array $ctx = []);
+    public function apagarDadosAtendimento(?UnidadeInterface $unidade, array $ctx = []);
 }
