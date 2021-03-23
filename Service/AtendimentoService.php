@@ -29,7 +29,7 @@ use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
 use Novosga\Infrastructure\StorageInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * AtendimentoService.

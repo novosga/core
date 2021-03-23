@@ -11,9 +11,9 @@
 
 namespace Novosga\Repository;
 
-use Novosga\Entity\UsuarioInterface;
-use Novosga\Entity\UnidadeInterface;
-use Doctrine\Common\Persistence\ObjectRepository;
+use Novosga\Entity\Usuario;
+use Novosga\Entity\Unidade;
+use Doctrine\Persistence\ObjectRepository;
 
 /**
  * UnidadeRepositoryInterface
@@ -25,8 +25,8 @@ interface UnidadeRepositoryInterface extends ObjectRepository
     
     /**
      * Retorna as unidades disponíveis para o usuário
-     * @param UsuarioInterface $usuario
-     * @return UnidadeInterface[]
+     * @param Usuario $usuario
+     * @return Unidade[]
      */
-    public function findByUsuario(UsuarioInterface $usuario);
+    public function findByUsuario(Usuario $usuario);
 }

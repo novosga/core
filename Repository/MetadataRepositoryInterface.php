@@ -11,8 +11,8 @@
 
 namespace Novosga\Repository;
 
-use Novosga\Entity\MetadataInterface;
-use Doctrine\Common\Persistence\ObjectRepository;
+use Novosga\Entity\Metadata;
+use Doctrine\Persistence\ObjectRepository;
 
 /**
  * MetadataRepositoryInterface

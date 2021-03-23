@@ -11,11 +11,11 @@
 
 namespace Novosga\Repository;
 
-use Novosga\Entity\UsuarioInterface;
-use Novosga\Entity\UnidadeInterface;
-use Novosga\Entity\ServicoInterface;
-use Novosga\Entity\ServicoUsuarioInterface;
-use Doctrine\Common\Persistence\ObjectRepository;
+use Novosga\Entity\Usuario;
+use Novosga\Entity\Unidade;
+use Novosga\Entity\Servico;
+use Novosga\Entity\ServicoUsuario;
+use Doctrine\Persistence\ObjectRepository;
 
 /**
  * ServicoUsuarioRepositoryInterface
@@ -27,18 +27,18 @@ interface ServicoUsuarioRepositoryInterface extends ObjectRepository
     /**
      * Retorna todos os serviços do usuario
      *
-     * @param UsuarioInterface|int $usuario
-     * @return ServicoUsuarioInterface[]
+     * @param Usuario|int $usuario
+     * @return ServicoUsuario[]
      */
     public function getAll($usuario, $unidade);
     
     /**
      * Retorna o relacionamento entre o serviço e a usuario.
      *
-     * @param UsuarioInterface|int $usuario
-     * @param UnidadeInterface|int $unidade
-     * @param ServicoInterface|int $servico
-     * @return ServicoUsuarioInterface|null
+     * @param Usuario|int $usuario
+     * @param Unidade|int $unidade
+     * @param Servico|int $servico
+     * @return ServicoUsuario|null
      */
     public function get($usuario, $unidade, $servico);
 }

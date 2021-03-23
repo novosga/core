@@ -12,9 +12,10 @@
 namespace Novosga\Repository;
 
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\Common\Persistence\ObjectRepository;
-use Novosga\Entity\UnidadeInterface;
-use Novosga\Entity\ServicoUnidadeInterface;
+use Doctrine\Persistence\ObjectRepository;
+use Novosga\Entity\Unidade;
+use Novosga\Entity\Usuario;
+use Novosga\Entity\ServicoUnidade;
 
 /**
  * UsuarioRepositoryInterface
@@ -25,17 +26,17 @@ interface UsuarioRepositoryInterface extends ObjectRepository
 {
     /**
      * Retorna os usuários que tem lotação na unidade
-     * @param UnidadeInterface $unidade
+     * @param Unidade $unidade
      * @param Criteria $criteria
-     * @return UsuarioInterface[]
+     * @return Usuario[]
      */
-    public function findByUnidade(UnidadeInterface $unidade, Criteria $criteria = null);
+    public function findByUnidade(Unidade $unidade, Criteria $criteria = null);
     
     /**
      * Retorna os usuários que atendem o serviço da unidade
-     * @param ServicoUnidadeInterface $servicoUnidade
+     * @param ServicoUnidade $servicoUnidade
      * @param Criteria $criteria
-     * @return UsuarioInterface[]
+     * @return Usuario[]
      */
-    public function findByServicoUnidade(ServicoUnidadeInterface $servicoUnidade, Criteria $criteria = null);
+    public function findByServicoUnidade(ServicoUnidade $servicoUnidade, Criteria $criteria = null);
 }
