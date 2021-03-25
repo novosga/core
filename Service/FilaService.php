@@ -27,10 +27,17 @@ use Novosga\Infrastructure\StorageInterface;
  */
 class FilaService extends StorageAwareService
 {
-    const TIPO_TODOS       = 'todos';
-    const TIPO_NORMAL      = 'normal';
-    const TIPO_PRIORIDADE  = 'prioridade';
+    const TIPO_TODOS = 'todos';
+    const TIPO_NORMAL = 'normal';
+    const TIPO_PRIORIDADE = 'prioridade';
     const TIPO_AGENDAMENTO = 'agendamento';
+
+    const TIPOS_ATENDIMENTO = [
+        self::TIPO_TODOS,
+        self::TIPO_NORMAL,
+        self::TIPO_PRIORIDADE,
+        self::TIPO_AGENDAMENTO,
+    ];
     
     /**
      * @var Configuration

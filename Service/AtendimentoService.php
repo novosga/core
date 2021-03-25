@@ -29,6 +29,8 @@ use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
 use Novosga\Infrastructure\StorageInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Mercure\PublisherInterface;
+use Symfony\Component\Mercure\Update;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -66,16 +68,23 @@ class AtendimentoService extends StorageAwareService
      */
     private $translator;
     
+    /**
+     * @var PublisherInterface
+     */
+    private $publisher;
+    
     public function __construct(
         StorageInterface $storage,
         EventDispatcherInterface $dispatcher,
         LoggerInterface $logger,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        PublisherInterface $publisher
     ) {
         parent::__construct($storage);
         $this->dispatcher = $dispatcher;
         $this->logger     = $logger;
         $this->translator = $translator;
+        $this->publisher = $publisher;
     }
     
     public function situacoes()
@@ -275,6 +284,12 @@ class AtendimentoService extends StorageAwareService
             return false;
         }
 
+        ($this->publisher)(new Update([
+            "/atendimentos/{$atendimento->getId()}",
+            "/unidades/{$atendimento->getUnidade()->getId()}/fila",
+            "/usuarios/{$usuario->getId()}/fila",
+        ], json_encode([ 'id' => $atendimento->getId() ])));
+
         return true;
     }
 
@@ -464,12 +479,19 @@ class AtendimentoService extends StorageAwareService
             $this->storage->distribui($atendimento, $agendamento);
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
+            throw $e;
         }
         
         if (!$atendimento->getId()) {
             $error = $this->translator->trans('error.new_ticket');
+            $this->logger->error($error);
             throw new Exception($error);
         }
+
+        ($this->publisher)(new Update([
+            '/atendimentos',
+            "/unidades/{$unidade->getId()}/fila",
+        ], json_encode([ 'id' => $atendimento->getId() ])));
         
         return $atendimento;
     }
@@ -496,7 +518,13 @@ class AtendimentoService extends StorageAwareService
         $atendimento->setTempoDeslocamento($tempoDeslocamento);
         
         $om = $this->storage->getManager();
-        $om->merge($atendimento);
+        $om->persist($atendimento);
+
+        ($this->publisher)(new Update([
+            "/atendimentos/{$atendimento->getId()}",
+            "/unidades/{$atendimento->getUnidade()->getId()}/fila",
+            "/usuarios/{$usuario->getId()}/fila",
+        ], json_encode([ 'id' => $atendimento->getId() ])));
         
         $om->flush();
     }
@@ -527,7 +555,13 @@ class AtendimentoService extends StorageAwareService
         $atendimento->setTempoDeslocamento($tempoDeslocamento);
         
         $om = $this->storage->getManager();
-        $om->merge($atendimento);
+        $om->persist($atendimento);
+
+        ($this->publisher)(new Update([
+            "/atendimentos/{$atendimento->getId()}",
+            "/unidades/{$atendimento->getUnidade()->getId()}/fila",
+            "/usuarios/{$usuario->getId()}/fila",
+        ], json_encode([ 'id' => $atendimento->getId() ])));
         
         $om->flush();
     }
@@ -582,12 +616,18 @@ class AtendimentoService extends StorageAwareService
         $novo = $this->copyToRedirect($atendimento, $unidade, $servico, $usuario);
         
         $om = $this->storage->getManager();
-        $om->merge($atendimento);
+        $om->persist($atendimento);
         $om->persist($novo);
         
         $om->flush();
 
         $this->dispatcher->createAndDispatch('attending.redirect', [$atendimento, $novo], true);
+
+        ($this->publisher)(new Update([
+            "/atendimentos/{$atendimento->getId()}",
+            "/atendimentos/{$novo->getId()}",
+            "/unidades/{$unidade->getId()}/fila",
+        ], json_encode([ 'originalId' => $atendimento->getId(), 'novoId' => $novo->getId() ])));
 
         return $novo;
     }
@@ -630,6 +670,11 @@ class AtendimentoService extends StorageAwareService
             $this->dispatcher->createAndDispatch('attending.transfer', [$atendimento], true);
         }
 
+        ($this->publisher)(new Update([
+            "/atendimentos/{$atendimento->getId()}",
+            "/unidades/{$unidade->getId()}/fila",
+        ], json_encode([ 'id' => $atendimento->getId() ])));
+
         return $success;
     }
 
@@ -667,10 +712,15 @@ class AtendimentoService extends StorageAwareService
         $atendimento->setStatus(self::SENHA_CANCELADA);
         
         $em = $this->storage->getManager();
-        $em->merge($atendimento);
+        $em->persist($atendimento);
         $em->flush();
 
         $this->dispatcher->createAndDispatch('attending.cancel', $atendimento, true);
+
+        ($this->publisher)(new Update([
+            "/atendimentos/{$atendimento->getId()}",
+            "/unidades/{$atendimento->getUnidade()->getId()}/fila",
+        ], json_encode([ 'id' => $atendimento->getId() ])));
     }
 
     /**
@@ -712,6 +762,11 @@ class AtendimentoService extends StorageAwareService
             $this->storage->getManager()->refresh($atendimento);
             $this->dispatcher->createAndDispatch('attending.reactivate', $atendimento, true);
         }
+
+        ($this->publisher)(new Update([
+            "/atendimentos/{$atendimento->getId()}",
+            "/unidades/{$unidade->getId()}/fila",
+        ], json_encode([ 'id' => $atendimento->getId() ])));
 
         return $success;
     }
@@ -780,6 +835,11 @@ class AtendimentoService extends StorageAwareService
         $atendimento->setTempoAtendimento($tempoAtendimento);
         
         $this->storage->encerrar($atendimento, $executados, $novoAtendimento);
+
+        ($this->publisher)(new Update([
+            "/atendimentos/{$atendimento->getId()}",
+            "/unidades/{$unidade->getId()}/fila",
+        ], json_encode([ 'id' => $atendimento->getId() ])));
     }
     
     public function alteraStatusAtendimentoUsuario(Usuario $usuario, $novoStatus)

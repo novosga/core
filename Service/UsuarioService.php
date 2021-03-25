@@ -17,6 +17,9 @@ use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
 use Novosga\Entity\Servico;
 use Novosga\Entity\UsuarioMeta;
+use Novosga\Infrastructure\StorageInterface;
+use Symfony\Component\Mercure\PublisherInterface;
+use Symfony\Component\Mercure\Update;
 
 /**
  * UsuarioService.
@@ -30,6 +33,17 @@ class UsuarioService extends StorageAwareService
     const ATTR_ATENDIMENTO_NUM_LOCAL = 'atendimento.num_local';
     const ATTR_ATENDIMENTO_TIPO      = 'atendimento.tipo';
     const ATTR_SESSION_UNIDADE       = 'session.unidade';
+
+    /**
+     * @var PublisherInterface
+     */
+    private $publisher;
+
+    public function __construct(StorageInterface $storage, PublisherInterface $publisher)
+    {
+        parent::__construct($storage);
+        $this->publisher = $publisher;
+    }
 
     /**
      * Cria ou retorna um metadado do usuário caso o $value seja null (ou ocultado).
@@ -91,7 +105,7 @@ class UsuarioService extends StorageAwareService
      * @param Usuario $usuario
      * @param Unidade $unidade
      *
-     * @return ArrayCollection
+     * @return array
      */
     public function servicos(Usuario $usuario, Unidade $unidade)
     {
@@ -145,5 +159,99 @@ class UsuarioService extends StorageAwareService
             ->getSingleScalarResult();
 
         return $count === 0;
+    }
+
+    public function updateUsuario(
+        Usuario $usuario,
+        string $tipoAtendimento = null,
+        int $local = null,
+        int $numero = null,
+    ) {
+        $em = $this->storage->getManager();
+
+        if ($tipoAtendimento && in_array($tipoAtendimento, FilaService::TIPOS_ATENDIMENTO)) {
+            $this->meta($usuario, UsuarioService::ATTR_ATENDIMENTO_TIPO, $tipoAtendimento);
+        }
+        
+        if ($local > 0) {
+            $this->meta($usuario, UsuarioService::ATTR_ATENDIMENTO_LOCAL, $local);
+        }
+        
+        if ($numero > 0) {
+            $this->meta($usuario, UsuarioService::ATTR_ATENDIMENTO_NUM_LOCAL, $numero);
+        }
+        
+        ($this->publisher)(new Update([
+            "/usuarios/{$usuario->getId()}/fila",
+        ], json_encode([ 'id' => $usuario->getId() ])));
+    }
+
+    public function addServicoUsuario(Usuario $usuario, Servico $servico, Unidade $unidade): ServicoUsuario
+    {
+        $em = $this->storage->getManager();
+
+        $servicoUsuario = new ServicoUsuario();
+        $servicoUsuario->setUsuario($usuario);
+        $servicoUsuario->setServico($servico);
+        $servicoUsuario->setUnidade($unidade);
+        $servicoUsuario->setPeso(1);
+
+        $em->persist($servicoUsuario);
+        $em->flush();
+        
+        ($this->publisher)(new Update([
+            "/usuarios/{$usuario->getId()}/fila",
+        ], json_encode([ 'id' => $usuario->getId() ])));
+
+        return $servicoUsuario;
+    }
+
+    public function removeServicoUsuario(Usuario $usuario, Servico $servico, Unidade $unidade): ?ServicoUsuario
+    {
+        $em = $this->storage->getManager();
+
+        $servicoUsuario = $em
+            ->getRepository(ServicoUsuario::class)
+            ->findOneBy([
+                'usuario' => $usuario,
+                'servico' => $servico,
+                'unidade' => $unidade
+            ]);
+
+        if ($servicoUsuario) {
+            $em->remove($servicoUsuario);
+            $em->flush();
+        }
+        
+        ($this->publisher)(new Update([
+            "/usuarios/{$usuario->getId()}/fila",
+        ], json_encode([ 'id' => $usuario->getId() ])));
+
+        return $servicoUsuario;
+    }
+
+    public function updateServicoUsuario(Usuario $usuario, Servico $servico, Unidade $unidade, int $peso): ?ServicoUsuario
+    {
+        $em = $this->storage->getManager();
+
+        $servicoUsuario = $em
+            ->getRepository(ServicoUsuario::class)
+            ->findOneBy([
+                'usuario' => $usuario,
+                'servico' => $servico,
+                'unidade' => $unidade
+            ]);
+        
+        if ($servicoUsuario && $peso > 0) {
+            $servicoUsuario->setPeso($peso);
+            $em->persist($servicoUsuario);
+            $em->flush();
+        }
+        
+        ($this->publisher)(new Update([
+            "/usuarios/{$usuario->getId()}/fila",
+        ], json_encode([ 'id' => $usuario->getId() ])));
+
+        return $servicoUsuario;
     }
 }
