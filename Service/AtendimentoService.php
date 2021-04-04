@@ -176,6 +176,11 @@ class AtendimentoService extends StorageAwareService
         $om->flush();
 
         $this->dispatcher->createAndDispatch('panel.call', [$atendimento, $senha], true);
+
+        ($this->publisher)(new Update([
+            "/paineis",
+            "/unidades/{$unidade->getId()}/painel",
+        ], json_encode([ 'id' => $atendimento->getId() ])));
     }
 
     /**
