@@ -45,8 +45,9 @@ class Envelope implements \JsonSerializable
      */
     private $detail;
 
-    public function __construct()
+    public function __construct($data = null)
     {
+        $this->data = $data;
         $this->success = true;
         $this->sessionStatus = 'active';
     }
