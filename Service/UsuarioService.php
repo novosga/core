@@ -165,7 +165,7 @@ class UsuarioService extends StorageAwareService
         Usuario $usuario,
         string $tipoAtendimento = null,
         int $local = null,
-        int $numero = null,
+        int $numero = null
     ) {
         $em = $this->storage->getManager();
 
