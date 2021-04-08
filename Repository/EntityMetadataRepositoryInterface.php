@@ -21,6 +21,14 @@ use Doctrine\Persistence\ObjectRepository;
  */
 interface EntityMetadataRepositoryInterface extends ObjectRepository
 {
+
+    /**
+     * @param mixed $entity
+     * @param string $namespace
+     * @return EntityMetadata[]
+     */
+    public function findByNamespace($entity, string $namespace);
+
     /**
      * @param mixed $entity
      * @param string $namespace

@@ -54,6 +54,11 @@ class Agendamento implements \JsonSerializable
      * @var DateTime
      */
     private $dataConfirmacao;
+    
+    /**
+     * @var string
+     */
+    private $oid;
 
     public function __construct()
     {
@@ -135,6 +140,18 @@ class Agendamento implements \JsonSerializable
 
         return $this;
     }
+
+    public function getOid(): ?string
+    {
+        return $this->oid;
+    }
+
+    public function setOid(?string $oid): self
+    {
+        $this->oid = $oid;
+
+        return $this;
+    }
         
     public function __toString()
     {
@@ -144,13 +161,14 @@ class Agendamento implements \JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'id'               => $this->getId(),
-            'cliente'          => $this->getCliente(),
-            'servico'          => $this->getServico(),
-            'unidade'          => $this->getUnidade(),
-            'data'             => $this->getData() ? $this->getData()->format('Y-m-d') : null,
-            'hora'             => $this->getHora() ? $this->getHora()->format('H:i') : null,
-            'dataConfirmacao'  => $this->getDataConfirmacao(),
+            'id' => $this->getId(),
+            'cliente' => $this->getCliente(),
+            'servico' => $this->getServico(),
+            'unidade' => $this->getUnidade(),
+            'data' => $this->getData() ? $this->getData()->format('Y-m-d') : null,
+            'hora' => $this->getHora() ? $this->getHora()->format('H:i') : null,
+            'dataConfirmacao' => $this->getDataConfirmacao(),
+            'oid' => $this->getOid(),
         ];
     }
 }
