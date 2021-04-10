@@ -199,6 +199,10 @@ class AtendimentoService extends StorageAwareService
         $this->storage->acumularAtendimentos($unidade, $ctx);
 
         $this->dispatcher->createAndDispatch('attending.reset', $unidade, true);
+
+        ($this->publisher)(new Update([
+            "/unidades/{$unidade->getId()}/fila",
+        ], json_encode([ 'id' => $unidade->getId() ])));
     }
 
     public function buscaAtendimento(Unidade $unidade, $id)
@@ -988,9 +992,13 @@ class AtendimentoService extends StorageAwareService
      * Apaga os dados de atendimento da unidade ou global
      * @param Unidade $unidade
      */
-    public function limparDados(Unidade $unidade = null)
+    public function limparDados(Unidade $unidade)
     {
         $this->storage->apagarDadosAtendimento($unidade);
+
+        ($this->publisher)(new Update([
+            "/unidades/{$unidade->getId()}/fila",
+        ], json_encode([ 'id' => $unidade->getId() ])));
     }
     
     /**
