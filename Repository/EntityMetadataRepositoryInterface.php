@@ -45,4 +45,11 @@ interface EntityMetadataRepositoryInterface extends ObjectRepository
      * @return EntityMetadata
      */
     public function set($entity, string $namespace, string $name, $value);
+    
+    /**
+     * @param mixed $entity
+     * @param string $namespace
+     * @param string $name
+     */
+    public function remove($entity, string $namespace, string $name);
 }
