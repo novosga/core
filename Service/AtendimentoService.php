@@ -201,7 +201,7 @@ class AtendimentoService extends StorageAwareService
         $this->dispatcher->createAndDispatch('attending.reset', $unidade, true);
 
         ($this->publisher)(new Update([
-            "/unidades/{$unidade->getId()}/fila",
+            ($unidade ? "/unidades/{$unidade->getId()}/fila" : "/fila"),
         ], json_encode([ 'id' => $unidade->getId() ])));
     }
 
