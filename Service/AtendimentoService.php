@@ -16,10 +16,10 @@ use Exception;
 use Novosga\Entity\Agendamento;
 use Novosga\Entity\Atendimento;
 use Novosga\Entity\AtendimentoCodificado;
+use Novosga\Entity\AtendimentoHistorico;
 use Novosga\Entity\AtendimentoMeta;
 use Novosga\Entity\Cliente;
 use Novosga\Event\EventDispatcherInterface;
-use Novosga\Entity\Local;
 use Novosga\Entity\Lotacao;
 use Novosga\Entity\PainelSenha;
 use Novosga\Entity\Prioridade;
@@ -149,8 +149,8 @@ class AtendimentoService extends StorageAwareService
         $senha->setSiglaSenha($atendimento->getSenha()->getSigla());
         $senha->setMensagem($su->getMensagem() . '');
         // local
-        $senha->setLocal($atendimento->getLocal()->getNome());
-        $senha->setNumeroLocal($atendimento->getNumeroLocal());
+        $senha->setLocal($su->getLocal()->getNome());
+        $senha->setNumeroLocal($atendimento->getLocal());
         // prioridade
         $senha->setPeso($atendimento->getPrioridade()->getPeso());
         $senha->setPrioridade($atendimento->getPrioridade()->getNome());
@@ -173,16 +173,28 @@ class AtendimentoService extends StorageAwareService
      * Move os registros da tabela atendimento para a tabela de historico de atendimentos.
      * Se a unidade não for informada, será acumulado serviços de todas as unidades.
      *
-     * @param Unidade $unidade
-     * @param array   $ctx
+     * @param Unidade|int $unidade
      *
      * @throws Exception
      */
-    public function acumularAtendimentos(?Unidade $unidade, $ctx = [])
+    public function acumularAtendimentos($unidade = 0)
     {
+        if ($unidade instanceof Unidade) {
+            $unidadeId = $unidade->getId();
+        } else {
+            $unidadeId = max($unidade, 0);
+            $unidade   = null;
+            if ($unidadeId > 0) {
+                $unidade = $this
+                    ->storage
+                    ->getRepository(Unidade::class)
+                    ->find($unidadeId);
+            }
+        }
+
         $this->dispatcher->createAndDispatch('attending.pre-reset', $unidade, true);
 
-        $this->storage->acumularAtendimentos($unidade, $ctx);
+        $this->storage->acumularAtendimentos($unidade);
 
         $this->dispatcher->createAndDispatch('attending.reset', $unidade, true);
     }
@@ -253,16 +265,14 @@ class AtendimentoService extends StorageAwareService
         return $rs;
     }
 
-    public function chamar(Atendimento $atendimento, Usuario $usuario, Local $local, int $numeroLocal)
+    public function chamar(Atendimento $atendimento, Usuario $usuario, int $local)
     {
-        $this->dispatcher->createAndDispatch('attending.pre-call', [$atendimento, $usuario, $local, $numeroLocal], true);
+        $this->dispatcher->createAndDispatch('attending.pre-call', [$atendimento, $usuario, $local], true);
         
-        $atendimento
-            ->setUsuario($usuario)
-            ->setLocal($local)
-            ->setNumeroLocal($numeroLocal)
-            ->setStatus(self::CHAMADO_PELA_MESA)
-            ->setDataChamada(new DateTime());
+        $atendimento->setUsuario($usuario);
+        $atendimento->setLocal($local);
+        $atendimento->setStatus(self::CHAMADO_PELA_MESA);
+        $atendimento->setDataChamada(new DateTime());
         
         $tempoEspera = $atendimento->getDataChamada()->diff($atendimento->getDataChegada());
         $atendimento->setTempoEspera($tempoEspera);
@@ -408,41 +418,14 @@ class AtendimentoService extends StorageAwareService
         }
         
         $su = $this->checkServicoUnidade($unidade, $servico);
-
-        if (
-            ($su->getTipo() === 2 && $prioridade->getPeso() > 0) ||
-            ($su->getTipo() === 3 && $prioridade->getPeso() === 0)
-         ) {
-            $error = $this->translator->trans('error.invalid_attendance_priority');
-            throw new Exception($error);
-        }
-
-        if ($su->getMaximo() > 0) {
-            $count = $this
-                ->storage
-                ->getManager()
-                ->getRepository(Atendimento::class)
-                ->count([
-                    'servico' => $servico,
-                    'unidade' => $unidade,
-                ]);
-
-            if ($count >= $su->getMaximo()) {
-                $error = $this->translator->trans('error.maximum_attendance_reached');
-                throw new Exception($error);
-            }
-        }
         
         $atendimento = new Atendimento();
-        $atendimento
-            ->setServico($servico)
-            ->setUnidade($unidade)
-            ->setPrioridade($prioridade)
-            ->setUsuarioTriagem($usuario)
-            ->setStatus(self::SENHA_EMITIDA)
-            ->setLocal(null)
-            ->setNumeroLocal(null);
-
+        $atendimento->setServico($servico);
+        $atendimento->setUnidade($unidade);
+        $atendimento->setPrioridade($prioridade);
+        $atendimento->setUsuarioTriagem($usuario);
+        $atendimento->setStatus(self::SENHA_EMITIDA);
+        $atendimento->setLocal(null);
         $atendimento->getSenha()->setSigla($su->getSigla());
         
         if ($agendamento) {
@@ -461,6 +444,33 @@ class AtendimentoService extends StorageAwareService
         $this->dispatcher->createAndDispatch('attending.pre-create', [$atendimento], true);
         
         try {
+            /**
+             * MySQL memory autoincrement fix
+             */
+            $atCount = $om
+                ->getRepository(Atendimento::class)
+                ->createQueryBuilder('a')
+                ->select("COUNT(a.id)")
+                ->getQuery()
+                ->getSingleScalarResult();
+            if ($atCount == 0) {
+                // Count the attendances history
+                $atHistCount = $om
+                    ->getRepository(AtendimentoHistorico::class)
+                    ->createQueryBuilder('ah')
+                    ->select("COUNT(ah.id)")
+                    ->getQuery()
+                    ->getSingleScalarResult();
+
+                if ($atHistCount > 0) {
+                    // If it has attendance history and attendance table is empty
+                    // Set the auto_increment based on history attendance.
+                    $conn = $om->getConnection();
+                    $atHistCount++;
+                    $stmt = $conn->prepare("ALTER TABLE atendimentos AUTO_INCREMENT = " . $atHistCount);
+                    $stmt->execute();
+                }
+            }
             $this->storage->distribui($atendimento, $agendamento);
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
@@ -940,22 +950,17 @@ class AtendimentoService extends StorageAwareService
     {
         // copiando a senha do atendimento atual
         $novo = new Atendimento();
-        $novo
-            ->setLocal(null)
-            ->setNumeroLocal(null)
-            ->setServico($servico)
-            ->setUnidade($unidade)
-            ->setPai($atendimento)
-            ->setDataChegada(new DateTime())
-            ->setStatus(self::SENHA_EMITIDA)
-            ->setUsuario($usuario)
-            ->setUsuarioTriagem($atendimento->getUsuario())
-            ->setPrioridade($atendimento->getPrioridade());
-            
-        $novo
-            ->getSenha()
-            ->setSigla($atendimento->getSenha()->getSigla())
-            ->setNumero($atendimento->getSenha()->getNumero());
+        $novo->setLocal(null);
+        $novo->setServico($servico);
+        $novo->setUnidade($unidade);
+        $novo->setPai($atendimento);
+        $novo->setDataChegada(new DateTime());
+        $novo->setStatus(self::SENHA_EMITIDA);
+        $novo->getSenha()->setSigla($atendimento->getSenha()->getSigla());
+        $novo->getSenha()->setNumero($atendimento->getSenha()->getNumero());
+        $novo->setUsuario($usuario);
+        $novo->setUsuarioTriagem($atendimento->getUsuario());
+        $novo->setPrioridade($atendimento->getPrioridade());
         
         if ($atendimento->getCliente()) {
             $novo->setCliente($atendimento->getCliente());
