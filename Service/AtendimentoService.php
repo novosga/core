@@ -810,6 +810,8 @@ class AtendimentoService extends StorageAwareService
                 )
             );
         }
+
+        $this->dispatcher->createAndDispatch('attending.pre-finish', $atendimento, true);
         
         $executados = [];
         $servicoRepository  = $this->storage->getRepository(Servico::class);
@@ -855,6 +857,8 @@ class AtendimentoService extends StorageAwareService
             "/atendimentos/{$atendimento->getId()}",
             "/unidades/{$unidade->getId()}/fila",
         ], json_encode([ 'id' => $atendimento->getId() ])));
+
+        $this->dispatcher->createAndDispatch('attending.finish', $atendimento, true);
     }
     
     public function alteraStatusAtendimentoUsuario(Usuario $usuario, $novoStatus)
