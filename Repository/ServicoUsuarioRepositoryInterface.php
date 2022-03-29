@@ -15,7 +15,7 @@ use Novosga\Entity\Usuario;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Servico;
 use Novosga\Entity\ServicoUsuario;
-use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\Persistence\ObjectRepository;
 
 /**
  * ServicoUsuarioRepositoryInterface

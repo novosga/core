@@ -13,7 +13,7 @@ namespace Novosga\Repository;
 
 use Novosga\Entity\Usuario;
 use Novosga\Entity\Unidade;
-use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\Persistence\ObjectRepository;
 
 /**
  * UnidadeRepositoryInterface

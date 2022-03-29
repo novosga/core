@@ -11,8 +11,8 @@
 
 namespace Novosga\Infrastructure;
 
-use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectRepository;
 use Novosga\Entity\Agendamento;
 use Novosga\Entity\Atendimento;
 use Novosga\Entity\Unidade;

@@ -20,6 +20,10 @@ use DateTime;
  */
 class Agendamento implements \JsonSerializable
 {
+    const SITUACAO_AGENDADO = 'agendado';
+    const SITUACAO_CONFIRMADO = 'confirmado';
+    const SITUACAO_NAO_COMPARECEU = 'nao_compareceu';
+
     /**
      * @var mixed
      */
@@ -34,6 +38,11 @@ class Agendamento implements \JsonSerializable
      * @var DateTime
      */
     private $hora;
+
+    /**
+     * @var string|null
+     */
+    private $situacao;
     
     /**
      * @var Cliente
@@ -54,9 +63,15 @@ class Agendamento implements \JsonSerializable
      * @var DateTime
      */
     private $dataConfirmacao;
+    
+    /**
+     * @var string
+     */
+    private $oid;
 
     public function __construct()
     {
+        $this->situacao = self::SITUACAO_AGENDADO;
     }
 
     public function getId()
@@ -64,32 +79,37 @@ class Agendamento implements \JsonSerializable
         return $this->id;
     }
 
-    public function getData()
+    public function getData(): ?DateTime
     {
         return $this->data;
     }
 
-    public function getHora()
+    public function getHora(): ?DateTime
     {
         return $this->hora;
     }
 
-    public function getCliente()
+    public function getSituacao(): ?string
+    {
+        return $this->situacao;
+    }
+
+    public function getCliente(): ?Cliente
     {
         return $this->cliente;
     }
 
-    public function getUnidade()
+    public function getUnidade(): ?Unidade
     {
         return $this->unidade;
     }
 
-    public function getServico()
+    public function getServico(): ?Servico
     {
         return $this->servico;
     }
     
-    public function getDataConfirmacao()
+    public function getDataConfirmacao(): ?DateTime
     {
         return $this->dataConfirmacao;
     }
@@ -104,6 +124,13 @@ class Agendamento implements \JsonSerializable
     public function setHora(?DateTime $hora): self
     {
         $this->hora = $hora;
+
+        return $this;
+    }
+
+    public function setSituacao(?string $situacao): self
+    {
+        $this->situacao = $situacao;
 
         return $this;
     }
@@ -135,6 +162,18 @@ class Agendamento implements \JsonSerializable
 
         return $this;
     }
+
+    public function getOid(): ?string
+    {
+        return $this->oid;
+    }
+
+    public function setOid(?string $oid): self
+    {
+        $this->oid = $oid;
+
+        return $this;
+    }
         
     public function __toString()
     {
@@ -144,13 +183,14 @@ class Agendamento implements \JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'id'               => $this->getId(),
-            'cliente'          => $this->getCliente(),
-            'servico'          => $this->getServico(),
-            'unidade'          => $this->getUnidade(),
-            'data'             => $this->getData() ? $this->getData()->format('Y-m-d') : null,
-            'hora'             => $this->getHora() ? $this->getHora()->format('H:i') : null,
-            'dataConfirmacao'  => $this->getDataConfirmacao(),
+            'id' => $this->getId(),
+            'cliente' => $this->getCliente(),
+            'servico' => $this->getServico(),
+            'unidade' => $this->getUnidade(),
+            'data' => $this->getData() ? $this->getData()->format('Y-m-d') : null,
+            'hora' => $this->getHora() ? $this->getHora()->format('H:i') : null,
+            'dataConfirmacao' => $this->getDataConfirmacao(),
+            'oid' => $this->getOid(),
         ];
     }
 }

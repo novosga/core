@@ -12,7 +12,7 @@
 namespace Novosga\Repository;
 
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\Persistence\ObjectRepository;
 use Novosga\Entity\Unidade;
 use Novosga\Entity\Usuario;
 use Novosga\Entity\ServicoUnidade;

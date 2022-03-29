@@ -39,6 +39,11 @@ class Prioridade implements \JsonSerializable
     private $peso;
 
     /**
+     * @var string
+     */
+    private $cor;
+
+    /**
      * @var int
      */
     private $ativo;
@@ -159,6 +164,18 @@ class Prioridade implements \JsonSerializable
         return $this;
     }
 
+    public function getCor(): ?string
+    {
+        return $this->cor;
+    }
+
+    public function setCor(?string $cor): self
+    {
+        $this->cor = $cor;
+
+        return $this;
+    }
+
     public function __toString()
     {
         return $this->getNome();
@@ -171,6 +188,7 @@ class Prioridade implements \JsonSerializable
             'nome'      => $this->getNome(),
             'descricao' => $this->getDescricao(),
             'peso'      => $this->getPeso(),
+            'cor'       => $this->getCor(),
             'ativo'     => $this->isAtivo(),
             'createdAt' => $this->getCreatedAt() ? $this->getCreatedAt()->format('Y-m-d\TH:i:s') : null,
             'updatedAt' => $this->getUpdatedAt() ? $this->getUpdatedAt()->format('Y-m-d\TH:i:s') : null,

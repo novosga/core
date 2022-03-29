@@ -11,7 +11,7 @@
 
 namespace Novosga\Http;
 
-use Exception;
+use Throwable;
 
 /**
  * Envelope
@@ -45,8 +45,9 @@ class Envelope implements \JsonSerializable
      */
     private $detail;
 
-    public function __construct()
+    public function __construct($data = null)
     {
+        $this->data = $data;
         $this->success = true;
         $this->sessionStatus = 'active';
     }
@@ -106,7 +107,7 @@ class Envelope implements \JsonSerializable
         return $this;
     }
     
-    public function exception(Exception $e, $debug = false)
+    public function exception(Throwable $e, $debug = false)
     {
         $this
             ->setSuccess(false)

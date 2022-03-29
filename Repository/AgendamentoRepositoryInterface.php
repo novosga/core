@@ -14,10 +14,10 @@ namespace Novosga\Repository;
 use Doctrine\Persistence\ObjectRepository;
 
 /**
- * ClienteRepositoryInterface
+ * AgendamentoRepositoryInterface
  *
  * @author Rogério Lino <rogeriolino@gmail.com>
  */
-interface ClienteRepositoryInterface extends ObjectRepository
+interface AgendamentoRepositoryInterface extends ObjectRepository
 {
 }

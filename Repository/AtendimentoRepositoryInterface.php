@@ -11,7 +11,7 @@
 
 namespace Novosga\Repository;
 
-use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\Persistence\ObjectRepository;
 use Novosga\Entity\Atendimento;
 use Novosga\Entity\Servico;
 use Novosga\Entity\Unidade;
@@ -27,7 +27,7 @@ interface AtendimentoRepositoryInterface extends ObjectRepository
      * Retorna o par do id do serviço e o total de atendimentos
      * @param Unidade          $unidade
      * @param Servico[]|int[]  $servicos
-     * @param string           $status
+     * @param string                    $status
      * @return array
      */
     public function countByServicos(Unidade $unidade, array $servicos, $status = null);

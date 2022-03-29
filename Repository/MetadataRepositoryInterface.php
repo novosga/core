@@ -12,7 +12,7 @@
 namespace Novosga\Repository;
 
 use Novosga\Entity\Metadata;
-use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\Persistence\ObjectRepository;
 
 /**
  * MetadataRepositoryInterface
@@ -24,7 +24,7 @@ interface MetadataRepositoryInterface extends ObjectRepository
     /**
      * @param string $namespace
      * @param string $name
-     * @return Metadata|null
+     * @return MetadataInterface|null
      */
     public function get(string $namespace, string $name);
     
@@ -32,7 +32,7 @@ interface MetadataRepositoryInterface extends ObjectRepository
      * @param string $namespace
      * @param string $name
      * @param mixed $value
-     * @return Metadata
+     * @return MetadataInterface
      */
     public function set(string $namespace, string $name, $value);
 }

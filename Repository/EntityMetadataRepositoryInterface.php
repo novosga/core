@@ -11,8 +11,8 @@
 
 namespace Novosga\Repository;
 
-use Novosga\Entity\Metadata;
-use Doctrine\Common\Persistence\ObjectRepository;
+use Novosga\Entity\EntityMetadata;
+use Doctrine\Persistence\ObjectRepository;
 
 /**
  * MetadataRepositoryInterface
@@ -21,11 +21,19 @@ use Doctrine\Common\Persistence\ObjectRepository;
  */
 interface EntityMetadataRepositoryInterface extends ObjectRepository
 {
+
+    /**
+     * @param mixed $entity
+     * @param string $namespace
+     * @return EntityMetadata[]
+     */
+    public function findByNamespace($entity, string $namespace);
+
     /**
      * @param mixed $entity
      * @param string $namespace
      * @param string $name
-     * @return Metadata|null
+     * @return EntityMetadata|null
      */
     public function get($entity, string $namespace, string $name);
     
@@ -34,7 +42,14 @@ interface EntityMetadataRepositoryInterface extends ObjectRepository
      * @param string $namespace
      * @param string $name
      * @param mixed $value
-     * @return Metadata
+     * @return EntityMetadata
      */
     public function set($entity, string $namespace, string $name, $value);
+    
+    /**
+     * @param mixed $entity
+     * @param string $namespace
+     * @param string $name
+     */
+    public function remove($entity, string $namespace, string $name);
 }
