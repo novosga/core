@@ -13,8 +13,11 @@ declare(strict_types=1);
 
 namespace Novosga\Repository;
 
+use DateTimeInterface;
 use Doctrine\Persistence\ObjectRepository;
 use Novosga\Entity\AgendamentoInterface;
+use Novosga\Entity\ServicoInterface;
+use Novosga\Entity\UnidadeInterface;
 
 /**
  * AgendamentoRepositoryInterface
@@ -25,4 +28,10 @@ use Novosga\Entity\AgendamentoInterface;
  */
 interface AgendamentoRepositoryInterface extends ObjectRepository, BaseRepository
 {
+    /** @return AgendamentoInterface[] */
+    public function findByUnidadeAndServicoAndData(
+        UnidadeInterface|int $unidade,
+        ServicoInterface|int $servico,
+        DateTimeInterface $data,
+    ): array;
 }
