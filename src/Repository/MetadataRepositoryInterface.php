@@ -19,16 +19,15 @@ use Novosga\Entity\MetadataInterface;
 /**
  * MetadataRepositoryInterface
  *
- * @template T of MetadataInterface
- * @extends ObjectRepository<T>
+ * @extends ObjectRepository<MetadataInterface>
  *
  * @author Rogério Lino <rogeriolino@gmail.com>
  */
 interface MetadataRepositoryInterface extends ObjectRepository, BaseRepository
 {
-    /** @return ?T */
+    /** @return ?MetadataInterface */
     public function get(string $namespace, string $name): ?MetadataInterface;
 
-    /** @return T */
+    /** @return MetadataInterface */
     public function set(string $namespace, string $name, mixed $value = null): MetadataInterface;
 }
