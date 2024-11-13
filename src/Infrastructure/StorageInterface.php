@@ -54,7 +54,7 @@ interface StorageInterface
      * Move os dados de atendimento para o histórico
      */
     public function acumularAtendimentos(
-        UsuarioInterface $usuario,
+        ?UsuarioInterface $usuario,
         ?UnidadeInterface $unidade,
         DateTimeInterface $ateData,
     ): void;

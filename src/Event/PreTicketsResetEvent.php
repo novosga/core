@@ -26,7 +26,7 @@ final readonly class PreTicketsResetEvent
 {
     public function __construct(
         public ?UnidadeInterface $unidade,
-        public UsuarioInterface $usuario,
+        public ?UsuarioInterface $usuario,
         public DateTimeInterface $ateData,
     ) {
     }
