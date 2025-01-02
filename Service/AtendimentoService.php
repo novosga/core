@@ -479,11 +479,11 @@ class AtendimentoService extends StorageAwareService
             $hora = $agendamento->getHora()->format('H:i');
             $dtAge = DateTime::createFromFormat('Y-m-d H:i', "{$data} {$hora}");
             $atendimento->setDataAgendamento($dtAge);
-        }
-        
-        $clienteValido = $this->getClienteValido($cliente);
-
-        if ($clienteValido) {
+            $atendimento
+                ->setDataAgendamento($dtAge)
+                ->setCliente($agendamento->getCliente());
+        } else {
+            $clienteValido = $this->getClienteValido($cliente);
             $atendimento->setCliente($clienteValido);
         }
 
