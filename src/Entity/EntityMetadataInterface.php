@@ -16,7 +16,7 @@ namespace Novosga\Entity;
 /**
  * EntityMetadataInterface.
  *
- * @template T
+ * @template T of object
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
