@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Novosga\Service;
 
-use Novosga\Dto\InstalledModule;
+use Novosga\Settings\InstalledModule;
 
 interface ModuleServiceInterface
 {
