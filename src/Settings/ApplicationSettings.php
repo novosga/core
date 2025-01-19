@@ -11,14 +11,19 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Novosga\Service;
+namespace Novosga\Settings;
 
 /**
- * ConfigurationInterface
+ * ApplicationSettings
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-interface ConfigurationInterface
+class ApplicationSettings
 {
-    public function get(string $key): mixed;
+    public function __construct(
+        public AppearanceSettings $appearance,
+        public BehaviorSettings $behavior,
+        public QueueSettings $queue,
+    ) {
+    }
 }
