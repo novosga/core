@@ -324,7 +324,7 @@ abstract class AbstractAtendimento implements \JsonSerializable
         return $this;
     }
         
-    public function setCliente(Cliente $cliente): self
+    public function setCliente(?Cliente $cliente): self
     {
         $this->cliente = $cliente;
 
@@ -469,10 +469,7 @@ abstract class AbstractAtendimento implements \JsonSerializable
         return $interval;
     }
 
-    /**
-     * @return Cliente
-     */
-    public function getCliente()
+    public function getCliente(): ?Cliente
     {
         return $this->cliente;
     }
