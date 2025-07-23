@@ -30,6 +30,15 @@ interface UsuarioInterface extends PasswordAuthenticatedUserInterface, JsonSeria
     public function setLogin(?string $login): static;
     public function getLogin(): ?string;
 
+    public function setNome(?string $nome): static;
+    public function getNome(): ?string;
+
+    public function setSobrenome(?string $sobrenome): static;
+    public function getSobrenome(): ?string;
+
+    public function setEmail(?string $email): static;
+    public function getEmail(): ?string;
+
     public function getLotacao(): ?LotacaoInterface;
     public function setLotacao(?LotacaoInterface $lotacao): static;
 
