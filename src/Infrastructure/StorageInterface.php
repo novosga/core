@@ -39,7 +39,7 @@ interface StorageInterface
     public function getRepository(string $className): EntityRepository;
 
     /** Gera uma nova senha de atendimento */
-    public function distribui(AtendimentoInterface $atendimento, AgendamentoInterface $agendamento = null): void;
+    public function distribui(AtendimentoInterface $atendimento, ?AgendamentoInterface $agendamento = null): void;
 
     public function chamar(AtendimentoInterface $atendimento): void;
 
@@ -47,7 +47,7 @@ interface StorageInterface
     public function encerrar(
         AtendimentoInterface $atendimento,
         array $codificados,
-        AtendimentoInterface $novoAtendimento = null
+        ?AtendimentoInterface $novoAtendimento = null,
     ): void;
 
     /**

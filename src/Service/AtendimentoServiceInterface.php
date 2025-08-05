@@ -81,8 +81,8 @@ interface AtendimentoServiceInterface
         int|UsuarioInterface $usuario,
         int|ServicoInterface $servico,
         int|PrioridadeInterface $prioridade,
-        ClienteInterface $cliente = null,
-        AgendamentoInterface $agendamento = null,
+        ?ClienteInterface $cliente = null,
+        ?AgendamentoInterface $agendamento = null,
     ): AtendimentoInterface;
 
     /**
@@ -144,7 +144,7 @@ interface AtendimentoServiceInterface
         AtendimentoInterface $atendimento,
         UsuarioInterface $usuario,
         ServicoInterface|int $novoServico,
-        UsuarioInterface|int $novoAtendente = null,
+        UsuarioInterface|int|null $novoAtendente = null,
     ): AtendimentoInterface;
 
     /**
@@ -179,8 +179,8 @@ interface AtendimentoServiceInterface
         AtendimentoInterface $atendimento,
         UsuarioInterface $usuario,
         array $servicosRealizados,
-        ServicoInterface|int $servicoRedirecionado = null,
-        UsuarioInterface|int $novoUsuario = null,
+        ServicoInterface|int|null $servicoRedirecionado = null,
+        UsuarioInterface|int|null $novoUsuario = null,
     ): void;
 
     /**
