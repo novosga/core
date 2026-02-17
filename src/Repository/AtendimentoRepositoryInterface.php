@@ -34,5 +34,5 @@ interface AtendimentoRepositoryInterface extends ObjectRepository, BaseRepositor
      */
     public function countByServicos(UnidadeInterface $unidade, array $servicos, ?string $status = null): array;
 
-    public function getUltimo(UnidadeInterface $unidade, ServicoInterface $servico = null): ?AtendimentoInterface;
+    public function getUltimo(UnidadeInterface $unidade, ?ServicoInterface $servico = null): ?AtendimentoInterface;
 }
