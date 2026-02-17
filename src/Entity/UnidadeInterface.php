@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Novosga\Entity;
 
+use DateTimeZone;
 use JsonSerializable;
 
 /**
@@ -35,4 +36,9 @@ interface UnidadeInterface extends JsonSerializable
     public function setAtivo(bool $ativo): static;
 
     public function getImpressao(): ConfiguracaoImpressaoInterface;
+
+    public function getTimezone(): ?string;
+    public function setTimezone(?string $timezone): static;
+
+    public function getDateTimeZone(): DateTimeZone;
 }
