@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Novosga\Http;
 
+use DateTimeZone;
 use Throwable;
 
 /**
@@ -22,19 +23,35 @@ use Throwable;
  */
 class Envelope implements \JsonSerializable
 {
-    private bool $success = true;
-    private string $sessionStatus = 'active';
-    private ?string $message = null;
-    private ?string $detail = null;
+    private ?string $message;
+    private ?string $detail;
 
     public function __construct(
-        private mixed $data = null
+        private DateTimeZone $timezone = new DateTimeZone('UTC'),
+        private mixed $data = null,
+        private bool $success = true,
+        private string $sessionStatus = 'active',
     ) {
     }
 
     public function isSuccess(): bool
     {
         return $this->success;
+    }
+
+    public function getSessionStatus(): string
+    {
+        return $this->sessionStatus;
+    }
+
+    public function getData(): mixed
+    {
+        return $this->data;
+    }
+
+    public function getMessage(): ?string
+    {
+        return $this->message;
     }
 
     public function setSuccess(bool $success): static
@@ -44,11 +61,6 @@ class Envelope implements \JsonSerializable
         return $this;
     }
 
-    public function getSessionStatus(): string
-    {
-        return $this->sessionStatus;
-    }
-
     public function setSessionStatus(string $session): static
     {
         $this->sessionStatus = $session;
@@ -56,21 +68,11 @@ class Envelope implements \JsonSerializable
         return $this;
     }
 
-    public function getData(): mixed
-    {
-        return $this->data;
-    }
-
     public function setData(mixed $data): static
     {
         $this->data = $data;
 
         return $this;
-    }
-
-    public function getMessage(): ?string
-    {
-        return $this->message;
     }
 
     public function setMessage(?string $message): static
@@ -91,14 +93,15 @@ class Envelope implements \JsonSerializable
         return $this;
     }
 
-    public function exception(Throwable $e, bool $debug = false): static
+    public function exception(Throwable $e, ?bool $debug = false): static
     {
         $this
             ->setSuccess(false)
             ->setMessage($e->getMessage());
 
         if ($debug) {
-            $this->setDetail("{$e->getFile()}:{$e->getLine()}\n{$e->getTraceAsString()}");
+            $detail = "{$e->getFile()}:{$e->getLine()}\n{$e->getTraceAsString()}";
+            $this->setDetail($detail);
         }
 
         return $this;
@@ -111,6 +114,7 @@ class Envelope implements \JsonSerializable
             'success' => $this->success,
             'sessionStatus' => $this->sessionStatus,
             'time' => time() * 1000,
+            'tz' => $this->timezone->getName(),
         ];
 
         if ($this->success) {
