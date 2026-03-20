@@ -43,7 +43,22 @@ interface ApplicationSettingsServiceInterface
 
     public function saveQueueSettings(QueueSettings $settings): void;
 
-    public function loadUserBehaviorSettings(UsuarioInterface $usuario): UserBehaviorSettings;
+    /**
+     * Loads behavior settings for the given user.
+     *
+     * When $resolveGlobal is true (default), any field not explicitly overridden
+     * by the user falls back to the global BehaviorSettings value, so the returned
+     * object always has concrete (non-null) values ready for enforcement.
+     *
+     * When $resolveGlobal is false, only the raw per-user overrides are returned;
+     * fields with no override will be null, which is useful for displaying the
+     * current override state in settings forms without conflating "not set" with
+     * the global default.
+     */
+    public function loadUserBehaviorSettings(
+        UsuarioInterface $usuario,
+        ?bool $resolveGlobal = true,
+    ): UserBehaviorSettings;
 
     public function saveUserBehaviorSettings(UsuarioInterface $usuario, UserBehaviorSettings $settings): void;
 }
