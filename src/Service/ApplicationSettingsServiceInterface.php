@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace Novosga\Service;
 
+use Novosga\Entity\UsuarioInterface;
 use Novosga\Settings\AppearanceSettings;
 use Novosga\Settings\ApplicationSettings;
 use Novosga\Settings\BehaviorSettings;
 use Novosga\Settings\QueueSettings;
+use Novosga\Settings\UserBehaviorSettings;
 
 /**
  * ApplicationSettingsServiceInterface
@@ -40,4 +42,8 @@ interface ApplicationSettingsServiceInterface
     public function saveBehaviorSettings(BehaviorSettings $settings): void;
 
     public function saveQueueSettings(QueueSettings $settings): void;
+
+    public function loadUserBehaviorSettings(UsuarioInterface $usuario): UserBehaviorSettings;
+
+    public function saveUserBehaviorSettings(UsuarioInterface $usuario, UserBehaviorSettings $settings): void;
 }
