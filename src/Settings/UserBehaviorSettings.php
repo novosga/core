@@ -26,6 +26,7 @@ class UserBehaviorSettings
     public function __construct(
         public ?bool $callTicketByService = null,
         public ?bool $callTicketOutOfOrder = null,
+        public ?bool $changeTicketType = null,
     ) {
     }
 }

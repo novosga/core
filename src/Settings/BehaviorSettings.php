@@ -26,6 +26,7 @@ class BehaviorSettings
         public int $prioritySwapCount = 1,
         public bool $callTicketByService = false,
         public bool $callTicketOutOfOrder = false,
+        public bool $changeTicketType = true,
     ) {
     }
 }
