@@ -11,11 +11,11 @@
     "require": {
         "php": ">=8.2",
         "doctrine/orm": "^3.2",
-        "symfony/http-kernel": "7.1.*",
-        "symfony/form": "7.1.*",
+        "symfony/http-kernel": "7.4.*",
+        "symfony/form": "7.4.*",
         "symfony/event-dispatcher-contracts": "^3.5",
-        "symfony/validator": "7.1.*",
-        "symfony/security-core": "7.1.*"
+        "symfony/validator": "7.4.*",
+        "symfony/security-core": "7.4.*"
     },
     "require-dev": {
         "phpstan/phpstan": "^1.10",
