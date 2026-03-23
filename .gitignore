@@ -1,4 +1,7 @@
 vendor/
 composer.lock
-.phpcs-cache
-.phpunit.result.cache
+/.phpcs-cache
+/phpcs.xml
+phpstan.neon
+/phpunit.xml
+/.phpunit.cache/

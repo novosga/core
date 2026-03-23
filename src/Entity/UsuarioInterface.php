@@ -15,14 +15,15 @@ namespace Novosga\Entity;
 
 use Doctrine\Common\Collections\Collection;
 use JsonSerializable;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 /**
- * Usuario
+ * UsuarioInterface
  *
  * @author Rogerio Lino <rogeriolino@gmail.com>
  */
-interface UsuarioInterface extends PasswordAuthenticatedUserInterface, JsonSerializable
+interface UsuarioInterface extends UserInterface, PasswordAuthenticatedUserInterface, JsonSerializable
 {
     public function getId(): ?int;
     public function setId(?int $id): static;
