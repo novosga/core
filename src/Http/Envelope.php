@@ -23,8 +23,8 @@ use Throwable;
  */
 class Envelope implements \JsonSerializable
 {
-    private ?string $message;
-    private ?string $detail;
+    private ?string $message = null;
+    private ?string $detail = null;
 
     public function __construct(
         private DateTimeZone $timezone = new DateTimeZone('UTC'),
