@@ -31,4 +31,10 @@ interface ModuleInterface
     public function getName(): string;
 
     public function getHomeRoute(): string;
+
+    public function getDescription(): ?string;
+
+    public function getWebsite(): ?string;
+
+    public function getAuthor(): ?string;
 }

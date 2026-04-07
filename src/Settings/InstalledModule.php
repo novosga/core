@@ -26,6 +26,9 @@ final class InstalledModule
         public readonly string $displayName,
         public readonly string $iconName,
         public readonly string $homeRoute,
+        public readonly ?string $description,
+        public readonly ?string $website,
+        public readonly ?string $author,
     ) {
     }
 }

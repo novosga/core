@@ -44,4 +44,19 @@ abstract class BaseModule extends Bundle implements ModuleInterface
 
         return $domain;
     }
+
+    public function getDescription(): ?string
+    {
+        return null;
+    }
+
+    public function getWebsite(): ?string
+    {
+        return null;
+    }
+
+    public function getAuthor(): ?string
+    {
+        return null;
+    }
 }
