@@ -35,4 +35,8 @@ interface PainelInterface
 
     /** @return Collection<int, PainelServicoInterface> */
     public function getServicos(): Collection;
+
+    public function addServico(PainelServicoInterface $servico): static;
+
+    public function removeServico(PainelServicoInterface $servico): static;
 }
