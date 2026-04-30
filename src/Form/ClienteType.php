@@ -15,6 +15,7 @@ namespace Novosga\Form;
 
 use Novosga\Entity\ClienteInterface;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\BirthdayType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -23,6 +24,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\Valid;
 
 class ClienteType extends AbstractType
 {
@@ -67,11 +69,26 @@ class ClienteType extends AbstractType
                     'label.gender.unknown' => 'O',
                 ],
             ])
+            ->add('dataNascimento', BirthdayType::class, [
+                'label' => 'label.birthday',
+                'required' => false,
+                'placeholder' => '',
+            ])
             ->add('observacao', TextareaType::class, [
                 'label' => 'label.notes',
                 'required' => false,
                 'attr' => [
                     'rows' => 6,
+                ],
+            ])
+            ->add('endereco', EnderecoType::class, [
+                'label' => 'label.address',
+                'required' => false,
+                'attr' => [
+                    'rows' => 6,
+                ],
+                'constraints' => [
+                    new Valid(),
                 ],
             ])
         ;
