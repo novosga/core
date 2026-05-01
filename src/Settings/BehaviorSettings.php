@@ -27,6 +27,7 @@ class BehaviorSettings
         public bool $callTicketByService = false,
         public bool $callTicketOutOfOrder = false,
         public bool $changeTicketType = true,
+        public int $appointmentConfirmationDelay = 60,
     ) {
     }
 }
