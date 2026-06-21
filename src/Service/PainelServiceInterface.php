@@ -15,6 +15,7 @@ namespace Novosga\Service;
 
 use Novosga\Entity\PainelInterface;
 use Novosga\Entity\UnidadeInterface;
+use Novosga\Settings\PainelSettings;
 
 /**
  * PainelServiceInterface
@@ -35,4 +36,8 @@ interface PainelServiceInterface
     public function save(PainelInterface $painel): PainelInterface;
 
     public function remove(PainelInterface $painel): void;
+
+    public function loadSettings(PainelInterface $painel): PainelSettings;
+
+    public function saveSettings(PainelInterface $painel, PainelSettings $settings): void;
 }
